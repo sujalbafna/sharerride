@@ -3,7 +3,7 @@
 
 import { useState } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, addDoc, setDoc, doc } from "firebase/firestore"
+import { collection, addDoc } from "firebase/firestore"
 import { 
   Dialog, 
   DialogContent, 
@@ -16,10 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
-import { Navigation, Users, Shield, Loader2, MapPin } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -33,20 +30,20 @@ export function StartJourneyDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [startLoc, setStartLoc] = useState("")
   const [endLoc, setEndLoc] = useState("")
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([])
-  const [sharePassengerDetails, setSharePassengerDetails] = useState(true)
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
 
-  const { data: contacts, isLoading: loadingContacts } = useCollection(contactsQuery)
+  const { data: contacts } = useCollection(contactsQuery)
 
   const handleStart = async () => {
     if (!user || !db || !startLoc || !endLoc) return
 
     setIsSubmitting(true)
+    const allFriendIds = contacts?.map(c => c.id) || []
+    
     const journeyData = {
       userId: user.uid,
       journeyType: "General",
@@ -58,7 +55,7 @@ export function StartJourneyDialog() {
       endLocationDescription: endLoc,
       endLatitude: 12.9720,
       endLongitude: 77.5950,
-      sharedWithContactIds: selectedContacts,
+      sharedWithContactIds: allFriendIds,
       createdAt: new Date().toISOString()
     }
 
@@ -67,29 +64,32 @@ export function StartJourneyDialog() {
     try {
       await addDoc(journeysRef, journeyData)
       
-      for (const friendId of selectedContacts) {
-        const friendContact = contacts?.find(c => c.id === friendId)
-        if (friendContact?.appUserId) {
-          await addDoc(collection(db, "users", friendContact.appUserId, "supportRequests"), {
-            userId: friendContact.appUserId,
-            senderId: user.uid,
-            senderName: user.displayName || "Member",
-            requestType: "JourneyNotification",
-            description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
-            timestamp: new Date().toISOString(),
-            status: "Pending"
-          })
+      // Notify all friends automatically
+      if (contacts && contacts.length > 0) {
+        for (const friendContact of contacts) {
+          if (friendContact.appUserId) {
+            await addDoc(collection(db, "users", friendContact.appUserId, "supportRequests"), {
+              userId: friendContact.appUserId,
+              senderId: user.uid,
+              senderName: user.displayName || "Member",
+              requestType: "JourneyNotification",
+              description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
+              timestamp: new Date().toISOString(),
+              status: "Pending"
+            })
+          }
         }
       }
 
       toast({
         title: "Journey Started",
-        description: "Your friends have been notified and tracking is active.",
+        description: contacts && contacts.length > 0 
+          ? `All ${contacts.length} friends have been notified and tracking is active.`
+          : "Your journey has started. Tracking is active.",
       })
       setIsOpen(false)
       setStartLoc("")
       setEndLoc("")
-      setSelectedContacts([])
     } catch (error) {
       const contextualError = new FirestorePermissionError({
         operation: 'create',
@@ -100,12 +100,6 @@ export function StartJourneyDialog() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const toggleContact = (id: string) => {
-    setSelectedContacts(prev => 
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    )
   }
 
   return (
@@ -123,7 +117,7 @@ export function StartJourneyDialog() {
             Initialize Journey
           </DialogTitle>
           <DialogDescription>
-            Enter your route and select friends for live tracking.
+            Enter your route details. Your entire friend circle will be notified automatically.
           </DialogDescription>
         </DialogHeader>
 
@@ -155,47 +149,6 @@ export function StartJourneyDialog() {
                 />
               </div>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Notify Friends
-              </Label>
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                {selectedContacts.length} Selected
-              </span>
-            </div>
-            <ScrollArea className="h-[120px] rounded-xl border p-4 bg-muted/30">
-              {loadingContacts ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              ) : !contacts || contacts.length === 0 ? (
-                <p className="text-xs text-center text-muted-foreground py-4">
-                  No friends found in your circle. Add some in the Network tab.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {contacts.map((contact) => (
-                    <div key={contact.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={contact.id} 
-                        checked={selectedContacts.includes(contact.id)}
-                        onCheckedChange={() => toggleContact(contact.id)}
-                      />
-                      <label 
-                        htmlFor={contact.id} 
-                        className="text-sm font-medium leading-none cursor-pointer"
-                      >
-                        {contact.contactName} ({contact.relationshipToUser})
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
           </div>
         </div>
 
