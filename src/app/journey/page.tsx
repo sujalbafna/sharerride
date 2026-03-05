@@ -3,14 +3,13 @@
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit } from "firebase/firestore"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, BellRing, PhoneCall, MessageCircle, AlertTriangle } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
-import { MeetingPointsDisplay } from "@/components/meeting-points-display"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
 import { GoogleMap } from "@/components/google-map"
 import { cn } from "@/lib/utils"
@@ -79,8 +78,8 @@ export default function JourneyPage() {
                       </h3>
                       <p className="opacity-80 text-sm md:text-base">
                         {isEmergencyActive 
-                          ? "SOS Protocol is broadcasting your live location to nearest responders." 
-                          : "Safe sharing is enabled with your primary friends."}
+                          ? "SOS Protocol is active." 
+                          : "Safe sharing is enabled with your friends."}
                       </p>
                     </div>
 
@@ -111,51 +110,37 @@ export default function JourneyPage() {
                           SOS ALERT
                         </Button>
                       )}
-                      {isEmergencyActive && (
-                        <Button className="h-14 rounded-2xl bg-white text-destructive hover:bg-white/90 font-black">
-                          <CheckCircle2 className="mr-2 h-5 w-5" />
-                          RESOLVED
-                        </Button>
-                      )}
                     </div>
 
                     {isEmergencyActive ? (
                       <EmergencyProtocolDisplay />
                     ) : (
-                      <>
-                        <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
-                          <CardContent className="p-6 space-y-4">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
-                                <ShieldCheck className="h-4 w-4 text-accent" />
-                                Capacity Information
-                              </h4>
-                              <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">
-                                {activeJourney.availableSeats || 0} SEATS LEFT
-                              </Badge>
-                            </div>
-                            <div className="space-y-3">
-                              <p className="text-sm font-medium leading-relaxed">
-                                {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
-                              </p>
-                              <div className="flex gap-2">
-                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                                  <Users className="h-4 w-4 opacity-60" />
-                                </div>
-                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                                  <MessageCircle className="h-4 w-4 opacity-60" />
-                                </div>
+                      <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
+                        <CardContent className="p-6 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
+                              <ShieldCheck className="h-4 w-4 text-accent" />
+                              Travel Capacity
+                            </h4>
+                            <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">
+                              {activeJourney.availableSeats || 0} SEATS LEFT
+                            </Badge>
+                          </div>
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium leading-relaxed">
+                              {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
+                            </p>
+                            <div className="flex gap-2">
+                              <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                <Users className="h-4 w-4 opacity-60" />
+                              </div>
+                              <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                <MessageCircle className="h-4 w-4 opacity-60" />
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                        
-                        <MeetingPointsDisplay 
-                          startLocation={activeJourney.startLocationDescription}
-                          destination={activeJourney.endLocationDescription}
-                          userId={user?.uid || ""}
-                        />
-                      </>
+                          </div>
+                        </CardContent>
+                      </Card>
                     )}
                   </div>
                   
@@ -203,7 +188,7 @@ export default function JourneyPage() {
                           </div>
                           <div className="space-y-0.5">
                             <p className="text-[10px] font-black uppercase">Responder Status</p>
-                            <p className="text-xs font-bold">Nearest responder is 2 mins away</p>
+                            <p className="text-xs font-bold">Help is being coordinated.</p>
                           </div>
                         </div>
                       </div>
@@ -220,7 +205,7 @@ export default function JourneyPage() {
                 Ready for your next safe travel?
               </h1>
               <p className="text-muted-foreground text-lg md:text-xl max-w-lg">
-                Setu provides discrete virtual companionship and real-time tracking for every step of your journey.
+                Setu provides virtual companionship and real-time tracking for every step of your journey.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="w-full sm:w-auto">

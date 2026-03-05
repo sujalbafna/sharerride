@@ -1,50 +1,10 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // Public Profiles are searchable by any signed-in user
-    match /publicProfiles/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId);
-    }
-
-    match /users/{userId} {
-      allow get, list, create, update, delete: if isOwner(userId);
-
-      match /trustedContacts/{contactId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /chats/{friendId}/messages/{messageId} {
-        // A user can read/write their own chat logs
-        // Note: For bi-directional chat, both users store a copy or we use a global chat path.
-        // For this prototype, we'll store messages under the owner's path.
-        allow read, write: if isOwner(userId);
-      }
-
-      match /journeys/{journeyId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /emergencyAlerts/{alertId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /supportRequests/{requestId} {
-        // Recipients can read and update (accept/decline)
-        allow read, update: if isOwner(userId);
-        // Anyone signed in can send a request to a user's inbox
-        allow create: if isSignedIn();
-      }
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }

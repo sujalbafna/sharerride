@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useState } from "react"
-import { AlertCircle, Loader2, ShieldAlert, Car, Wrench, Mountain, HeartPulse, Shield, Landmark } from "lucide-react"
+import { useState, useEffect } from "react"
+import { AlertCircle, Loader2, ShieldAlert, Car, Wrench, Mountain, HeartPulse } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,9 +14,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
-import { useFirestore, useUser } from "@/firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
+import { collection, addDoc, doc } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 
 const emergencyTypes = [
@@ -30,10 +29,18 @@ export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<string | null>(null)
-  const [aiMessage, setAiMessage] = useState<string | null>(null)
   const { toast } = useToast()
   const { user } = useUser()
   const db = useFirestore()
+
+  // Fetch user data for name
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return doc(db, "users", user.uid)
+  }, [db, user])
+  const { data: userData } = useDoc(userRef)
+  
+  const senderName = userData ? `${userData.firstName} ${userData.lastName}` : (user?.displayName || "User")
 
   const handleSOS = async () => {
     if (!user || !db || !selectedType) {
@@ -44,11 +51,7 @@ export function SOSButton() {
     setIsSending(true)
     try {
       const typeLabel = emergencyTypes.find(t => t.id === selectedType)?.label || "Emergency"
-      const result = await generateEmergencyMessage({
-        location: "Current GPS Location",
-        situation: `${typeLabel} - Manual SOS trigger via Dashboard.`,
-      })
-      setAiMessage(result.message)
+      const message = `SOS ALERT from ${senderName}: I am facing a ${typeLabel} emergency. My current coordinates are tracked. Please check my live location.`
       
       await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
@@ -56,7 +59,7 @@ export function SOSButton() {
         alertLocationDescription: "Current GPS Location",
         alertLatitude: 12.9716,
         alertLongitude: 77.5946,
-        alertMessage: result.message,
+        alertMessage: message,
         status: "Sent",
         emergencyType: selectedType,
         recipientsContactIds: []
@@ -64,7 +67,7 @@ export function SOSButton() {
 
       toast({
         title: "SOS Protocol Activated",
-        description: `Nearest person on route notified. Emergency type: ${typeLabel}.`,
+        description: `Your friends have been notified. Emergency type: ${typeLabel}.`,
       })
       
       setIsSending(false)
@@ -73,7 +76,7 @@ export function SOSButton() {
       toast({
         variant: "destructive",
         title: "Alert Failure",
-        description: "Communication link failed. Please use cellular backup for SOS.",
+        description: "Communication link failed. Please try again.",
       })
       setIsSending(false)
     }
@@ -99,7 +102,7 @@ export function SOSButton() {
             Emergency Dispatch
           </DialogTitle>
           <DialogDescription className="text-base">
-            Select the emergency category to notify your friends and nearest specialized responders.
+            Select the emergency category to notify your friends.
           </DialogDescription>
         </DialogHeader>
         

@@ -2,8 +2,8 @@
 "use client"
 
 import { useState } from "react"
-import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
+import { collection, addDoc, doc } from "firebase/firestore"
 import { 
   Dialog, 
   DialogContent, 
@@ -18,8 +18,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Navigation, Shield, Loader2, MapPin, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { errorEmitter } from "@/firebase/error-emitter"
-import { FirestorePermissionError } from "@/firebase/errors"
 
 export function StartJourneyDialog() {
   const { user } = useUser()
@@ -31,6 +29,15 @@ export function StartJourneyDialog() {
   const [startLoc, setStartLoc] = useState("")
   const [endLoc, setEndLoc] = useState("")
   const [seats, setSeats] = useState("0")
+
+  // Fetch current user details from DB to get the actual name
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return doc(db, "users", user.uid)
+  }, [db, user])
+  const { data: userData } = useDoc(userRef)
+  
+  const userName = userData ? `${userData.firstName} ${userData.lastName}` : (user?.displayName || "User")
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -63,10 +70,8 @@ export function StartJourneyDialog() {
       createdAt: new Date().toISOString()
     }
 
-    const journeysRef = collection(db, "users", user.uid, "journeys")
-    
     try {
-      const journeyDoc = await addDoc(journeysRef, journeyData)
+      const journeyDoc = await addDoc(collection(db, "users", user.uid, "journeys"), journeyData)
       
       // Notify all friends automatically
       if (contacts && contacts.length > 0) {
@@ -75,7 +80,7 @@ export function StartJourneyDialog() {
             await addDoc(collection(db, "users", friendContact.appUserId, "supportRequests"), {
               userId: friendContact.appUserId,
               senderId: user.uid,
-              senderName: user.displayName || "Member",
+              senderName: userName,
               requestType: "JourneyNotification",
               description: `is traveling from ${startLoc} to ${endLoc}. ${availableSeatsCount > 0 ? `${availableSeatsCount} seats available.` : "No seats available."}`,
               timestamp: new Date().toISOString(),
@@ -88,21 +93,18 @@ export function StartJourneyDialog() {
 
       toast({
         title: "Journey Started",
-        description: contacts && contacts.length > 0 
-          ? `All ${contacts.length} friends have been notified and tracking is active.`
-          : "Your journey has started. Tracking is active.",
+        description: `All your friends have been notified and tracking is active.`,
       })
       setIsOpen(false)
       setStartLoc("")
       setEndLoc("")
       setSeats("0")
     } catch (error) {
-      const contextualError = new FirestorePermissionError({
-        operation: 'create',
-        path: journeysRef.path,
-        requestResourceData: journeyData
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not start journey.",
       })
-      errorEmitter.emit('permission-error', contextualError)
     } finally {
       setIsSubmitting(false)
     }
@@ -123,7 +125,7 @@ export function StartJourneyDialog() {
             Initialize Journey
           </DialogTitle>
           <DialogDescription>
-            Enter your route details. Your entire friend circle will be notified automatically.
+            Enter your route details. Your friends will be notified automatically.
           </DialogDescription>
         </DialogHeader>
 
