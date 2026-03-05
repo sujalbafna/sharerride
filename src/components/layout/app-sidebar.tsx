@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { 
   Home, 
   LogOut,
@@ -13,7 +13,8 @@ import {
   UserPlus,
   X,
   Loader2,
-  Bell
+  Bell,
+  MessageSquare
 } from "lucide-react"
 
 import {
@@ -35,7 +36,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, orderBy } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 function RequestItem({ 
@@ -92,6 +93,8 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const activeChatId = searchParams.get("with")
   const { user, isUserLoading } = useUser()
   const auth = useAuth()
   const db = useFirestore()
@@ -121,7 +124,17 @@ export function AppSidebar() {
     )
   }, [db, user])
 
-  const { data: requests, isLoading: loadingRequests } = useCollection(requestsQuery)
+  const { data: requests } = useCollection(requestsQuery)
+
+  const friendsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "trustedContacts"),
+      orderBy("contactName", "asc")
+    )
+  }, [db, user])
+
+  const { data: friends } = useCollection(friendsQuery)
 
   const handleSearch = async () => {
     if (!db || !searchQuery.trim()) return
@@ -172,6 +185,7 @@ export function AppSidebar() {
   const handleAccept = async (req: any, resolvedSenderName: string) => {
     if (!db || !user) return
     try {
+      // 1. Add sender to my friends
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
@@ -184,6 +198,7 @@ export function AppSidebar() {
       
       const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Friend"
 
+      // 2. Add me to sender's friends
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -194,9 +209,12 @@ export function AppSidebar() {
         relationshipToUser: "Friend"
       })
 
-      await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Accepted" })
-      toast({ title: "Connection Approved", description: `You are now connected with ${resolvedSenderName}.` })
+      // 3. Mark request as accepted
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
+      
+      toast({ title: "Friendship Established", description: `You are now connected with ${resolvedSenderName}.` })
     } catch (e) {
+      console.error("Approval error:", e)
       toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
     }
   }
@@ -204,8 +222,8 @@ export function AppSidebar() {
   const handleDecline = async (req: any) => {
     if (!db || !user) return
     try {
-      await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Declined" })
-      toast({ title: "Request Declined", description: "The request has been removed." })
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Declined" })
+      toast({ title: "Request Removed", description: "The request has been declined." })
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to decline request." })
     }
@@ -235,7 +253,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="py-4 space-y-6">
+      <SidebarContent className="py-4 space-y-4">
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -251,7 +269,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
-            Friend Network Hub
+            Friend Network
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div className="space-y-2">
@@ -279,7 +297,7 @@ export function AppSidebar() {
               )}
             </div>
 
-            <div className="pt-4 space-y-3">
+            <div className="pt-2 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black uppercase text-muted-foreground flex items-center gap-1.5">
                   <Bell className="h-3 w-3" /> Inbox
@@ -308,6 +326,30 @@ export function AppSidebar() {
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
+            Friend Circle
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="space-y-1">
+            {!friends || friends.length === 0 ? (
+              <p className="text-[9px] text-center text-muted-foreground opacity-50 py-2">No friends yet</p>
+            ) : (
+              friends.map((friend) => (
+                <SidebarMenuButton 
+                  key={friend.id} 
+                  onClick={() => router.push(`/chat?with=${friend.appUserId}&name=${encodeURIComponent(friend.contactName)}`)}
+                  isActive={activeChatId === friend.appUserId}
+                >
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                    {friend.contactName[0]}
+                  </div>
+                  <span className="text-sm font-medium">{friend.contactName}</span>
+                </SidebarMenuButton>
+              ))
+            )}
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
@@ -322,7 +364,7 @@ export function AppSidebar() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
                 <span className="truncate font-semibold">{user?.displayName || "Member"}</span>
-                <span className="truncate text-xs opacity-70">{user?.email || "Account Active"}</span>
+                <span className="truncate text-xs opacity-70">Account Active</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -338,3 +380,4 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
+

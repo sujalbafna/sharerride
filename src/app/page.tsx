@@ -13,7 +13,8 @@ import {
   Activity, 
   Loader2, 
   MessageSquare,
-  Search
+  Search,
+  Users
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,25 +47,20 @@ export default function Home() {
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
 
-  // My Connections (Trusted Circle)
+  // My Connections (Friend Circle)
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
       collection(db, "users", user.uid, "trustedContacts"),
-      orderBy("contactName", "asc"),
-      limit(4)
+      orderBy("contactName", "asc")
     )
   }, [db, user])
 
-  const { data: contacts } = useCollection(contactsQuery)
+  const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
 
   const filteredJourneys = journeys?.filter(j => 
     j.endLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
     j.status.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const filteredContacts = contacts?.filter(c => 
-    c.contactName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   if (isUserLoading) {
@@ -91,7 +87,7 @@ export default function Home() {
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input 
-              placeholder="Search journeys, status, or friends..." 
+              placeholder="Search journeys or status..." 
               className="pl-12 h-12 bg-white/5 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/40 transition-all text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -128,7 +124,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Network</CardTitle>
+                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
@@ -149,6 +145,51 @@ export default function Home() {
               </Card>
             </div>
 
+            <section className="space-y-6">
+              <h3 className="font-black text-lg flex items-center gap-3 text-primary">
+                <Users className="h-5 w-5" />
+                My Friend Circle
+              </h3>
+              
+              {isContactsLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : !contacts || contacts.length === 0 ? (
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-primary/10">
+                  <CardContent className="p-12 text-center space-y-4">
+                    <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contacts.map((contact) => (
+                    <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                            {contact.contactName?.[0]}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-sm tracking-tight">{contact.contactName}</h3>
+                            <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary font-bold">CONNECTED</Badge>
+                          </div>
+                        </div>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-10 w-10 rounded-full text-primary hover:bg-primary/10"
+                          onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
+                        >
+                          <MessageSquare className="h-5 w-5" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
@@ -162,7 +203,7 @@ export default function Home() {
               ) : !filteredJourneys || filteredJourneys.length === 0 ? (
                 <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
                   <CardContent className="p-16 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">No journeys matched your search.</p>
+                    <p className="text-sm font-bold text-muted-foreground">No recent journeys recorded.</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -201,37 +242,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-
-            {filteredContacts && filteredContacts.length > 0 && (
-              <section className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Friend Circle</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredContacts.map((contact) => (
-                    <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:bg-card/80 transition-all">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                            {contact.contactName?.[0]}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-sm">{contact.contactName}</h3>
-                            <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary font-bold">FRIEND</Badge>
-                          </div>
-                        </div>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-10 w-10 rounded-full text-primary"
-                          onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                        >
-                          <MessageSquare className="h-5 w-5" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
           </div>
         </div>
       </main>
