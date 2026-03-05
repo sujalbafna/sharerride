@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { MeetingPointsDisplay } from "@/components/meeting-points-display"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
+import { cn } from "@/lib/utils"
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -52,7 +53,7 @@ export default function JourneyPage() {
         )}
       </header>
 
-      <main className="p-8 max-w-6xl mx-auto space-y-12">
+      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -68,14 +69,14 @@ export default function JourneyPage() {
               "rounded-[2.5rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
               isEmergencyActive ? "bg-destructive text-white" : "bg-primary text-primary-foreground"
             )}>
-              <CardContent className="p-12">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                  <div className="space-y-8">
+              <CardContent className="p-6 md:p-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                  <div className="space-y-8 min-w-0">
                     <div>
-                      <h3 className="text-4xl font-black mb-2">
+                      <h3 className="text-3xl md:text-4xl font-black mb-2">
                         {isEmergencyActive ? "Emergency Response" : "Transit in Progress"}
                       </h3>
-                      <p className="opacity-80">
+                      <p className="opacity-80 text-sm md:text-base">
                         {isEmergencyActive 
                           ? "SOS Protocol is broadcasting your live location to nearest responders." 
                           : "Safe sharing is enabled with your primary guardians."}
@@ -83,14 +84,14 @@ export default function JourneyPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="flex justify-between text-xs font-black uppercase tracking-widest opacity-80">
+                      <div className="flex justify-between text-[10px] md:text-xs font-black uppercase tracking-widest opacity-80">
                         <span>Route Progress</span>
                         <span>{isEmergencyActive ? "SOS DISPATCHED" : "Tracking..."}</span>
                       </div>
                       <Progress value={20} className={cn("h-3", isEmergencyActive ? "bg-white/30" : "bg-white/20")} />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Button className="h-14 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold">
                         <Share2 className="mr-2 h-5 w-5" />
                         Share Link
@@ -151,7 +152,7 @@ export default function JourneyPage() {
                   </div>
                   
                   <div className={cn(
-                    "rounded-3xl p-8 backdrop-blur-sm space-y-6",
+                    "rounded-3xl p-6 md:p-8 backdrop-blur-sm space-y-6 min-w-0",
                     isEmergencyActive ? "bg-white/20" : "bg-white/10"
                   )}>
                     <div className="space-y-4">
@@ -162,9 +163,9 @@ export default function JourneyPage() {
                         )}>
                           <MapPin className="h-5 w-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0 overflow-hidden">
                           <p className="text-xs font-black uppercase opacity-60">Starting Point</p>
-                          <p className="font-bold">{activeJourney.startLocationDescription}</p>
+                          <p className="font-bold truncate">{activeJourney.startLocationDescription}</p>
                         </div>
                       </div>
                       <div className="h-8 w-px bg-white/20 ml-5" />
@@ -172,9 +173,9 @@ export default function JourneyPage() {
                         <div className="h-10 w-10 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0">
                           <Navigation className="h-5 w-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0 overflow-hidden">
                           <p className="text-xs font-black uppercase opacity-60">Destination</p>
-                          <p className="font-bold">{activeJourney.endLocationDescription}</p>
+                          <p className="font-bold truncate">{activeJourney.endLocationDescription}</p>
                         </div>
                       </div>
                     </div>
@@ -205,30 +206,34 @@ export default function JourneyPage() {
             </Card>
           </section>
         ) : (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-12">
-            <div className="space-y-8">
-              <h1 className="text-5xl font-black tracking-tighter leading-tight">Ready for your next safe travel?</h1>
-              <p className="text-muted-foreground text-xl">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 md:py-12">
+            <div className="space-y-8 min-w-0">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight">
+                Ready for your next safe travel?
+              </h1>
+              <p className="text-muted-foreground text-lg md:text-xl max-w-lg">
                 Setu Guardian provides discrete virtual companionship and real-time tracking for every step of your journey.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <StartJourneyDialog />
-                <Button variant="outline" className="h-16 px-8 rounded-2xl text-lg font-bold border-2">
+                <div className="w-full sm:w-auto">
+                  <StartJourneyDialog />
+                </div>
+                <Button variant="outline" className="h-16 px-8 rounded-2xl text-lg font-bold border-2 w-full sm:w-auto">
                   <History className="mr-2 h-6 w-6" />
                   HISTORY
                 </Button>
               </div>
             </div>
-            <div className="relative h-[400px] w-full bg-muted rounded-[3rem] overflow-hidden shadow-2xl border-4 border-card">
+            <div className="relative h-[300px] md:h-[400px] w-full bg-muted rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-card min-w-0">
               <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/map/800/800')] opacity-50 grayscale" data-ai-hint="map city" />
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-              <div className="absolute bottom-8 left-8 right-8 bg-card/90 backdrop-blur-md p-6 rounded-2xl shadow-xl flex items-center gap-4 border">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <MapPin className="h-6 w-6 text-primary" />
+              <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 right-4 md:right-8 bg-card/90 backdrop-blur-md p-4 md:p-6 rounded-xl md:rounded-2xl shadow-xl flex items-center gap-4 border">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Nearby Status</p>
-                  <p className="font-bold">System is ready for tracking</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Nearby Status</p>
+                  <p className="font-bold text-sm md:text-base truncate">System is ready for tracking</p>
                 </div>
               </div>
             </div>
@@ -274,8 +279,4 @@ export default function JourneyPage() {
       </main>
     </div>
   )
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ')
 }
