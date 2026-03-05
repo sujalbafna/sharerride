@@ -8,7 +8,7 @@ import {
   MapPin, 
   Users, 
   MessageSquare, 
-  Shield, 
+  Shield,
   Settings,
   LogOut,
   Bell
@@ -71,12 +71,12 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "User"} />
-                <AvatarFallback className="rounded-lg">{user?.displayName?.[0] || "U"}</AvatarFallback>
+                <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || ""} />
+                <AvatarFallback className="rounded-lg">{user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || "U"}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-semibold">{user?.displayName || "Guest User"}</span>
-                <span className="truncate text-xs opacity-70">{user?.email || "Connect your account"}</span>
+                <span className="truncate font-semibold">{user?.displayName || "User Session"}</span>
+                <span className="truncate text-xs opacity-70">{user?.email || "Account Active"}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

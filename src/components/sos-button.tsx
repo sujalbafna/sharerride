@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 import { useFirestore, useUser } from "@/firebase"
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, addDoc } from "firebase/firestore"
 
 export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
@@ -36,7 +36,6 @@ export function SOSButton() {
       })
       setAiMessage(result.message)
       
-      // Save alert to Firestore
       await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
@@ -45,7 +44,7 @@ export function SOSButton() {
         alertLongitude: 0,
         alertMessage: result.message,
         status: "Sent",
-        recipientsContactIds: [] // In a real app, populate this
+        recipientsContactIds: []
       })
 
       toast({
@@ -85,7 +84,7 @@ export function SOSButton() {
             Confirm SOS Dispatch
           </DialogTitle>
           <DialogDescription className="text-base">
-            This will immediately broadcast your live location and a distress message to all 5 trusted contacts.
+            This will immediately broadcast your live location and a distress message to your trusted contacts.
           </DialogDescription>
         </DialogHeader>
         

@@ -1,7 +1,7 @@
 "use client"
 
 import { SOSButton } from "@/components/sos-button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,20 +24,22 @@ export default function Home() {
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
 
-  const alertsQuery = useMemoFirebase(() => {
+  const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "emergencyAlerts"),
-      orderBy("timestamp", "desc"),
-      limit(1)
-    )
+    return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
 
-  const { data: latestAlert } = useCollection(alertsQuery)
+  const { data: contacts } = useCollection(contactsQuery)
+
+  const journeysTotalQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return collection(db, "users", user.uid, "journeys")
+  }, [db, user])
+
+  const { data: allJourneys } = useCollection(journeysTotalQuery)
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Header Bar */}
       <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold tracking-tight">Overview</h2>
@@ -49,21 +51,19 @@ export default function Home() {
         <div className="flex items-center gap-3">
           <Button size="icon" variant="ghost" className="relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-2 right-2 h-2 w-2 bg-destructive rounded-full" />
           </Button>
         </div>
       </header>
 
       <main className="p-8 space-y-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Actions & Status */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="rounded-3xl border-none shadow-xl bg-primary text-primary-foreground overflow-hidden">
               <CardContent className="p-8 text-center space-y-6">
                 <SOSButton />
                 <div className="space-y-2">
                   <h3 className="text-lg font-bold">Emergency Response</h3>
-                  <p className="text-sm opacity-80">Triggering SOS notifies all 5 registered guardians immediately with your location.</p>
+                  <p className="text-sm opacity-80">Triggering SOS notifies all your registered guardians immediately with your location.</p>
                 </div>
               </CardContent>
             </Card>
@@ -87,14 +87,13 @@ export default function Home() {
                 <div>
                   <h4 className="font-bold text-sm text-primary">Safety Intelligence</h4>
                   <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                    System suggests enabling live sharing based on your current transit route.
+                    System monitors your routes to suggest real-time safety measures.
                   </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Column: Data & Logs */}
           <div className="lg:col-span-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="rounded-2xl border-none shadow-sm">
@@ -102,8 +101,8 @@ export default function Home() {
                   <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Active Guardians</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-black text-primary">05</p>
-                  <p className="text-xs text-muted-foreground mt-1">All contacts are currently online</p>
+                  <p className="text-3xl font-black text-primary">{contacts?.length || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Total registered emergency contacts</p>
                 </CardContent>
               </Card>
               <Card className="rounded-2xl border-none shadow-sm">
@@ -111,7 +110,7 @@ export default function Home() {
                   <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Safe Journeys</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-black text-accent">128</p>
+                  <p className="text-3xl font-black text-accent">{allJourneys?.length || 0}</p>
                   <p className="text-xs text-muted-foreground mt-1">Total journeys logged securely</p>
                 </CardContent>
               </Card>
@@ -130,7 +129,7 @@ export default function Home() {
                 <div className="space-y-3">
                   {[1, 2].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />)}
                 </div>
-              ) : journeys?.length === 0 ? (
+              ) : !journeys || journeys.length === 0 ? (
                 <Card className="rounded-2xl border-dashed border-2 bg-transparent">
                   <CardContent className="p-12 text-center">
                     <p className="text-sm text-muted-foreground">No recent journeys found. Start your first safe journey today.</p>
@@ -138,7 +137,7 @@ export default function Home() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {journeys?.map((j) => (
+                  {journeys.map((j) => (
                     <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">

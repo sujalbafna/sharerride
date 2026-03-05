@@ -5,7 +5,7 @@ import { collection, query, orderBy } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2 } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 
@@ -59,9 +59,9 @@ export default function JourneyPage() {
                     <div className="space-y-4">
                       <div className="flex justify-between text-xs font-black uppercase tracking-widest opacity-80">
                         <span>Route Progress</span>
-                        <span>Estimating...</span>
+                        <span>Tracking...</span>
                       </div>
-                      <Progress value={45} className="h-3 bg-white/20" />
+                      <Progress value={0} className="h-3 bg-white/20" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -79,7 +79,7 @@ export default function JourneyPage() {
                   <div className="bg-white/10 rounded-3xl p-8 backdrop-blur-sm space-y-6">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-full bg-accent text-primary flex items-center justify-center font-bold">
-                        {user?.displayName?.[0] || 'U'}
+                        {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <div>
                         <p className="font-bold">{activeJourney.startLocationDescription}</p>
@@ -88,12 +88,9 @@ export default function JourneyPage() {
                     </div>
                     <div className="border-t border-white/10 pt-6">
                       <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Watching Guardians</p>
-                      <div className="flex -space-x-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="h-10 w-10 rounded-full border-2 border-primary bg-muted overflow-hidden">
-                            <img src={`https://picsum.photos/seed/guard${i}/40/40`} alt="Guardian" />
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2 text-sm">
+                        <Users className="h-4 w-4 opacity-60" />
+                        <span>Contacts in your network have been notified.</span>
                       </div>
                     </div>
                   </div>
@@ -141,6 +138,11 @@ export default function JourneyPage() {
             Recent History
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {!isLoading && (!journeys || journeys.filter(j => j.status === 'Completed').length === 0) && (
+              <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border-2 border-dashed">
+                No past journeys recorded.
+              </div>
+            )}
             {journeys?.filter(j => j.status === 'Completed').map((j) => (
               <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all">
                 <CardHeader className="pb-3 border-b border-muted/30">
