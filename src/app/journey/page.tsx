@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
+import { StartJourneyDialog } from "@/components/start-journey-dialog"
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -61,7 +62,7 @@ export default function JourneyPage() {
                         <span>Route Progress</span>
                         <span>Tracking...</span>
                       </div>
-                      <Progress value={0} className="h-3 bg-white/20" />
+                      <Progress value={20} className="h-3 bg-white/20" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -77,20 +78,32 @@ export default function JourneyPage() {
                   </div>
                   
                   <div className="bg-white/10 rounded-3xl p-8 backdrop-blur-sm space-y-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-accent text-primary flex items-center justify-center font-bold">
-                        {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-full bg-accent text-primary flex items-center justify-center shrink-0">
+                          <MapPin className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black uppercase opacity-60">Starting Point</p>
+                          <p className="font-bold">{activeJourney.startLocationDescription}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold">{activeJourney.startLocationDescription}</p>
-                        <p className="text-xs opacity-60">Journey started at {format(new Date(activeJourney.startTime), 'p')}</p>
+                      <div className="h-8 w-px bg-white/20 ml-5" />
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0">
+                          <Navigation className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black uppercase opacity-60">Destination</p>
+                          <p className="font-bold">{activeJourney.endLocationDescription}</p>
+                        </div>
                       </div>
                     </div>
                     <div className="border-t border-white/10 pt-6">
                       <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Watching Guardians</p>
                       <div className="flex items-center gap-2 text-sm">
                         <Users className="h-4 w-4 opacity-60" />
-                        <span>Contacts in your network have been notified.</span>
+                        <span>{activeJourney.sharedWithContactIds?.length || 0} contacts are receiving updates.</span>
                       </div>
                     </div>
                   </div>
@@ -106,10 +119,7 @@ export default function JourneyPage() {
                 Setu Guardian provides discrete virtual companionship and real-time tracking for every step of your journey.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="h-16 px-8 rounded-2xl text-lg font-black bg-primary">
-                  <Navigation className="mr-2 h-6 w-6" />
-                  START NEW JOURNEY
-                </Button>
+                <StartJourneyDialog />
                 <Button variant="outline" className="h-16 px-8 rounded-2xl text-lg font-bold border-2">
                   <History className="mr-2 h-6 w-6" />
                   HISTORY
@@ -149,7 +159,7 @@ export default function JourneyPage() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      <span className="text-xs font-bold">{format(new Date(j.startTime), 'MMM d, yyyy')}</span>
+                      <span className="text-xs font-bold">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
                     </div>
                     <Badge variant="secondary" className="text-[10px]">COMPLETED</Badge>
                   </div>

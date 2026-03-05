@@ -1,0 +1,212 @@
+"use client"
+
+import { useState } from "react"
+import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Switch } from "@/components/ui/switch"
+import { Navigation, Users, Shield, Loader2, MapPin } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { errorEmitter } from "@/firebase/error-emitter"
+import { FirestorePermissionError } from "@/firebase/errors"
+
+export function StartJourneyDialog() {
+  const { user } = useUser()
+  const db = useFirestore()
+  const { toast } = useToast()
+  
+  const [isOpen, setIsOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [startLoc, setStartLoc] = useState("")
+  const [endLoc, setEndLoc] = useState("")
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([])
+  const [sharePassengerDetails, setSharePassengerDetails] = useState(true)
+
+  const contactsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return collection(db, "users", user.uid, "trustedContacts")
+  }, [db, user])
+
+  const { data: contacts, isLoading: loadingContacts } = useCollection(contactsQuery)
+
+  const handleStart = async () => {
+    if (!user || !db || !startLoc || !endLoc) return
+
+    setIsSubmitting(true)
+    const journeyData = {
+      userId: user.uid,
+      journeyType: "General",
+      status: "InProgress",
+      startTime: new Date().toISOString(),
+      startLocationDescription: startLoc,
+      startLatitude: 0, // In a real app, use Geolocation API
+      startLongitude: 0,
+      endLocationDescription: endLoc,
+      endLatitude: 0,
+      endLongitude: 0,
+      sharedWithContactIds: selectedContacts,
+      sharePassengerDetails: sharePassengerDetails, // Privacy control
+      createdAt: new Date().toISOString()
+    }
+
+    const journeysRef = collection(db, "users", user.uid, "journeys")
+    
+    addDoc(journeysRef, journeyData)
+      .then(() => {
+        toast({
+          title: "Journey Started",
+          description: "Your live location is now being shared with your selected guardians.",
+        })
+        setIsOpen(false)
+        setStartLoc("")
+        setEndLoc("")
+        setSelectedContacts([])
+      })
+      .catch((error) => {
+        const contextualError = new FirestorePermissionError({
+          operation: 'create',
+          path: journeysRef.path,
+          requestResourceData: journeyData
+        })
+        errorEmitter.emit('permission-error', contextualError)
+      })
+      .finally(() => {
+        setIsSubmitting(false)
+      })
+  }
+
+  const toggleContact = (id: string) => {
+    setSelectedContacts(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="h-16 px-8 rounded-2xl text-lg font-black bg-primary">
+          <Navigation className="mr-2 h-6 w-6" />
+          START NEW JOURNEY
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            Initialize Journey
+          </DialogTitle>
+          <DialogDescription>
+            Enter your route and select guardians for live tracking.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="start">Starting Point</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="start" 
+                  placeholder="e.g. Current Location or Home" 
+                  className="pl-10 h-12 rounded-xl"
+                  value={startLoc}
+                  onChange={(e) => setStartLoc(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end">Final Destination</Label>
+              <div className="relative">
+                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="end" 
+                  placeholder="e.g. Office or Central Mall" 
+                  className="pl-10 h-12 rounded-xl"
+                  value={endLoc}
+                  onChange={(e) => setEndLoc(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Notify Guardians
+              </Label>
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                {selectedContacts.length} Selected
+              </span>
+            </div>
+            <ScrollArea className="h-[120px] rounded-xl border p-4 bg-muted/30">
+              {loadingContacts ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : !contacts || contacts.length === 0 ? (
+                <p className="text-xs text-center text-muted-foreground py-4">
+                  No trusted contacts found. Add some in the Network tab.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {contacts.map((contact) => (
+                    <div key={contact.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={contact.id} 
+                        checked={selectedContacts.includes(contact.id)}
+                        onCheckedChange={() => toggleContact(contact.id)}
+                      />
+                      <label 
+                        htmlFor={contact.id} 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {contact.contactName} ({contact.relationshipToUser})
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-accent/5 rounded-2xl border border-accent/20">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-bold">Share Passenger Details</Label>
+              <p className="text-xs text-muted-foreground">Allow guardians to see specific transit info.</p>
+            </div>
+            <Switch 
+              checked={sharePassengerDetails} 
+              onCheckedChange={setSharePassengerDetails} 
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button 
+            className="w-full h-14 rounded-2xl font-black text-lg" 
+            onClick={handleStart}
+            disabled={isSubmitting || !startLoc || !endLoc}
+          >
+            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+            BROADCAST ITINERARY
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
