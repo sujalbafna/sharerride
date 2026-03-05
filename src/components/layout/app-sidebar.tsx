@@ -6,13 +6,9 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { 
   Home, 
-  MapPin, 
-  Users, 
-  MessageSquare, 
-  Shield,
   LogOut,
   User,
-  Settings
+  Shield
 } from "lucide-react"
 
 import {
@@ -32,10 +28,6 @@ import { useToast } from "@/hooks/use-toast"
 
 const items = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "My Journeys", url: "/journey", icon: MapPin },
-  { title: "Trusted Network", url: "/contacts", icon: Users },
-  { title: "Support Hub", url: "/support", icon: MessageSquare },
-  { title: "Profile Hub", url: "/profile", icon: User },
 ]
 
 export function AppSidebar() {

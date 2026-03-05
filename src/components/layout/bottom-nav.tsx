@@ -1,16 +1,14 @@
+
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, MapPin, Users, MessageSquare } from "lucide-react"
+import { Home } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/firebase"
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
-  { icon: MapPin, label: "Journey", href: "/journey" },
-  { icon: Users, label: "Contacts", href: "/contacts" },
-  { icon: MessageSquare, label: "Support", href: "/support" },
 ]
 
 export function BottomNav() {
