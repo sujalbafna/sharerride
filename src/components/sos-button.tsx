@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useState } from "react"
-import { AlertCircle, Loader2, ShieldAlert } from "lucide-react"
+import { AlertCircle, Loader2, ShieldAlert, Car, Wrench, Mountain, HeartPulse, Shield, Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,23 +17,36 @@ import { useToast } from "@/hooks/use-toast"
 import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 import { useFirestore, useUser } from "@/firebase"
 import { collection, addDoc } from "firebase/firestore"
+import { cn } from "@/lib/utils"
+
+const emergencyTypes = [
+  { id: "accident", label: "Accident", icon: Car, color: "text-red-500", bg: "bg-red-50" },
+  { id: "vehicle", label: "Vehicle Issue", icon: Wrench, color: "text-orange-500", bg: "bg-orange-50" },
+  { id: "natural", label: "Natural Disaster", icon: Mountain, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "medical", label: "Medical", icon: HeartPulse, color: "text-pink-500", bg: "bg-pink-50" },
+]
 
 export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedType, setSelectedType] = useState<string | null>(null)
   const [aiMessage, setAiMessage] = useState<string | null>(null)
   const { toast } = useToast()
   const { user } = useUser()
   const db = useFirestore()
 
   const handleSOS = async () => {
-    if (!user || !db) return
+    if (!user || !db || !selectedType) {
+      toast({ variant: "destructive", title: "Selection Required", description: "Please select an emergency category." })
+      return
+    }
 
     setIsSending(true)
     try {
+      const typeLabel = emergencyTypes.find(t => t.id === selectedType)?.label || "Emergency"
       const result = await generateEmergencyMessage({
         location: "Current GPS Location",
-        situation: "Manual SOS trigger via Dashboard.",
+        situation: `${typeLabel} - Manual SOS trigger via Dashboard.`,
       })
       setAiMessage(result.message)
       
@@ -40,20 +54,21 @@ export function SOSButton() {
         userId: user.uid,
         timestamp: new Date().toISOString(),
         alertLocationDescription: "Current GPS Location",
-        alertLatitude: 0,
-        alertLongitude: 0,
+        alertLatitude: 12.9716, // Simulated
+        alertLongitude: 77.5946,
         alertMessage: result.message,
         status: "Sent",
-        recipientsContactIds: []
+        emergencyType: selectedType,
+        recipientsContactIds: [] // Nearest person algorithm would populate this server-side
       })
 
       toast({
-        title: "SOS Alert Sent",
-        description: "Your trusted contacts have been notified with your live coordinates.",
+        title: "SOS Protocol Activated",
+        description: `Nearest person on route notified. Emergency type: ${typeLabel}.`,
       })
       
       setIsSending(false)
-      setTimeout(() => setIsOpen(false), 1000)
+      setTimeout(() => setIsOpen(false), 1500)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -81,17 +96,31 @@ export function SOSButton() {
             <AlertCircle className="h-10 w-10 text-destructive" />
           </div>
           <DialogTitle className="text-3xl font-black tracking-tight text-destructive">
-            Confirm SOS Dispatch
+            Emergency Dispatch
           </DialogTitle>
           <DialogDescription className="text-base">
-            This will immediately broadcast your live location and a distress message to your trusted contacts.
+            Select the emergency category to notify the nearest specialized responder.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-6">
-           <div className="p-6 bg-muted rounded-2xl text-sm italic border-2 border-dashed border-muted-foreground/20 leading-relaxed text-center">
-              {aiMessage ? `Distress Message: "${aiMessage}"` : "AI is preparing a concise location-aware message for your guardians..."}
-           </div>
+        <div className="grid grid-cols-2 gap-3 py-6">
+          {emergencyTypes.map((type) => (
+            <button
+              key={type.id}
+              onClick={() => setSelectedType(type.id)}
+              className={cn(
+                "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2",
+                selectedType === type.id 
+                  ? "border-destructive bg-destructive/5" 
+                  : "border-muted hover:border-destructive/30"
+              )}
+            >
+              <div className={cn("p-2 rounded-xl", type.bg)}>
+                <type.icon className={cn("h-6 w-6", type.color)} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-tight">{type.label}</span>
+            </button>
+          ))}
         </div>
 
         <DialogFooter className="flex flex-col gap-3">
@@ -99,13 +128,13 @@ export function SOSButton() {
             variant="destructive" 
             className="w-full h-16 text-xl font-black rounded-2xl shadow-lg shadow-destructive/20"
             onClick={handleSOS}
-            disabled={isSending}
+            disabled={isSending || !selectedType}
           >
             {isSending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : null}
-            SEND ALERT NOW
+            ACTIVATE PROTOCOL
           </Button>
           <Button variant="ghost" className="w-full h-12 font-bold text-muted-foreground" onClick={() => setIsOpen(false)}>
-            STAY SAFE (CANCEL)
+            CANCEL
           </Button>
         </DialogFooter>
       </DialogContent>

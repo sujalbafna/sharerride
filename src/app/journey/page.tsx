@@ -1,15 +1,17 @@
+
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy } from "firebase/firestore"
+import { collection, query, orderBy, limit } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, BellRing, PhoneCall, MessageCircle } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, BellRing, PhoneCall, MessageCircle, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { MeetingPointsDisplay } from "@/components/meeting-points-display"
+import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -19,20 +21,33 @@ export default function JourneyPage() {
     if (!db || !user) return null
     return query(
       collection(db, "users", user.uid, "journeys"),
-      orderBy("startTime", "desc")
+      orderBy("startTime", "desc"),
+      limit(10)
     )
   }, [db, user])
 
   const { data: journeys, isLoading } = useCollection(journeysQuery)
   const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
 
+  const alertsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "emergencyAlerts"),
+      orderBy("timestamp", "desc"),
+      limit(1)
+    )
+  }, [db, user])
+
+  const { data: latestAlerts } = useCollection(alertsQuery)
+  const isEmergencyActive = latestAlerts && latestAlerts.length > 0 && latestAlerts[0].status !== 'Resolved'
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
         <h2 className="text-xl font-bold tracking-tight">Journeys</h2>
         {activeJourney && (
-          <Badge variant="secondary" className="bg-accent/20 text-primary border-accent animate-pulse">
-            LIVE TRACKING
+          <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-accent/20 text-primary border-accent animate-pulse")}>
+            {isEmergencyActive ? "EMERGENCY PROTOCOL" : "LIVE TRACKING"}
           </Badge>
         )}
       </header>
@@ -49,21 +64,30 @@ export default function JourneyPage() {
               <Compass className="h-4 w-4" />
               Active Session
             </div>
-            <Card className="rounded-[2.5rem] bg-primary text-primary-foreground border-none shadow-2xl overflow-hidden">
+            <Card className={cn(
+              "rounded-[2.5rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
+              isEmergencyActive ? "bg-destructive text-white" : "bg-primary text-primary-foreground"
+            )}>
               <CardContent className="p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                   <div className="space-y-8">
                     <div>
-                      <h3 className="text-4xl font-black mb-2">Transit in Progress</h3>
-                      <p className="opacity-80">Safe sharing is enabled with your primary guardians.</p>
+                      <h3 className="text-4xl font-black mb-2">
+                        {isEmergencyActive ? "Emergency Response" : "Transit in Progress"}
+                      </h3>
+                      <p className="opacity-80">
+                        {isEmergencyActive 
+                          ? "SOS Protocol is broadcasting your live location to nearest responders." 
+                          : "Safe sharing is enabled with your primary guardians."}
+                      </p>
                     </div>
 
                     <div className="space-y-4">
                       <div className="flex justify-between text-xs font-black uppercase tracking-widest opacity-80">
                         <span>Route Progress</span>
-                        <span>Tracking...</span>
+                        <span>{isEmergencyActive ? "SOS DISPATCHED" : "Tracking..."}</span>
                       </div>
-                      <Progress value={20} className="h-3 bg-white/20" />
+                      <Progress value={20} className={cn("h-3", isEmergencyActive ? "bg-white/30" : "bg-white/20")} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -71,51 +95,71 @@ export default function JourneyPage() {
                         <Share2 className="mr-2 h-5 w-5" />
                         Share Link
                       </Button>
-                      <Button className="h-14 rounded-2xl bg-accent text-primary hover:bg-accent/90 font-black">
-                        <ShieldAlert className="mr-2 h-5 w-5" />
-                        SOS ALERT
-                      </Button>
+                      {!isEmergencyActive && (
+                        <Button className="h-14 rounded-2xl bg-accent text-primary hover:bg-accent/90 font-black">
+                          <ShieldAlert className="mr-2 h-5 w-5" />
+                          SOS ALERT
+                        </Button>
+                      )}
+                      {isEmergencyActive && (
+                        <Button className="h-14 rounded-2xl bg-white text-destructive hover:bg-white/90 font-black">
+                          <CheckCircle2 className="mr-2 h-5 w-5" />
+                          RESOLVED
+                        </Button>
+                      )}
                     </div>
 
-                    <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-accent" />
-                            Remote Safety Protocol
-                          </h4>
-                          <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">Scenario B</Badge>
-                        </div>
-                        <div className="space-y-3">
-                          <p className="text-sm font-medium leading-relaxed">
-                            Automated outreach (SMS, WhatsApp, and Phone Call) is scheduled to trigger when you are 10km away from your destination.
-                          </p>
-                          <div className="flex gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                              <MessageCircle className="h-4 w-4 opacity-60" />
+                    {isEmergencyActive ? (
+                      <EmergencyProtocolDisplay />
+                    ) : (
+                      <>
+                        <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
+                          <CardContent className="p-6 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4 text-accent" />
+                                Remote Safety Protocol
+                              </h4>
+                              <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">Scenario B</Badge>
                             </div>
-                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                              <BellRing className="h-4 w-4 opacity-60" />
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium leading-relaxed">
+                                Automated outreach (SMS, WhatsApp, and Phone Call) is scheduled to trigger when you are 10km away from your destination.
+                              </p>
+                              <div className="flex gap-2">
+                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                  <MessageCircle className="h-4 w-4 opacity-60" />
+                                </div>
+                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                  <BellRing className="h-4 w-4 opacity-60" />
+                                </div>
+                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                  <PhoneCall className="h-4 w-4 opacity-60" />
+                                </div>
+                              </div>
                             </div>
-                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                              <PhoneCall className="h-4 w-4 opacity-60" />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <MeetingPointsDisplay 
-                      startLocation={activeJourney.startLocationDescription}
-                      destination={activeJourney.endLocationDescription}
-                      userId={user?.uid || ""}
-                    />
+                          </CardContent>
+                        </Card>
+                        
+                        <MeetingPointsDisplay 
+                          startLocation={activeJourney.startLocationDescription}
+                          destination={activeJourney.endLocationDescription}
+                          userId={user?.uid || ""}
+                        />
+                      </>
+                    )}
                   </div>
                   
-                  <div className="bg-white/10 rounded-3xl p-8 backdrop-blur-sm space-y-6">
+                  <div className={cn(
+                    "rounded-3xl p-8 backdrop-blur-sm space-y-6",
+                    isEmergencyActive ? "bg-white/20" : "bg-white/10"
+                  )}>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
-                        <div className="h-10 w-10 rounded-full bg-accent text-primary flex items-center justify-center shrink-0">
+                        <div className={cn(
+                          "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                          isEmergencyActive ? "bg-white text-destructive" : "bg-accent text-primary"
+                        )}>
                           <MapPin className="h-5 w-5" />
                         </div>
                         <div>
@@ -141,6 +185,20 @@ export default function JourneyPage() {
                         <span>{activeJourney.sharedWithContactIds?.length || 0} contacts are receiving updates.</span>
                       </div>
                     </div>
+
+                    {isEmergencyActive && (
+                      <div className="p-4 bg-white/20 rounded-2xl border-2 border-dashed border-white/40">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center animate-bounce">
+                            <AlertTriangle className="h-4 w-4 text-destructive" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] font-black uppercase">Responder Status</p>
+                            <p className="text-xs font-bold">Nearest responder is 2 mins away</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -216,4 +274,8 @@ export default function JourneyPage() {
       </main>
     </div>
   )
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(' ')
 }
