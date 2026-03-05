@@ -38,9 +38,16 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user } = useUser()
+  const { user, isUserLoading } = useUser()
   const auth = useAuth()
   const { toast } = useToast()
+  const [mounted, setMounted] = React.useState(false)
+
+  // Defer rendering user-specific sections until after hydration
+  // to avoid HTML mismatches between server and client.
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const isLoginPage = pathname === "/login"
 
@@ -61,6 +68,9 @@ export function AppSidebar() {
     }
   }
 
+  // Conditionally render navigation if we are mounted, not on login page, and have a user.
+  const showNavContent = mounted && !isLoginPage && !isUserLoading && user
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-16 flex items-center justify-center border-b">
@@ -72,7 +82,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      {!isLoginPage && user && (
+      {showNavContent && (
         <>
           <SidebarContent className="py-4">
             <SidebarMenu>
