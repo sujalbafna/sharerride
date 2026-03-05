@@ -46,16 +46,20 @@ export function AppSidebar() {
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
 
-  // Defer rendering user-specific sections until after hydration
-  // to avoid HTML mismatches between server and client.
+  // Defer rendering until after hydration to avoid mismatches
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
   const isLoginPage = pathname === "/login"
 
-  // Completely hide sidebar on login page or when not mounted
-  if (!mounted || isLoginPage || (!isUserLoading && !user)) {
+  // Only render on the client, and hide on login page
+  if (!mounted || isLoginPage) {
+    return null
+  }
+
+  // If user is not logged in and we're not loading, don't show the sidebar
+  if (!isUserLoading && !user) {
     return null
   }
 
