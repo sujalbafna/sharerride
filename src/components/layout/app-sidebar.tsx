@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -10,9 +9,7 @@ import {
   Users, 
   MessageSquare, 
   Shield,
-  Settings,
   LogOut,
-  Bell,
   User
 } from "lucide-react"
 
@@ -45,6 +42,8 @@ export function AppSidebar() {
   const auth = useAuth()
   const { toast } = useToast()
 
+  const isLoginPage = pathname === "/login"
+
   const handleLogout = async () => {
     try {
       await signOut(auth)
@@ -72,51 +71,56 @@ export function AppSidebar() {
           <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase">SETU</span>
         </div>
       </SidebarHeader>
-      <SidebarContent className="py-4">
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
-                asChild 
-                isActive={pathname === item.url}
-                tooltip={item.title}
-              >
-                <Link href={item.url}>
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter className="border-t p-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="h-auto py-2">
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || ""} />
-                <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
-                  {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
-                <span className="truncate font-semibold">{user?.displayName || "Member"}</span>
-                <span className="truncate text-xs opacity-70">{user?.email || "Account Active"}</span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem className="mt-2">
-            <SidebarMenuButton 
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="group-data-[collapsible=icon]:hidden">Logout Session</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      
+      {!isLoginPage && user && (
+        <>
+          <SidebarContent className="py-4">
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={pathname === item.url}
+                    tooltip={item.title}
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter className="border-t p-4">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg" className="h-auto py-2">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || ""} />
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+                      {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
+                    <span className="truncate font-semibold">{user?.displayName || "Member"}</span>
+                    <span className="truncate text-xs opacity-70">{user?.email || "Account Active"}</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem className="mt-2">
+                <SidebarMenuButton 
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">Logout Session</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </>
+      )}
       <SidebarRail />
     </Sidebar>
   )

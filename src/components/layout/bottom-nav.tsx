@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, MapPin, Users, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useUser } from "@/firebase"
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
@@ -14,8 +15,11 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { user } = useUser()
 
-  // Only visible on mobile/small screens
+  const isLoginPage = pathname === "/login"
+  if (isLoginPage || !user) return null
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-md pb-safe md:hidden">
       <div className="flex justify-around items-center h-16 px-4">
