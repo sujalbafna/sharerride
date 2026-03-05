@@ -5,10 +5,11 @@ import { collection, query, orderBy } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
+import { MeetingPointsDisplay } from "@/components/meeting-points-display"
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -75,6 +76,13 @@ export default function JourneyPage() {
                         SOS ALERT
                       </Button>
                     </div>
+                    
+                    {/* Meeting Points Display for Active Journey */}
+                    <MeetingPointsDisplay 
+                      startLocation={activeJourney.startLocationDescription}
+                      destination={activeJourney.endLocationDescription}
+                      userId={user?.uid || ""}
+                    />
                   </div>
                   
                   <div className="bg-white/10 rounded-3xl p-8 backdrop-blur-sm space-y-6">
