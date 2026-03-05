@@ -11,7 +11,8 @@ import {
   MessageSquare, 
   Shield,
   LogOut,
-  User
+  User,
+  Settings
 } from "lucide-react"
 
 import {
@@ -34,6 +35,7 @@ const items = [
   { title: "My Journeys", url: "/journey", icon: MapPin },
   { title: "Trusted Network", url: "/contacts", icon: Users },
   { title: "Support Hub", url: "/support", icon: MessageSquare },
+  { title: "Profile Hub", url: "/profile", icon: User },
 ]
 
 export function AppSidebar() {
@@ -107,7 +109,11 @@ export function AppSidebar() {
       <SidebarFooter className="border-t p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="h-auto py-2">
+            <SidebarMenuButton 
+              size="lg" 
+              className="h-auto py-2"
+              onClick={() => router.push("/profile")}
+            >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || ""} />
                 <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
