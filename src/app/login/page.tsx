@@ -85,18 +85,18 @@ export default function LoginPage() {
         <h1 className="text-3xl font-black tracking-tighter">SETU GUARDIAN</h1>
       </div>
 
-      <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
+      <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-[#0F293A]">
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-primary/10 p-1 rounded-none">
+          <TabsList className="grid w-full grid-cols-2 h-16 bg-[#0B1E2B] p-0 rounded-t-[2.5rem] overflow-hidden">
             <TabsTrigger 
               value="login" 
-              className="rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest"
+              className="rounded-none data-[state=active]:bg-[#0F293A] data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest h-full transition-all border-r border-white/5"
             >
               LOGIN
             </TabsTrigger>
             <TabsTrigger 
               value="register" 
-              className="rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest"
+              className="rounded-none data-[state=active]:bg-[#0F293A] data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest h-full transition-all"
             >
               REGISTER
             </TabsTrigger>
@@ -105,19 +105,19 @@ export default function LoginPage() {
           <TabsContent value="login" className="mt-0">
             <form onSubmit={handleSignIn}>
               <CardHeader className="pt-8 text-center">
-                <CardTitle className="text-2xl font-black">Welcome Back</CardTitle>
-                <CardDescription>Enter your credentials to access your safety dashboard.</CardDescription>
+                <CardTitle className="text-2xl font-black text-white">Welcome Back</CardTitle>
+                <CardDescription className="text-slate-400">Enter your credentials to access your safety dashboard.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email-login">Email</Label>
+                  <Label htmlFor="email-login" className="text-slate-300">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="email-login" 
                       type="email" 
                       placeholder="name@example.com" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white placeholder:text-slate-600"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
@@ -125,13 +125,13 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-login">Password</Label>
+                  <Label htmlFor="password-login" className="text-slate-300">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="password-login" 
                       type="password" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
@@ -140,7 +140,7 @@ export default function LoginPage() {
                 </div>
               </CardContent>
               <CardFooter className="pb-8">
-                <Button className="w-full h-14 rounded-2xl font-black text-lg" disabled={isLoading}>
+                <Button className="w-full h-14 rounded-2xl font-black text-lg bg-primary hover:bg-primary/90" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <LogIn className="h-5 w-5 mr-2" />}
                   SIGN IN
                 </Button>
@@ -151,18 +151,18 @@ export default function LoginPage() {
           <TabsContent value="register" className="mt-0">
             <form onSubmit={handleSignUp}>
               <CardHeader className="pt-8 text-center">
-                <CardTitle className="text-2xl font-black">Create Account</CardTitle>
-                <CardDescription>Join the network to start your first safe journey.</CardDescription>
+                <CardTitle className="text-2xl font-black text-white">Create Account</CardTitle>
+                <CardDescription className="text-slate-400">Join the network to start your first safe journey.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullname">Full Name</Label>
+                  <Label htmlFor="fullname" className="text-slate-300">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="fullname" 
                       placeholder="John Doe" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white placeholder:text-slate-600"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
@@ -170,14 +170,14 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email-reg">Email</Label>
+                  <Label htmlFor="email-reg" className="text-slate-300">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="email-reg" 
                       type="email" 
                       placeholder="name@example.com" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white placeholder:text-slate-600"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       required
@@ -185,14 +185,14 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
+                  <Label htmlFor="mobile" className="text-slate-300">Mobile Number</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="mobile" 
                       type="tel" 
                       placeholder="+1 (555) 000-0000" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white placeholder:text-slate-600"
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value)}
                       required
@@ -200,13 +200,13 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-reg">Password</Label>
+                  <Label htmlFor="password-reg" className="text-slate-300">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="password-reg" 
                       type="password" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       required
@@ -214,13 +214,13 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password" className="text-slate-300">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input 
                       id="confirm-password" 
                       type="password" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -229,7 +229,7 @@ export default function LoginPage() {
                 </div>
               </CardContent>
               <CardFooter className="pb-8">
-                <Button className="w-full h-14 rounded-2xl font-black text-lg" disabled={isLoading}>
+                <Button className="w-full h-14 rounded-2xl font-black text-lg bg-primary hover:bg-primary/90" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <UserPlus className="h-5 w-5 mr-2" />}
                   CREATE ACCOUNT
                 </Button>
@@ -239,7 +239,7 @@ export default function LoginPage() {
         </Tabs>
       </Card>
       
-      <p className="mt-8 text-sm text-muted-foreground max-w-xs text-center leading-relaxed">
+      <p className="mt-8 text-sm text-slate-500 max-w-xs text-center leading-relaxed">
         By continuing, you agree to our terms of service and high-security privacy protocols.
       </p>
     </div>
