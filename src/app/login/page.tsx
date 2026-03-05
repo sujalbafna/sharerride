@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Loader2, Mail, Lock, UserPlus, LogIn } from "lucide-react"
+import { Shield, Loader2, Mail, Lock, UserPlus, LogIn, User, Phone } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
@@ -19,8 +19,17 @@ export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  
+  // Login State
+  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPassword, setLoginPassword] = useState("")
+
+  // Register State
+  const [fullName, setFullName] = useState("")
+  const [regEmail, setRegEmail] = useState("")
+  const [mobileNumber, setMobileNumber] = useState("")
+  const [regPassword, setRegPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
 
   useEffect(() => {
     if (user && !isUserLoading) {
@@ -30,17 +39,33 @@ export default function LoginPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) return
+    if (!loginEmail || !loginPassword) return
     setIsLoading(true)
-    initiateEmailSignIn(auth, email, password)
-    // Non-blocking call. Redirect happens via useEffect on auth state change.
+    initiateEmailSignIn(auth, loginEmail, loginPassword)
   }
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) return
+    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Missing Fields",
+        description: "Please fill in all registration fields.",
+      })
+      return
+    }
+
+    if (regPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords Mismatch",
+        description: "Password and Confirm Password must be identical.",
+      })
+      return
+    }
+
     setIsLoading(true)
-    initiateEmailSignUp(auth, email, password)
+    initiateEmailSignUp(auth, regEmail, regPassword)
   }
 
   if (isUserLoading) {
@@ -93,8 +118,8 @@ export default function LoginPage() {
                       type="email" 
                       placeholder="name@example.com" 
                       className="pl-10 h-12 rounded-xl"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
                       required
                     />
                   </div>
@@ -107,8 +132,8 @@ export default function LoginPage() {
                       id="password-login" 
                       type="password" 
                       className="pl-10 h-12 rounded-xl"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
                       required
                     />
                   </div>
@@ -131,6 +156,20 @@ export default function LoginPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
+                  <Label htmlFor="fullname">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="fullname" 
+                      placeholder="John Doe" 
+                      className="pl-10 h-12 rounded-xl"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="email-reg">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -139,8 +178,23 @@ export default function LoginPage() {
                       type="email" 
                       placeholder="name@example.com" 
                       className="pl-10 h-12 rounded-xl"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mobile">Mobile Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="mobile" 
+                      type="tel" 
+                      placeholder="+1 (555) 000-0000" 
+                      className="pl-10 h-12 rounded-xl"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
                       required
                     />
                   </div>
@@ -153,8 +207,22 @@ export default function LoginPage() {
                       id="password-reg" 
                       type="password" 
                       className="pl-10 h-12 rounded-xl"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="confirm-password" 
+                      type="password" 
+                      className="pl-10 h-12 rounded-xl"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
                   </div>
