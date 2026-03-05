@@ -89,7 +89,6 @@ export default function ProfilePage() {
       </header>
 
       <main className="p-8 max-w-4xl mx-auto space-y-8">
-        {/* User Info Header */}
         <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border/50">
           <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl">
             <AvatarImage src={userData?.profileImageUrl || ""} />
@@ -122,7 +121,6 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* Network Stats */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="rounded-[2rem] border-none shadow-sm bg-primary/5">
             <CardContent className="p-8 flex items-center gap-6">
@@ -149,7 +147,6 @@ export default function ProfilePage() {
           </Card>
         </section>
 
-        {/* Navigation Menu */}
         <section className="space-y-4">
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences & Safety</h3>
           <div className="bg-card rounded-[2rem] border border-border/50 overflow-hidden divide-y divide-border/50">
@@ -175,13 +172,11 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* Security Badge */}
         <div className="flex items-center justify-center gap-3 p-6 bg-accent/5 rounded-[2rem] border-2 border-dashed border-accent/20">
           <ShieldCheck className="h-6 w-6 text-accent" />
           <p className="text-xs font-bold text-primary uppercase tracking-widest">End-to-End Encryption Active</p>
         </div>
 
-        {/* Sign Out */}
         <Button 
           variant="destructive" 
           className="w-full h-16 rounded-[2rem] font-black text-lg shadow-xl shadow-destructive/20"

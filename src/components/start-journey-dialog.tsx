@@ -53,7 +53,7 @@ export function StartJourneyDialog() {
       status: "InProgress",
       startTime: new Date().toISOString(),
       startLocationDescription: startLoc,
-      startLatitude: 12.9716, // Simulated
+      startLatitude: 12.9716,
       startLongitude: 77.5946,
       endLocationDescription: endLoc,
       endLatitude: 12.9720,
@@ -67,7 +67,6 @@ export function StartJourneyDialog() {
     try {
       await addDoc(journeysRef, journeyData)
       
-      // Notify Selected Guardians
       for (const friendId of selectedContacts) {
         const friendContact = contacts?.find(c => c.id === friendId)
         if (friendContact?.appUserId) {
@@ -76,7 +75,7 @@ export function StartJourneyDialog() {
             senderId: user.uid,
             senderName: user.displayName || "Member",
             requestType: "JourneyNotification",
-            description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated guardian.`,
+            description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
             timestamp: new Date().toISOString(),
             status: "Pending"
           })
@@ -85,7 +84,7 @@ export function StartJourneyDialog() {
 
       toast({
         title: "Journey Started",
-        description: "Your guardians have been notified and tracking is active.",
+        description: "Your friends have been notified and tracking is active.",
       })
       setIsOpen(false)
       setStartLoc("")
@@ -124,7 +123,7 @@ export function StartJourneyDialog() {
             Initialize Journey
           </DialogTitle>
           <DialogDescription>
-            Enter your route and select guardians for live tracking.
+            Enter your route and select friends for live tracking.
           </DialogDescription>
         </DialogHeader>
 
@@ -162,7 +161,7 @@ export function StartJourneyDialog() {
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" />
-                Notify Guardians
+                Notify Friends
               </Label>
               <span className="text-[10px] font-bold uppercase text-muted-foreground">
                 {selectedContacts.length} Selected
@@ -175,7 +174,7 @@ export function StartJourneyDialog() {
                 </div>
               ) : !contacts || contacts.length === 0 ? (
                 <p className="text-xs text-center text-muted-foreground py-4">
-                  No trusted contacts found. Add some in the Network tab.
+                  No friends found in your circle. Add some in the Network tab.
                 </p>
               ) : (
                 <div className="space-y-3">

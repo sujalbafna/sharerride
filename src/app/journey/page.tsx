@@ -80,11 +80,10 @@ export default function JourneyPage() {
                       <p className="opacity-80 text-sm md:text-base">
                         {isEmergencyActive 
                           ? "SOS Protocol is broadcasting your live location to nearest responders." 
-                          : "Safe sharing is enabled with your primary guardians."}
+                          : "Safe sharing is enabled with your primary friends."}
                       </p>
                     </div>
 
-                    {/* Google Map Integration */}
                     <div className="h-[300px] w-full">
                       <GoogleMap 
                         variant={isEmergencyActive ? "alert" : "active"}
@@ -190,10 +189,10 @@ export default function JourneyPage() {
                       </div>
                     </div>
                     <div className="border-t border-white/10 pt-6">
-                      <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Watching Guardians</p>
+                      <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Watching Friends</p>
                       <div className="flex items-center gap-2 text-sm">
                         <Users className="h-4 w-4 opacity-60" />
-                        <span>{activeJourney.sharedWithContactIds?.length || 0} contacts are receiving updates.</span>
+                        <span>{activeJourney.sharedWithContactIds?.length || 0} friends are receiving updates.</span>
                       </div>
                     </div>
 

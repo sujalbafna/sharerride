@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,10 +12,12 @@ import {
   ArrowRight, 
   Activity, 
   Loader2, 
-  MessageSquare
+  MessageSquare,
+  Search
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
 import { collection, query, orderBy, limit } from "firebase/firestore"
 import { format } from "date-fns"
@@ -24,6 +26,7 @@ export default function Home() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -43,7 +46,7 @@ export default function Home() {
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
 
-  // My Connections (Trusted Circle) for Quick Access
+  // My Connections (Trusted Circle)
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -54,6 +57,15 @@ export default function Home() {
   }, [db, user])
 
   const { data: contacts } = useCollection(contactsQuery)
+
+  const filteredJourneys = journeys?.filter(j => 
+    j.endLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    j.status.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const filteredContacts = contacts?.filter(c => 
+    c.contactName.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   if (isUserLoading) {
     return (
@@ -75,11 +87,21 @@ export default function Home() {
             LIVE SYSTEM
           </Badge>
         </div>
+        <div className="flex-1 max-w-md mx-8 hidden md:block">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              placeholder="Search journeys, status, or friends..." 
+              className="pl-12 h-12 bg-white/5 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/40 transition-all text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
       </header>
 
       <main className="p-8 space-y-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Column - SOS & Journey Actions */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
               <CardContent className="p-10 text-center space-y-8">
@@ -87,7 +109,7 @@ export default function Home() {
                 <div className="space-y-3">
                   <h3 className="text-2xl font-black tracking-tight">Emergency Response</h3>
                   <p className="text-sm opacity-90 leading-relaxed font-medium">
-                    Triggering SOS notifies all your registered guardians immediately with your live coordinates.
+                    Triggering SOS notifies all your registered friends immediately with your live coordinates.
                   </p>
                 </div>
               </CardContent>
@@ -102,12 +124,11 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Right Column - Stats & Activity */}
           <div className="lg:col-span-2 space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Guardian Network</CardTitle>
+                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Network</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
@@ -138,16 +159,15 @@ export default function Home() {
                 <div className="space-y-4">
                   {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card/40 animate-pulse rounded-3xl" />)}
                 </div>
-              ) : !journeys || journeys.length === 0 ? (
+              ) : !filteredJourneys || filteredJourneys.length === 0 ? (
                 <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
                   <CardContent className="p-16 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">No journeys tracked yet.</p>
-                    <Button variant="link" onClick={() => router.push("/journey")} className="text-primary font-black">START YOUR FIRST TRIP</Button>
+                    <p className="text-sm font-bold text-muted-foreground">No journeys matched your search.</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {journeys.map((j) => (
+                  {filteredJourneys.map((j) => (
                     <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -182,12 +202,11 @@ export default function Home() {
               )}
             </div>
 
-            {/* My Circle Quick Access */}
-            {contacts && contacts.length > 0 && (
+            {filteredContacts && filteredContacts.length > 0 && (
               <section className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Trusted Circle</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Friend Circle</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contacts.map((contact) => (
+                  {filteredContacts.map((contact) => (
                     <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:bg-card/80 transition-all">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -196,7 +215,7 @@ export default function Home() {
                           </div>
                           <div>
                             <h3 className="font-bold text-sm">{contact.contactName}</h3>
-                            <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary font-bold">GUARDIAN</Badge>
+                            <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary font-bold">FRIEND</Badge>
                           </div>
                         </div>
                         <Button 

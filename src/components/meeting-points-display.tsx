@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -67,14 +68,14 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
       status: "Pending",
       targetLocationDescription: point.pointName,
       requestedContactIds: point.nearbyGuardians,
-      currentJourneyId: "active-journey" // In a real app, pass the actual journey ID
+      currentJourneyId: "active-journey"
     }
 
     try {
       await addDoc(collection(db, "users", userId, "supportRequests"), requestData)
       toast({
         title: "Meeting Request Sent",
-        description: `Nearby guardians have been prompted for a rendezvous at ${point.pointName}.`,
+        description: `Nearby friends have been prompted for a rendezvous at ${point.pointName}.`,
       })
     } catch (error) {
       toast({
@@ -129,7 +130,7 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
                 <div className="flex flex-col gap-1">
                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-white/40">
                     <Users className="h-3 w-3" />
-                    {point.nearbyGuardians.length} Proximate Guardians
+                    {point.nearbyGuardians.length} Proximate Friends
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-white/40">
                     <Info className="h-3 w-3" />

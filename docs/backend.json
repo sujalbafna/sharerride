@@ -81,7 +81,7 @@
     },
     "TrustedContact": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "TrustedContact",
+      "title": "Friend",
       "type": "object",
       "description": "Represents a trusted emergency contact designated by a User.",
       "properties": {
@@ -160,7 +160,7 @@
         "definition": {
           "entityName": "TrustedContact",
           "schema": { "$ref": "#/backend/entities/TrustedContact" },
-          "description": "User's trusted circle."
+          "description": "User's trusted friend circle."
         }
       },
       {

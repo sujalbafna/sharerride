@@ -54,12 +54,12 @@ export function SOSButton() {
         userId: user.uid,
         timestamp: new Date().toISOString(),
         alertLocationDescription: "Current GPS Location",
-        alertLatitude: 12.9716, // Simulated
+        alertLatitude: 12.9716,
         alertLongitude: 77.5946,
         alertMessage: result.message,
         status: "Sent",
         emergencyType: selectedType,
-        recipientsContactIds: [] // Nearest person algorithm would populate this server-side
+        recipientsContactIds: []
       })
 
       toast({
@@ -99,7 +99,7 @@ export function SOSButton() {
             Emergency Dispatch
           </DialogTitle>
           <DialogDescription className="text-base">
-            Select the emergency category to notify the nearest specialized responder.
+            Select the emergency category to notify your friends and nearest specialized responders.
           </DialogDescription>
         </DialogHeader>
         

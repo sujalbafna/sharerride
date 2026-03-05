@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -39,14 +40,12 @@ export default function SettingsPage() {
   const { toast } = useToast()
   const { theme: currentTheme, setTheme } = useTheme()
 
-  // Fetch Current User Data
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: userData, isLoading: isUserDocLoading } = useDoc(userRef)
 
-  // Settings State
   const [dataSharing, setDataSharing] = useState(true)
   const [locationPrivacy, setLocationPrivacy] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(true)
@@ -54,7 +53,6 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState("english")
   const [isSaving, setIsSaving] = useState(false)
 
-  // Initialize state from Firestore
   useEffect(() => {
     if (userData) {
       setDataSharing(userData.dataSharingEnabled ?? true)
@@ -62,7 +60,6 @@ export default function SettingsPage() {
       setPushEnabled(userData.pushNotificationsEnabled ?? true)
       setEmailEnabled(userData.emailNotificationsEnabled ?? true)
       setLanguage(userData.language ?? "english")
-      // Theme is managed via next-themes but we sync it
       if (userData.theme) {
         setTheme(userData.theme)
       }
@@ -124,7 +121,6 @@ export default function SettingsPage() {
       </header>
 
       <main className="p-4 md:p-8 max-w-3xl mx-auto space-y-8">
-        {/* Privacy Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
             <Lock className="h-4 w-4" />
@@ -166,7 +162,6 @@ export default function SettingsPage() {
           </Card>
         </section>
 
-        {/* Notification Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
             <Bell className="h-4 w-4" />
@@ -181,7 +176,7 @@ export default function SettingsPage() {
                     Push Notifications
                   </Label>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Receive real-time updates about nearby guardians and journey progress.
+                    Receive real-time updates about nearby friends and journey progress.
                   </p>
                 </div>
                 <Switch 
@@ -208,7 +203,6 @@ export default function SettingsPage() {
           </Card>
         </section>
 
-        {/* General Preferences */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
             <Globe className="h-4 w-4" />
@@ -260,7 +254,6 @@ export default function SettingsPage() {
           </Card>
         </section>
 
-        {/* Action Button */}
         <div className="pt-4">
           <Button 
             className="w-full h-16 rounded-[2rem] font-black text-lg shadow-xl shadow-primary/20"

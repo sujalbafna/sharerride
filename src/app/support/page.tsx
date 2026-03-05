@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
@@ -142,7 +143,7 @@ export default function SupportPage() {
                         {new Date(req.timestamp).toLocaleDateString()}
                       </div>
                       {req.status === 'Pending' && (
-                        <span className="text-[9px] font-black text-muted-foreground uppercase animate-pulse">Awaiting Guardian...</span>
+                        <span className="text-[9px] font-black text-muted-foreground uppercase animate-pulse">Awaiting Friend...</span>
                       )}
                     </div>
                   </CardContent>

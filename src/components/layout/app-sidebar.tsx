@@ -38,9 +38,6 @@ import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
-/**
- * A sub-component to handle individual request rendering with dynamic name fetching
- */
 function RequestItem({ 
   req, 
   onAccept, 
@@ -52,7 +49,6 @@ function RequestItem({
 }) {
   const db = useFirestore();
   
-  // Fetch the sender's public profile to ensure we have the most up-to-date name
   const profileRef = useMemoFirebase(() => {
     if (!db || !req.senderId) return null;
     return doc(db, "publicProfiles", req.senderId);
@@ -60,15 +56,14 @@ function RequestItem({
   
   const { data: profile, isLoading } = useDoc(profileRef);
   
-  // Fallback chain: Public Profile -> Request Data -> "Guardian"
-  const senderName = profile?.displayName || req.senderName || "Guardian";
+  const senderName = profile?.displayName || req.senderName || "Friend";
 
   return (
     <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2 animate-in slide-in-from-left-2">
       <div className="flex items-center gap-2">
         <Avatar className="h-6 w-6">
           <AvatarFallback className="text-[9px] font-black bg-accent/20 text-primary">
-            {senderName[0] || "U"}
+            {senderName[0] || "F"}
           </AvatarFallback>
         </Avatar>
         <span className="text-[11px] font-bold truncate flex-1">
@@ -103,24 +98,20 @@ export function AppSidebar() {
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
 
-  // Search States
   const [searchQuery, setSearchQuery] = React.useState("")
   const [searchResults, setSearchResults] = React.useState<any[]>([])
   const [isSearching, setIsSearching] = React.useState(false)
 
-  // Defer rendering until after hydration
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Fetch current user's document to get their name reliably
   const currentUserRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: currentUserDoc } = useDoc(currentUserRef)
 
-  // Fetch Pending Requests
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -158,7 +149,7 @@ export function AppSidebar() {
       (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) ||
       user.displayName || 
       user.email?.split('@')[0] || 
-      "Guardian"
+      "Friend"
 
     try {
       await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
@@ -170,7 +161,7 @@ export function AppSidebar() {
         timestamp: new Date().toISOString(),
         status: "Pending"
       })
-      toast({ title: "Request Sent", description: `Connection request sent to ${targetUser.displayName}.` })
+      toast({ title: "Request Sent", description: `Friend request sent to ${targetUser.displayName}.` })
       setSearchResults([])
       setSearchQuery("")
     } catch (e) {
@@ -181,7 +172,6 @@ export function AppSidebar() {
   const handleAccept = async (req: any, resolvedSenderName: string) => {
     if (!db || !user) return
     try {
-      // 1. Add them to my circle
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
@@ -189,12 +179,11 @@ export function AppSidebar() {
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: req.senderId,
-        relationshipToUser: "Guardian"
+        relationshipToUser: "Friend"
       })
       
-      const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Guardian"
+      const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Friend"
 
-      // 2. Add me to their circle (Mutual)
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -202,10 +191,9 @@ export function AppSidebar() {
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: user.uid,
-        relationshipToUser: "Guardian"
+        relationshipToUser: "Friend"
       })
 
-      // 3. Mark request as accepted
       await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Accepted" })
       toast({ title: "Connection Approved", description: `You are now connected with ${resolvedSenderName}.` })
     } catch (e) {
@@ -263,10 +251,9 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
-            Network Hub
+            Friend Network Hub
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
-            {/* Find Guardians Search */}
             <div className="space-y-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -292,7 +279,6 @@ export function AppSidebar() {
               )}
             </div>
 
-            {/* Inbox */}
             <div className="pt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black uppercase text-muted-foreground flex items-center gap-1.5">

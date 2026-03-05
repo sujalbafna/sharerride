@@ -60,7 +60,6 @@ export default function ContactsPage() {
     if (!db || !searchQuery.trim()) return
     setIsSearching(true)
     try {
-      // Mock search: in a real app, use a lowercase searchable field
       const q = query(
         collection(db, "publicProfiles"),
         where("displayName", ">=", searchQuery),
@@ -105,7 +104,7 @@ export default function ContactsPage() {
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: req.senderId,
-        relationshipToUser: "Guardian"
+        relationshipToUser: "Friend"
       })
 
       // 2. Add Me to Their Contacts (Mutual)
@@ -116,7 +115,7 @@ export default function ContactsPage() {
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: user.uid,
-        relationshipToUser: "Guardian"
+        relationshipToUser: "Friend"
       })
 
       // 3. Mark request as accepted
@@ -132,7 +131,7 @@ export default function ContactsPage() {
     if (!db || !user) return
     try {
       await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
-      toast({ title: "Contact Removed", description: "Guardian removed from your trusted network." })
+      toast({ title: "Contact Removed", description: "Friend removed from your circle." })
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to remove contact." })
     }
@@ -145,9 +144,8 @@ export default function ContactsPage() {
       </header>
 
       <main className="p-8 max-w-5xl mx-auto space-y-12">
-        {/* User Search Section */}
         <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Guardians</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Friends</h3>
           <div className="flex gap-2 max-w-md">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -189,7 +187,6 @@ export default function ContactsPage() {
           )}
         </section>
 
-        {/* Inbox Section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Requests</h3>
@@ -235,9 +232,8 @@ export default function ContactsPage() {
           )}
         </section>
 
-        {/* My Friends Section */}
         <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Guardians Circle</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Friend Circle</h3>
           
           {loadingContacts ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
