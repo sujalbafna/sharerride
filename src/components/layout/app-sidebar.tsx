@@ -38,6 +38,58 @@ import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
+/**
+ * A sub-component to handle individual request rendering with dynamic name fetching
+ */
+function RequestItem({ 
+  req, 
+  onAccept, 
+  onDecline 
+}: { 
+  req: any, 
+  onAccept: (req: any, name: string) => void, 
+  onDecline: (req: any) => void 
+}) {
+  const db = useFirestore();
+  
+  // Fetch the sender's public profile to ensure we have the most up-to-date name
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !req.senderId) return null;
+    return doc(db, "publicProfiles", req.senderId);
+  }, [db, req.senderId]);
+  
+  const { data: profile, isLoading } = useDoc(profileRef);
+  
+  // Fallback chain: Public Profile -> Request Data -> "Guardian"
+  const senderName = profile?.displayName || req.senderName || "Guardian";
+
+  return (
+    <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2 animate-in slide-in-from-left-2">
+      <div className="flex items-center gap-2">
+        <Avatar className="h-6 w-6">
+          <AvatarFallback className="text-[9px] font-black bg-accent/20 text-primary">
+            {senderName[0] || "U"}
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-[11px] font-bold truncate flex-1">
+          {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : senderName}
+        </span>
+        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => onDecline(req)}>
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+      <Button 
+        size="sm" 
+        className="w-full h-8 text-[10px] font-black uppercase rounded-lg" 
+        onClick={() => onAccept(req, senderName)}
+        disabled={isLoading}
+      >
+        APPROVE
+      </Button>
+    </div>
+  );
+}
+
 const items = [
   { title: "Dashboard", url: "/", icon: Home },
 ]
@@ -102,10 +154,6 @@ export function AppSidebar() {
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
     
-    // Fallback chain for sender name:
-    // 1. Current User's Document in Firestore (most reliable)
-    // 2. Auth Display Name
-    // 3. Email (prefix)
     const senderName = 
       (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) ||
       user.displayName || 
@@ -130,13 +178,14 @@ export function AppSidebar() {
     }
   }
 
-  const handleAccept = async (req: any) => {
+  const handleAccept = async (req: any, resolvedSenderName: string) => {
     if (!db || !user) return
     try {
+      // 1. Add them to my circle
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
-        contactName: req.senderName,
+        contactName: resolvedSenderName,
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: req.senderId,
@@ -145,6 +194,7 @@ export function AppSidebar() {
       
       const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Guardian"
 
+      // 2. Add me to their circle (Mutual)
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -154,8 +204,10 @@ export function AppSidebar() {
         appUserId: user.uid,
         relationshipToUser: "Guardian"
       })
+
+      // 3. Mark request as accepted
       await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Accepted" })
-      toast({ title: "Connection Approved", description: `You are now connected with ${req.senderName}.` })
+      toast({ title: "Connection Approved", description: `You are now connected with ${resolvedSenderName}.` })
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
     }
@@ -258,22 +310,12 @@ export function AppSidebar() {
               ) : (
                 <div className="space-y-2">
                   {requests.map((req) => (
-                    <div key={req.id} className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2 animate-in slide-in-from-left-2">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-[9px] font-black bg-accent/20 text-primary">
-                            {req.senderName?.[0] || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-[11px] font-bold truncate flex-1">{req.senderName}</span>
-                        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => handleDecline(req)}>
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Button size="sm" className="w-full h-8 text-[10px] font-black uppercase rounded-lg" onClick={() => handleAccept(req)}>
-                        APPROVE
-                      </Button>
-                    </div>
+                    <RequestItem 
+                      key={req.id} 
+                      req={req} 
+                      onAccept={handleAccept} 
+                      onDecline={handleDecline} 
+                    />
                   ))}
                 </div>
               )}

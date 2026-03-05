@@ -43,18 +43,24 @@ export default function LoginPage() {
   // Create public profile and user doc after registration
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (newUser) => {
+      // If we have a user and we're in the middle of a registration flow (fullName exists)
       if (newUser && db && fullName) {
         try {
-          // Update Auth Profile for immediate local consistency
+          // 1. Update Auth Profile for immediate local consistency
           await updateProfile(newUser, { displayName: fullName })
           
+          // 2. Prepare database records
           const userRef = doc(db, "users", newUser.uid)
           const publicRef = doc(db, "publicProfiles", newUser.uid)
           
+          const names = fullName.trim().split(/\s+/)
+          const fName = names[0] || "User"
+          const lName = names.slice(1).join(' ') || ""
+
           const userData = {
             id: newUser.uid,
-            firstName: fullName.split(' ')[0] || "User",
-            lastName: fullName.split(' ').slice(1).join(' ') || "",
+            firstName: fName,
+            lastName: lName,
             email: newUser.email || regEmail,
             phoneNumber: mobileNumber,
             createdAt: new Date().toISOString(),
@@ -68,7 +74,7 @@ export default function LoginPage() {
             photoURL: newUser.photoURL || ""
           }
 
-          // Ensure name is written to database profiles
+          // 3. Write to Firestore
           await setDoc(userRef, userData, { merge: true })
           await setDoc(publicRef, publicData, { merge: true })
         } catch (e) {
