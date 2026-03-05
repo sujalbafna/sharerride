@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -10,14 +11,12 @@ import {
   Bell, 
   Filter, 
   ArrowUpDown, 
-  ChevronRight, 
   AlertTriangle, 
   MapPin, 
   Clock, 
   Phone, 
   ShieldAlert,
   Loader2,
-  Search,
   ArrowLeft
 } from "lucide-react"
 import { format } from "date-fns"
@@ -30,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { GoogleMap } from "@/components/google-map"
 
 export default function AlertsPage() {
   const { user } = useUser()
@@ -125,7 +125,7 @@ export default function AlertsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               {alerts.map((alert, index) => (
                 <Card key={alert.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all overflow-hidden group">
                   <CardHeader className="p-6 pb-4 bg-muted/20">
@@ -161,9 +161,17 @@ export default function AlertsPage() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Location</p>
-                          <div className="flex items-center gap-2 text-sm font-bold">
+                          <div className="flex items-center gap-2 text-sm font-bold mb-3">
                             <MapPin className="h-4 w-4 text-destructive" />
                             {alert.alertLocationDescription}
+                          </div>
+                          {/* Mini Map Preview for Alerts */}
+                          <div className="h-32 w-full rounded-xl overflow-hidden border">
+                            <GoogleMap 
+                              variant="alert" 
+                              interactive={false} 
+                              className="h-full w-full rounded-none border-none" 
+                            />
                           </div>
                         </div>
                       </div>

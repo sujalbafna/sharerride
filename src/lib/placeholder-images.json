@@ -11,6 +11,18 @@
       "description": "User profile avatar",
       "imageUrl": "https://picsum.photos/seed/user1/100/100",
       "imageHint": "person avatar"
+    },
+    {
+      "id": "map-active",
+      "description": "Active tracking map view",
+      "imageUrl": "https://picsum.photos/seed/mapactive/800/600",
+      "imageHint": "city map"
+    },
+    {
+      "id": "map-alert",
+      "description": "Emergency incident map view",
+      "imageUrl": "https://picsum.photos/seed/mapalert/400/300",
+      "imageHint": "street map"
     }
   ]
 }

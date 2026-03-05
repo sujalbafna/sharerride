@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { MeetingPointsDisplay } from "@/components/meeting-points-display"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
+import { GoogleMap } from "@/components/google-map"
 import { cn } from "@/lib/utils"
 
 export default function JourneyPage() {
@@ -81,6 +82,15 @@ export default function JourneyPage() {
                           ? "SOS Protocol is broadcasting your live location to nearest responders." 
                           : "Safe sharing is enabled with your primary guardians."}
                       </p>
+                    </div>
+
+                    {/* Google Map Integration */}
+                    <div className="h-[300px] w-full">
+                      <GoogleMap 
+                        variant={isEmergencyActive ? "alert" : "active"}
+                        address={activeJourney.endLocationDescription}
+                        className="h-full w-full"
+                      />
                     </div>
 
                     <div className="space-y-4">
@@ -224,19 +234,7 @@ export default function JourneyPage() {
                 </Button>
               </div>
             </div>
-            <div className="relative h-[300px] md:h-[400px] w-full bg-muted rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-card min-w-0">
-              <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/map/800/800')] opacity-50 grayscale" data-ai-hint="map city" />
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-              <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 right-4 md:right-8 bg-card/90 backdrop-blur-md p-4 md:p-6 rounded-xl md:rounded-2xl shadow-xl flex items-center gap-4 border">
-                <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPin className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Nearby Status</p>
-                  <p className="font-bold text-sm md:text-base truncate">System is ready for tracking</p>
-                </div>
-              </div>
-            </div>
+            <GoogleMap variant="hero" className="h-[300px] md:h-[400px] w-full" />
           </section>
         )}
 
