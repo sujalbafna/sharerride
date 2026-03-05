@@ -86,7 +86,6 @@ export default function Home() {
     if (!db || !searchQuery.trim()) return
     setIsSearching(true)
     try {
-      // In a production app, we would use a more sophisticated search or lowercase indexing
       const q = query(
         collection(db, "publicProfiles"),
         where("displayName", ">=", searchQuery),
@@ -125,7 +124,6 @@ export default function Home() {
   const handleAccept = async (req: any) => {
     if (!db || !user) return
     try {
-      // 1. Add sender to my trusted contacts
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
@@ -135,8 +133,6 @@ export default function Home() {
         appUserId: req.senderId,
         relationshipToUser: "Guardian"
       })
-
-      // 2. Add me to the sender's trusted contacts (mutual connection)
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -146,10 +142,7 @@ export default function Home() {
         appUserId: user.uid,
         relationshipToUser: "Guardian"
       })
-
-      // 3. Mark request as accepted in my inbox
       await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Accepted" })
-      
       toast({ title: "Connection Approved", description: `You are now connected with ${req.senderName}.` })
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
@@ -197,8 +190,97 @@ export default function Home() {
       </header>
 
       <main className="p-8 space-y-12 max-w-7xl mx-auto">
+        {/* TOP SECTION: NETWORK HUB */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          {/* Find Guardians Section */}
+          <section className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Guardians</h3>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search by name..." 
+                  className="pl-10 h-14 bg-card rounded-2xl border-none shadow-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchUsers()}
+                />
+              </div>
+              <Button onClick={handleSearchUsers} disabled={isSearching} className="h-14 rounded-2xl px-6 font-bold bg-primary text-primary-foreground">
+                {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : "SEARCH"}
+              </Button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="grid gap-2 mt-4 animate-in slide-in-from-top-2 duration-300">
+                {searchResults.map((u) => (
+                  <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-primary/5">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                          {u.displayName?.[0]}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">{u.displayName}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase">Verified User</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-black text-xs h-9 px-4">
+                        <UserPlus className="h-4 w-4 mr-1.5" />
+                        ADD
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Pending Requests Inbox */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Inbox: Guardian Requests</h3>
+              <Badge className="bg-primary/20 text-primary border-none text-[10px] font-black">
+                {requests?.length || 0} NEW
+              </Badge>
+            </div>
+            
+            {!requests || requests.length === 0 ? (
+              <div className="h-24 flex items-center justify-center rounded-[2rem] border-2 border-dashed border-white/5 bg-card/20">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">No pending notifications</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {requests.map((req) => (
+                  <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-accent/5 animate-in zoom-in-95">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center text-primary font-black">
+                          {req.senderName?.[0]}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">{req.senderName}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase">Requesting Connection</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleAccept(req)} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg h-9 px-4 font-bold text-xs">
+                          APPROVE
+                        </Button>
+                        <Button onClick={() => handleDecline(req)} size="icon" variant="ghost" className="h-9 w-9 text-muted-foreground hover:text-destructive">
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Column - SOS & Network Actions */}
+          {/* Left Column - SOS & Journey Actions */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
               <CardContent className="p-10 text-center space-y-8">
@@ -219,86 +301,10 @@ export default function Home() {
               <MapPin className="mr-2 h-6 w-6" />
               START NEW JOURNEY
             </Button>
-
-            {/* Friend Search Section */}
-            <section className="space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Guardians</h3>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search by name..." 
-                    className="pl-10 h-12 bg-card rounded-xl border-none shadow-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearchUsers()}
-                  />
-                </div>
-                <Button onClick={handleSearchUsers} disabled={isSearching} className="h-12 rounded-xl px-4 font-bold">
-                  {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "FIND"}
-                </Button>
-              </div>
-
-              {searchResults.length > 0 && (
-                <div className="grid gap-2 mt-4 animate-in slide-in-from-top-2 duration-300">
-                  {searchResults.map((u) => (
-                    <Card key={u.userId} className="rounded-xl border-none shadow-sm bg-accent/5">
-                      <CardContent className="p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                            {u.displayName?.[0]}
-                          </div>
-                          <p className="font-bold text-xs">{u.displayName}</p>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-lg font-black text-[10px] h-8">
-                          <UserPlus className="h-3 w-3 mr-1" />
-                          ADD
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </section>
           </div>
 
           {/* Right Column - Stats & Activity */}
           <div className="lg:col-span-2 space-y-10">
-            {/* Pending Requests Inbox */}
-            {requests && requests.length > 0 && (
-              <section className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Inbox: Guardian Requests</h3>
-                  <Badge className="bg-primary/20 text-primary border-none text-[10px] font-black">{requests.length} NEW</Badge>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {requests.map((req) => (
-                    <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-primary/5 animate-in zoom-in-95">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black">
-                            {req.senderName?.[0]}
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm">{req.senderName}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Connection Pending</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleAccept(req)} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg h-8 px-3 font-bold text-xs">
-                            APPROVE
-                          </Button>
-                          <Button onClick={() => handleDecline(req)} size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
