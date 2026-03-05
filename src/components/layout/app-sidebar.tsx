@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -155,20 +154,21 @@ export function AppSidebar() {
     }
   }
 
+  const currentUserDisplayName = React.useMemo(() => {
+    if (currentUserDoc?.firstName && currentUserDoc?.lastName) {
+      return `${currentUserDoc.firstName} ${currentUserDoc.lastName}`
+    }
+    return user?.displayName || user?.email?.split('@')[0] || "User"
+  }, [currentUserDoc, user])
+
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
     
-    const senderName = 
-      (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) ||
-      user.displayName || 
-      user.email?.split('@')[0] || 
-      "Friend"
-
     try {
       await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
         userId: targetUser.userId,
         senderId: user.uid,
-        senderName: senderName,
+        senderName: currentUserDisplayName,
         requestType: "ConnectionRequest",
         description: "wants to join your trusted network.",
         timestamp: new Date().toISOString(),
@@ -195,14 +195,12 @@ export function AppSidebar() {
         appUserId: req.senderId,
         relationshipToUser: "Friend"
       })
-      
-      const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Friend"
 
       // 2. Add me to sender's friends
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
-        contactName: myName,
+        contactName: currentUserDisplayName,
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: user.uid,
@@ -357,13 +355,13 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="h-auto py-2" onClick={() => router.push("/profile")}>
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || ""} />
+                <AvatarImage src={user?.photoURL || ""} alt={currentUserDisplayName} />
                 <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
-                  {user?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
+                  {currentUserDisplayName[0]?.toUpperCase() || <User className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
-                <span className="truncate font-semibold">{user?.displayName || "Member"}</span>
+                <span className="truncate font-semibold">{currentUserDisplayName}</span>
                 <span className="truncate text-xs opacity-70">Account Active</span>
               </div>
             </SidebarMenuButton>
