@@ -5,7 +5,7 @@ import { collection, query, orderBy } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, BellRing, PhoneCall, MessageCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
@@ -76,8 +76,35 @@ export default function JourneyPage() {
                         SOS ALERT
                       </Button>
                     </div>
+
+                    <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-accent" />
+                            Remote Safety Protocol
+                          </h4>
+                          <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">Scenario B</Badge>
+                        </div>
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium leading-relaxed">
+                            Automated outreach (SMS, WhatsApp, and Phone Call) is scheduled to trigger when you are 10km away from your destination.
+                          </p>
+                          <div className="flex gap-2">
+                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                              <MessageCircle className="h-4 w-4 opacity-60" />
+                            </div>
+                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                              <BellRing className="h-4 w-4 opacity-60" />
+                            </div>
+                            <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                              <PhoneCall className="h-4 w-4 opacity-60" />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                     
-                    {/* Meeting Points Display for Active Journey */}
                     <MeetingPointsDisplay 
                       startLocation={activeJourney.startLocationDescription}
                       destination={activeJourney.endLocationDescription}

@@ -4,7 +4,8 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebas
 import { collection, query, orderBy } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Car, Package, UserCircle, MapPin, ChevronRight, MessageCircle, HelpCircle, Loader2 } from "lucide-react"
+import { Car, Package, UserCircle, MapPin, ChevronRight, MessageCircle, HelpCircle, Loader2, Handshake, Clock } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const supportOptions = [
   { 
@@ -82,9 +83,12 @@ export default function SupportPage() {
         </section>
 
         <section className="space-y-6 pt-12">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
-            <MessageCircle className="h-4 w-4" />
-            Active & Past Requests
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              <MessageCircle className="h-4 w-4" />
+              Active & Past Requests
+            </div>
+            <Badge variant="outline" className="text-[10px] uppercase font-black tracking-tight">Coordination Hub</Badge>
           </div>
           
           {isLoading ? (
@@ -109,18 +113,37 @@ export default function SupportPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {requests.map((req) => (
-                <Card key={req.id} className="rounded-2xl border-none shadow-sm overflow-hidden">
+                <Card key={req.id} className="rounded-2xl border-none shadow-sm overflow-hidden hover:shadow-md transition-all">
                   <CardHeader className="bg-muted/30 pb-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-black uppercase tracking-widest text-primary">{req.requestType}</span>
-                      <Badge variant="outline" className="text-[9px]">{req.status}</Badge>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                        {req.requestType === 'MeetingCompanion' ? <Handshake className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}
+                        {req.requestType}
+                      </span>
+                      <Badge 
+                        variant={req.status === 'Accepted' ? 'default' : 'outline'} 
+                        className={`text-[9px] uppercase font-black ${req.status === 'Accepted' ? 'bg-accent text-primary border-none' : ''}`}
+                      >
+                        {req.status}
+                      </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    <p className="text-sm font-medium mb-4 line-clamp-3">{req.description}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                      <Clock className="h-3 w-3" />
-                      {new Date(req.timestamp).toLocaleDateString()}
+                  <CardContent className="p-6 space-y-4">
+                    <p className="text-sm font-medium leading-relaxed">{req.description}</p>
+                    {req.targetLocationDescription && (
+                      <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/10">
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[11px] font-bold truncate">{req.targetLocationDescription}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between border-t pt-4">
+                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                        <Clock className="h-3 w-3" />
+                        {new Date(req.timestamp).toLocaleDateString()}
+                      </div>
+                      {req.status === 'Pending' && (
+                        <span className="text-[9px] font-black text-muted-foreground uppercase animate-pulse">Awaiting Guardian...</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
