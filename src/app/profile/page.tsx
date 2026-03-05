@@ -112,7 +112,10 @@ export default function ProfilePage() {
                 </span>
               </div>
             </div>
-            <Button className="rounded-xl px-6 font-bold shadow-lg shadow-primary/20">
+            <Button 
+              className="rounded-xl px-6 font-bold shadow-lg shadow-primary/20"
+              onClick={() => router.push("/profile/edit")}
+            >
               <Edit2 className="h-4 w-4 mr-2" />
               EDIT PROFILE
             </Button>
