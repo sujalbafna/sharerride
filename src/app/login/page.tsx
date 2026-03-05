@@ -34,7 +34,6 @@ export default function LoginPage() {
     setIsLoading(true)
     initiateEmailSignIn(auth, email, password)
     // Non-blocking call. Redirect happens via useEffect on auth state change.
-    // Error handling would typically be via a global auth error listener if implemented.
   }
 
   const handleSignUp = (e: React.FormEvent) => {
@@ -63,9 +62,19 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-muted/50 p-1 rounded-none">
-            <TabsTrigger value="login" className="rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none font-bold">LOGIN</TabsTrigger>
-            <TabsTrigger value="register" className="rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none font-bold">REGISTER</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-14 bg-primary/10 p-1 rounded-none">
+            <TabsTrigger 
+              value="login" 
+              className="rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest"
+            >
+              LOGIN
+            </TabsTrigger>
+            <TabsTrigger 
+              value="register" 
+              className="rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-none font-black text-xs tracking-widest"
+            >
+              REGISTER
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="mt-0">
