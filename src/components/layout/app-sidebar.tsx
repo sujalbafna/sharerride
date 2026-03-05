@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -13,7 +14,8 @@ import {
   X,
   Loader2,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Car
 } from "lucide-react"
 
 import {
@@ -35,17 +37,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, orderBy } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, orderBy, increment, arrayUnion } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 function RequestItem({ 
   req, 
   onAccept, 
-  onDecline 
+  onDecline,
+  onJoinRequest
 }: { 
   req: any, 
   onAccept: (req: any, name: string) => void, 
-  onDecline: (req: any) => void 
+  onDecline: (req: any) => void,
+  onJoinRequest: (req: any) => void
 }) {
   const db = useFirestore();
   
@@ -57,6 +61,59 @@ function RequestItem({
   const { data: profile, isLoading } = useDoc(profileRef);
   
   const senderName = profile?.displayName || req.senderName || "Friend";
+
+  if (req.requestType === "JourneyNotification") {
+    return (
+      <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 space-y-2">
+        <div className="flex items-center gap-2">
+          <Car className="h-3 w-3 text-primary" />
+          <span className="text-[10px] font-bold uppercase text-primary">Travel Alert</span>
+        </div>
+        <p className="text-[11px] leading-tight font-medium">
+          <span className="font-bold">{senderName}</span> {req.description}
+        </p>
+        <Button 
+          size="sm" 
+          variant="outline"
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+          onClick={() => onJoinRequest(req)}
+        >
+          WANTS TO JOIN
+        </Button>
+      </div>
+    );
+  }
+
+  if (req.requestType === "JoinJourneyRequest") {
+    return (
+      <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2">
+        <div className="flex items-center gap-2">
+          <User className="h-3 w-3 text-primary" />
+          <span className="text-[10px] font-bold uppercase text-primary">Join Request</span>
+        </div>
+        <p className="text-[11px] leading-tight font-medium">
+          <span className="font-bold">{senderName}</span> wants to join your journey.
+        </p>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            className="flex-1 h-8 text-[10px] font-black uppercase rounded-lg" 
+            onClick={() => onAccept(req, senderName)}
+          >
+            ACCEPT
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            className="h-8 w-8 p-0 rounded-lg text-destructive" 
+            onClick={() => onDecline(req)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2 animate-in slide-in-from-left-2">
@@ -119,7 +176,7 @@ export function AppSidebar() {
     return query(
       collection(db, "users", user.uid, "supportRequests"),
       where("status", "==", "Pending"),
-      where("requestType", "==", "ConnectionRequest")
+      orderBy("timestamp", "desc")
     )
   }, [db, user])
 
@@ -185,32 +242,44 @@ export function AppSidebar() {
   const handleAccept = async (req: any, resolvedSenderName: string) => {
     if (!db || !user) return
     try {
-      // 1. Add sender to my friends
-      await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
-        id: req.senderId,
-        userId: user.uid,
-        contactName: resolvedSenderName,
-        contactPhoneNumber: "Private",
-        isAppUser: true,
-        appUserId: req.senderId,
-        relationshipToUser: "Friend"
-      })
+      if (req.requestType === "ConnectionRequest") {
+        // 1. Add sender to my friends
+        await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
+          id: req.senderId,
+          userId: user.uid,
+          contactName: resolvedSenderName,
+          contactPhoneNumber: "Private",
+          isAppUser: true,
+          appUserId: req.senderId,
+          relationshipToUser: "Friend"
+        })
 
-      // 2. Add me to sender's friends
-      await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
-        id: user.uid,
-        userId: req.senderId,
-        contactName: currentUserDisplayName,
-        contactPhoneNumber: "Private",
-        isAppUser: true,
-        appUserId: user.uid,
-        relationshipToUser: "Friend"
-      })
+        // 2. Add me to sender's friends
+        await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
+          id: user.uid,
+          userId: req.senderId,
+          contactName: currentUserDisplayName,
+          contactPhoneNumber: "Private",
+          isAppUser: true,
+          appUserId: user.uid,
+          relationshipToUser: "Friend"
+        })
+      } else if (req.requestType === "JoinJourneyRequest") {
+        // Handle journey join approval
+        const journeyRef = doc(db, "users", user.uid, "journeys", req.targetJourneyId);
+        await updateDoc(journeyRef, {
+          availableSeats: increment(-1),
+          joinedUserIds: arrayUnion(req.senderId)
+        });
+        toast({ title: "Join Approved", description: `${resolvedSenderName} has joined your journey.` });
+      }
 
-      // 3. Mark request as accepted
+      // Mark request as accepted
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
       
-      toast({ title: "Friendship Established", description: `You are now connected with ${resolvedSenderName}.` })
+      if (req.requestType === "ConnectionRequest") {
+        toast({ title: "Friendship Established", description: `You are now connected with ${resolvedSenderName}.` })
+      }
     } catch (e) {
       console.error("Approval error:", e)
       toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
@@ -226,6 +295,30 @@ export function AppSidebar() {
       toast({ variant: "destructive", title: "Error", description: "Failed to decline request." })
     }
   }
+
+  const handleJoinRequest = async (req: any) => {
+    if (!db || !user) return;
+    try {
+      await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
+        userId: req.senderId,
+        senderId: user.uid,
+        senderName: currentUserDisplayName,
+        requestType: "JoinJourneyRequest",
+        description: "wants to join your journey.",
+        timestamp: new Date().toISOString(),
+        status: "Pending",
+        targetJourneyId: req.targetJourneyId
+      });
+      
+      // Update the original notification so user doesn't request twice
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
+
+      toast({ title: "Request Sent", description: "Your request to join has been sent to your friend." });
+    } catch (e) {
+      console.error("Join request error:", e);
+      toast({ variant: "destructive", title: "Error", description: "Failed to send join request." });
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -300,23 +393,24 @@ export function AppSidebar() {
                 <span className="text-[9px] font-black uppercase text-muted-foreground flex items-center gap-1.5">
                   <Bell className="h-3 w-3" /> Inbox
                 </span>
-                {requests && requests.length > 0 && (
+                {requests && requests.filter(r => r.status === "Pending").length > 0 && (
                   <Badge className="h-4 px-1.5 text-[8px] bg-primary/20 text-primary border-none">
-                    {requests.length} NEW
+                    {requests.filter(r => r.status === "Pending").length} NEW
                   </Badge>
                 )}
               </div>
               
-              {!requests || requests.length === 0 ? (
+              {!requests || requests.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification").length === 0 ? (
                 <p className="text-[9px] text-center text-muted-foreground opacity-50 py-2">No pending requests</p>
               ) : (
                 <div className="space-y-2">
-                  {requests.map((req) => (
+                  {requests.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification").map((req) => (
                     <RequestItem 
                       key={req.id} 
                       req={req} 
                       onAccept={handleAccept} 
-                      onDecline={handleDecline} 
+                      onDecline={handleDecline}
+                      onJoinRequest={handleJoinRequest}
                     />
                   ))}
                 </div>

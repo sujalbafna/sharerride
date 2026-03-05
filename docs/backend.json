@@ -109,24 +109,27 @@
         "startTime": { "type": "string", "format": "date-time" },
         "startLocationDescription": { "type": "string" },
         "endLocationDescription": { "type": "string" },
-        "sharedWithContactIds": { "type": "array", "items": { "type": "string" } }
+        "sharedWithContactIds": { "type": "array", "items": { "type": "string" } },
+        "availableSeats": { "type": "number" },
+        "joinedUserIds": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["id", "userId", "journeyType", "status", "startTime", "startLocationDescription", "endLocationDescription", "sharedWithContactIds"]
+      "required": ["id", "userId", "journeyType", "status", "startTime", "startLocationDescription", "endLocationDescription", "sharedWithContactIds", "availableSeats"]
     },
     "SupportRequest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "SupportRequest",
       "type": "object",
-      "description": "Represents connection requests, safety check-ins, or help requests.",
+      "description": "Represents connection requests, safety check-ins, help requests, or journey joins.",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
-        "requestType": { "type": "string", "enum": ["ConnectionRequest", "JourneyNotification", "NeedARide", "MeetingCompanion"] },
+        "requestType": { "type": "string", "enum": ["ConnectionRequest", "JourneyNotification", "JoinJourneyRequest", "NeedARide", "MeetingCompanion"] },
         "description": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
         "status": { "type": "string", "enum": ["Pending", "Accepted", "Declined", "Read"] },
         "senderName": { "type": "string" },
-        "senderId": { "type": "string" }
+        "senderId": { "type": "string" },
+        "targetJourneyId": { "type": "string" }
       },
       "required": ["id", "userId", "requestType", "description", "timestamp", "status"]
     }

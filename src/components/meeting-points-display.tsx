@@ -106,7 +106,6 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
           <ShieldCheck className="h-4 w-4 text-accent" />
           Optimal Meeting Points
         </h4>
-        <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">AI CALCULATED</Badge>
       </div>
 
       <div className="grid gap-3">

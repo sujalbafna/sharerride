@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Navigation, Shield, Loader2, MapPin } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from "@/firebase/error-emitter"
 import { FirestorePermissionError } from "@/firebase/errors"
@@ -30,6 +30,7 @@ export function StartJourneyDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [startLoc, setStartLoc] = useState("")
   const [endLoc, setEndLoc] = useState("")
+  const [seats, setSeats] = useState("0")
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -43,6 +44,7 @@ export function StartJourneyDialog() {
 
     setIsSubmitting(true)
     const allFriendIds = contacts?.map(c => c.id) || []
+    const availableSeatsCount = parseInt(seats) || 0
     
     const journeyData = {
       userId: user.uid,
@@ -56,13 +58,15 @@ export function StartJourneyDialog() {
       endLatitude: 12.9720,
       endLongitude: 77.5950,
       sharedWithContactIds: allFriendIds,
+      availableSeats: availableSeatsCount,
+      joinedUserIds: [],
       createdAt: new Date().toISOString()
     }
 
     const journeysRef = collection(db, "users", user.uid, "journeys")
     
     try {
-      await addDoc(journeysRef, journeyData)
+      const journeyDoc = await addDoc(journeysRef, journeyData)
       
       // Notify all friends automatically
       if (contacts && contacts.length > 0) {
@@ -73,9 +77,10 @@ export function StartJourneyDialog() {
               senderId: user.uid,
               senderName: user.displayName || "Member",
               requestType: "JourneyNotification",
-              description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
+              description: `is traveling from ${startLoc} to ${endLoc}. ${availableSeatsCount > 0 ? `${availableSeatsCount} seats available.` : "No seats available."}`,
               timestamp: new Date().toISOString(),
-              status: "Pending"
+              status: "Pending",
+              targetJourneyId: journeyDoc.id
             })
           }
         }
@@ -90,6 +95,7 @@ export function StartJourneyDialog() {
       setIsOpen(false)
       setStartLoc("")
       setEndLoc("")
+      setSeats("0")
     } catch (error) {
       const contextualError = new FirestorePermissionError({
         operation: 'create',
@@ -146,6 +152,21 @@ export function StartJourneyDialog() {
                   className="pl-10 h-12 rounded-xl"
                   value={endLoc}
                   onChange={(e) => setEndLoc(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="seats">Seats Available</Label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="seats" 
+                  type="number"
+                  min="0"
+                  placeholder="0" 
+                  className="pl-10 h-12 rounded-xl"
+                  value={seats}
+                  onChange={(e) => setSeats(e.target.value)}
                 />
               </div>
             </div>

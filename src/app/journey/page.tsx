@@ -128,23 +128,22 @@ export default function JourneyPage() {
                             <div className="flex items-center justify-between">
                               <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
                                 <ShieldCheck className="h-4 w-4 text-accent" />
-                                Remote Safety Protocol
+                                Capacity Information
                               </h4>
-                              <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">Scenario B</Badge>
+                              <Badge variant="outline" className="text-[9px] border-accent/30 text-accent uppercase">
+                                {activeJourney.availableSeats || 0} SEATS LEFT
+                              </Badge>
                             </div>
                             <div className="space-y-3">
                               <p className="text-sm font-medium leading-relaxed">
-                                Automated outreach (SMS, WhatsApp, and Phone Call) is scheduled to trigger when you are 10km away from your destination.
+                                {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
                               </p>
                               <div className="flex gap-2">
                                 <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                  <Users className="h-4 w-4 opacity-60" />
+                                </div>
+                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
                                   <MessageCircle className="h-4 w-4 opacity-60" />
-                                </div>
-                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                                  <BellRing className="h-4 w-4 opacity-60" />
-                                </div>
-                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
-                                  <PhoneCall className="h-4 w-4 opacity-60" />
                                 </div>
                               </div>
                             </div>
