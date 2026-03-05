@@ -45,7 +45,7 @@ export default function LoginPage() {
     const unsub = onAuthStateChanged(auth, async (newUser) => {
       if (newUser && db && fullName) {
         try {
-          // Update Auth Profile for sender identity
+          // Update Auth Profile for immediate local consistency
           await updateProfile(newUser, { displayName: fullName })
           
           const userRef = doc(db, "users", newUser.uid)
@@ -68,6 +68,7 @@ export default function LoginPage() {
             photoURL: newUser.photoURL || ""
           }
 
+          // Ensure name is written to database profiles
           await setDoc(userRef, userData, { merge: true })
           await setDoc(publicRef, publicData, { merge: true })
         } catch (e) {

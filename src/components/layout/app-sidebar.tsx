@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
@@ -60,6 +60,13 @@ export function AppSidebar() {
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Fetch current user's document to get their name reliably
+  const currentUserRef = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return doc(db, "users", user.uid)
+  }, [db, user])
+  const { data: currentUserDoc } = useDoc(currentUserRef)
 
   // Fetch Pending Requests
   const requestsQuery = useMemoFirebase(() => {
@@ -94,11 +101,22 @@ export function AppSidebar() {
 
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
+    
+    // Fallback chain for sender name:
+    // 1. Current User's Document in Firestore (most reliable)
+    // 2. Auth Display Name
+    // 3. Email (prefix)
+    const senderName = 
+      (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) ||
+      user.displayName || 
+      user.email?.split('@')[0] || 
+      "Guardian"
+
     try {
       await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
         userId: targetUser.userId,
         senderId: user.uid,
-        senderName: user.displayName || "Unknown User",
+        senderName: senderName,
         requestType: "ConnectionRequest",
         description: "wants to join your trusted network.",
         timestamp: new Date().toISOString(),
@@ -124,10 +142,13 @@ export function AppSidebar() {
         appUserId: req.senderId,
         relationshipToUser: "Guardian"
       })
+      
+      const myName = (currentUserDoc?.firstName && currentUserDoc?.lastName ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}` : null) || user.displayName || "Guardian"
+
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
-        contactName: user.displayName || "User",
+        contactName: myName,
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: user.uid,
