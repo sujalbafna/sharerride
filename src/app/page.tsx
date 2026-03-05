@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity, Loader2, Search } from "lucide-react"
+import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity, Loader2, Search, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,7 +30,7 @@ export default function Home() {
     return query(
       collection(db, "users", user.uid, "journeys"),
       orderBy("startTime", "desc"),
-      limit(5)
+      limit(10) // Fetch a few more for better local filtering
     )
   }, [db, user])
 
@@ -62,21 +62,29 @@ export default function Home() {
 
   const filteredJourneys = journeys?.filter(j => 
     j.startLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    j.endLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
     j.status.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const filteredContacts = contacts?.filter(c =>
+    c.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.relationshipToUser.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const hasResults = (filteredJourneys?.length || 0) > 0 || (filteredContacts?.length || 0) > 0
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-background/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-6">
           <h2 className="text-2xl font-black tracking-tighter">Overview</h2>
-          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full">
+          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full hidden sm:flex">
             <Activity className="h-3 w-3 mr-1.5 text-primary" />
             LIVE SYSTEM
           </Badge>
         </div>
 
-        <div className="flex-1 max-w-xl mx-12 hidden lg:block">
+        <div className="flex-1 max-w-xl mx-4 sm:mx-12">
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
@@ -177,72 +185,113 @@ export default function Home() {
               <div className="flex justify-between items-center px-1">
                 <h3 className="font-black text-lg flex items-center gap-3">
                   <Clock className="h-5 w-5 text-primary" />
-                  Recent Activity
+                  {searchQuery ? "Search Results" : "Recent Activity"}
                 </h3>
-                <Button 
-                  variant="link" 
-                  className="text-xs font-black uppercase tracking-widest text-primary hover:no-underline"
-                  onClick={() => router.push("/journey")}
-                >
-                  View All
-                </Button>
+                {!searchQuery && (
+                  <Button 
+                    variant="link" 
+                    className="text-xs font-black uppercase tracking-widest text-primary hover:no-underline"
+                    onClick={() => router.push("/journey")}
+                  >
+                    View All
+                  </Button>
+                )}
               </div>
 
               {isJourneysLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card/40 animate-pulse rounded-3xl" />)}
                 </div>
-              ) : !filteredJourneys || filteredJourneys.length === 0 ? (
+              ) : !hasResults ? (
                 <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
                   <CardContent className="p-20 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">
-                      {searchQuery ? `No results found for "${searchQuery}"` : "Your journey history is empty. Start a trip to enable tracking."}
+                      {searchQuery ? `No matches found for "${searchQuery}"` : "Your journey history is empty. Start a trip to enable tracking."}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {filteredJourneys.map((j) => (
-                    <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-5">
-                            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
-                              <MapPin className="h-7 w-7" />
-                            </div>
-                            <div className="space-y-1">
-                              <p className="font-black text-lg tracking-tight">{j.startLocationDescription}</p>
-                              <div className="flex items-center gap-3">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                  {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active now"}
-                                </p>
-                                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                                <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest">
-                                  {j.journeyType}
-                                </p>
+                <div className="space-y-6">
+                  {/* Filtered Journeys */}
+                  {filteredJourneys && filteredJourneys.length > 0 && (
+                    <div className="space-y-4">
+                      {searchQuery && <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-2">Journeys</p>}
+                      {filteredJourneys.map((j) => (
+                        <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-5">
+                                <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                                  <MapPin className="h-7 w-7" />
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="font-black text-lg tracking-tight">{j.startLocationDescription}</p>
+                                  <div className="flex items-center gap-3">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                      {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active now"}
+                                    </p>
+                                    <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                    <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest">
+                                      {j.journeyType}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <Badge 
+                                  variant={j.status === 'Completed' ? 'secondary' : 'default'} 
+                                  className="uppercase text-[9px] font-black tracking-widest px-3 py-1 rounded-lg"
+                                >
+                                  {j.status}
+                                </Badge>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all group-hover:translate-x-1"
+                                  onClick={() => router.push("/journey")}
+                                >
+                                  <ArrowRight className="h-5 w-5" />
+                                </Button>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <Badge 
-                              variant={j.status === 'Completed' ? 'secondary' : 'default'} 
-                              className="uppercase text-[9px] font-black tracking-widest px-3 py-1 rounded-lg"
-                            >
-                              {j.status}
-                            </Badge>
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all group-hover:translate-x-1"
-                              onClick={() => router.push("/journey")}
-                            >
-                              <ArrowRight className="h-5 w-5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Filtered Guardians (Only shown when searching) */}
+                  {searchQuery && filteredContacts && filteredContacts.length > 0 && (
+                    <div className="space-y-4 pt-4">
+                      <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-2">Guardians</p>
+                      {filteredContacts.map((c) => (
+                        <Card key={c.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all">
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-5">
+                                <div className="h-14 w-14 rounded-2xl bg-accent/10 text-primary flex items-center justify-center shadow-inner">
+                                  <Users className="h-7 w-7" />
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="font-black text-lg tracking-tight">{c.contactName}</p>
+                                  <p className="text-[10px] font-black text-accent uppercase tracking-widest">
+                                    {c.relationshipToUser}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                className="rounded-xl font-bold h-10 px-4"
+                                onClick={() => router.push(`/chat?with=${c.appUserId}&name=${encodeURIComponent(c.contactName)}`)}
+                              >
+                                CHAT
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
