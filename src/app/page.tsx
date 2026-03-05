@@ -1,8 +1,11 @@
+
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity } from "lucide-react"
+import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
@@ -10,8 +13,15 @@ import { collection, query, orderBy, limit } from "firebase/firestore"
 import { format } from "date-fns"
 
 export default function Home() {
-  const { user } = useUser()
+  const { user, isUserLoading } = useUser()
   const db = useFirestore()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, isUserLoading, router])
 
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -38,6 +48,16 @@ export default function Home() {
 
   const { data: allJourneys } = useCollection(journeysTotalQuery)
 
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!user) return null
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
@@ -49,7 +69,7 @@ export default function Home() {
           </Badge>
         </div>
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="ghost" className="relative">
+          <Button size="icon" variant="ghost" className="relative rounded-full">
             <Bell className="h-5 w-5" />
           </Button>
         </div>
