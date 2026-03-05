@@ -1,106 +1,176 @@
 "use client"
 
 import { SOSButton } from "@/components/sos-button"
-import { BottomNav } from "@/components/layout/bottom-nav"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap } from "lucide-react"
+import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
+import { collection, query, orderBy, limit } from "firebase/firestore"
+import { format } from "date-fns"
 
 export default function Home() {
+  const { user } = useUser()
+  const db = useFirestore()
+
+  const journeysQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "journeys"),
+      orderBy("startTime", "desc"),
+      limit(3)
+    )
+  }, [db, user])
+
+  const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
+
+  const alertsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "emergencyAlerts"),
+      orderBy("timestamp", "desc"),
+      limit(1)
+    )
+  }, [db, user])
+
+  const { data: latestAlert } = useCollection(alertsQuery)
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="p-6 bg-primary text-primary-foreground shadow-lg rounded-b-[2rem]">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight">Setu Guardian</h1>
-            <p className="text-xs opacity-80 font-medium">Your Personal Safety Companion</p>
-          </div>
-          <div className="h-10 w-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold border-2 border-white/20">
-            JD
-          </div>
+    <div className="min-h-screen bg-background">
+      {/* Top Header Bar */}
+      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold tracking-tight">Overview</h2>
+          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5">
+            <Activity className="h-3 w-3 mr-1 text-primary" />
+            LIVE SYSTEM
+          </Badge>
         </div>
-        <div className="flex items-center gap-2 mt-4 bg-white/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm">
-          <Shield className="h-5 w-5 text-accent" />
-          <div className="text-sm">
-            <p className="font-semibold">Security Status: Active</p>
-            <p className="text-xs opacity-70">3 trusted contacts online</p>
-          </div>
+        <div className="flex items-center gap-3">
+          <Button size="icon" variant="ghost" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2 right-2 h-2 w-2 bg-destructive rounded-full" />
+          </Button>
         </div>
       </header>
 
-      <main className="px-6 -mt-4 space-y-6">
-        {/* SOS Button Area */}
-        <SOSButton />
+      <main className="p-8 space-y-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Actions & Status */}
+          <div className="lg:col-span-1 space-y-8">
+            <Card className="rounded-3xl border-none shadow-xl bg-primary text-primary-foreground overflow-hidden">
+              <CardContent className="p-8 text-center space-y-6">
+                <SOSButton />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold">Emergency Response</h3>
+                  <p className="text-sm opacity-80">Triggering SOS notifies all 5 registered guardians immediately with your location.</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="rounded-2xl border-none shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex flex-col items-center text-center">
-              <div className="h-10 w-10 rounded-full bg-accent/20 text-primary flex items-center justify-center mb-2">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-1">Start Journey</h3>
-              <p className="text-[10px] text-muted-foreground leading-tight">Track your transit in real-time</p>
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl border-none shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex flex-col items-center text-center">
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
-                <UserPlus className="h-5 w-5" />
-              </div>
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-1">Add Contact</h3>
-              <p className="text-[10px] text-muted-foreground leading-tight">Secure your safety network</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Active/Recent Journey */}
-        <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
-          <CardHeader className="bg-muted/30 pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                Recent Journey
-              </CardTitle>
-              <Badge variant="secondary" className="text-[10px]">COMPLETED</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-4">
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-center gap-1">
-                <div className="h-3 w-3 rounded-full bg-primary" />
-                <div className="w-0.5 h-6 bg-muted-foreground/30" />
-                <div className="h-3 w-3 rounded-full bg-accent" />
-              </div>
-              <div className="flex-1 text-sm">
-                <p className="font-medium text-xs">Airport Terminal 3</p>
-                <div className="my-2 border-t border-dashed w-full opacity-20" />
-                <p className="font-medium text-xs">Home, Saket</p>
-              </div>
-              <Button size="icon" variant="ghost" className="rounded-full">
-                <ArrowRight className="h-4 w-4" />
+            <div className="grid grid-cols-2 gap-4">
+              <Button variant="secondary" className="h-24 rounded-2xl flex flex-col gap-2 font-bold bg-card shadow-sm border-none hover:shadow-md transition-all">
+                <MapPin className="h-6 w-6 text-primary" />
+                NEW JOURNEY
+              </Button>
+              <Button variant="secondary" className="h-24 rounded-2xl flex flex-col gap-2 font-bold bg-card shadow-sm border-none hover:shadow-md transition-all">
+                <UserPlus className="h-6 w-6 text-primary" />
+                ADD GUARDIAN
               </Button>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* AI Tip */}
-        <div className="bg-accent/10 border border-accent/20 p-4 rounded-2xl flex items-start gap-3">
-          <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center shrink-0">
-             <Zap className="h-4 w-4 text-primary" />
+            <Card className="rounded-2xl border-none shadow-sm bg-accent/10 border-accent/20">
+              <CardContent className="p-6 flex gap-4">
+                <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                  <Zap className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-primary">Safety Intelligence</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                    System suggests enabling live sharing based on your current transit route.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div>
-            <h4 className="text-sm font-bold text-primary">Guardian AI Tip</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Based on your location, we recommend sharing your journey with "Sarah" as you are in an unfamiliar area.
-            </p>
+
+          {/* Right Column: Data & Logs */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="rounded-2xl border-none shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Active Guardians</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-black text-primary">05</p>
+                  <p className="text-xs text-muted-foreground mt-1">All contacts are currently online</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-2xl border-none shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Safe Journeys</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-black text-accent">128</p>
+                  <p className="text-xs text-muted-foreground mt-1">Total journeys logged securely</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center px-1">
+                <h3 className="font-bold flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Recent Activity
+                </h3>
+                <Button variant="link" className="text-xs font-bold uppercase tracking-wider">View All</Button>
+              </div>
+
+              {isJourneysLoading ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />)}
+                </div>
+              ) : journeys?.length === 0 ? (
+                <Card className="rounded-2xl border-dashed border-2 bg-transparent">
+                  <CardContent className="p-12 text-center">
+                    <p className="text-sm text-muted-foreground">No recent journeys found. Start your first safe journey today.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {journeys?.map((j) => (
+                    <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                              <MapPin className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <p className="font-bold">{j.startLocationDescription}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active now"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={j.status === 'Completed' ? 'secondary' : 'default'} className="uppercase text-[10px]">
+                              {j.status}
+                            </Badge>
+                            <Button size="icon" variant="ghost" className="rounded-full">
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
-
-      <BottomNav />
     </div>
   )
 }
