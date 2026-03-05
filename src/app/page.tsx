@@ -1,13 +1,14 @@
 
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity, Loader2 } from "lucide-react"
+import { Shield, MapPin, Clock, ArrowRight, UserPlus, Zap, Bell, Activity, Loader2, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
 import { collection, query, orderBy, limit } from "firebase/firestore"
 import { format } from "date-fns"
@@ -16,6 +17,7 @@ export default function Home() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -28,7 +30,7 @@ export default function Home() {
     return query(
       collection(db, "users", user.uid, "journeys"),
       orderBy("startTime", "desc"),
-      limit(3)
+      limit(5)
     )
   }, [db, user])
 
@@ -58,126 +60,183 @@ export default function Home() {
 
   if (!user) return null
 
+  const filteredJourneys = journeys?.filter(j => 
+    j.startLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    j.status.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold tracking-tight">Overview</h2>
-          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5">
-            <Activity className="h-3 w-3 mr-1 text-primary" />
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-background/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-6">
+          <h2 className="text-2xl font-black tracking-tighter">Overview</h2>
+          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full">
+            <Activity className="h-3 w-3 mr-1.5 text-primary" />
             LIVE SYSTEM
           </Badge>
         </div>
+
+        <div className="flex-1 max-w-xl mx-12 hidden lg:block">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Input 
+              placeholder="Search journeys, status, or guardians..." 
+              className="pl-12 h-12 bg-white/5 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/40 transition-all text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="ghost" className="relative rounded-full">
+          <Button size="icon" variant="ghost" className="relative rounded-2xl h-11 w-11 bg-white/5 hover:bg-white/10">
             <Bell className="h-5 w-5" />
+            <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-primary rounded-full border-2 border-background" />
           </Button>
         </div>
       </header>
 
-      <main className="p-8 space-y-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="p-8 space-y-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Left Column - SOS & Actions */}
           <div className="lg:col-span-1 space-y-8">
-            <Card className="rounded-3xl border-none shadow-xl bg-primary text-primary-foreground overflow-hidden">
-              <CardContent className="p-8 text-center space-y-6">
+            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
+              <CardContent className="p-10 text-center space-y-8">
                 <SOSButton />
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold">Emergency Response</h3>
-                  <p className="text-sm opacity-80">Triggering SOS notifies all your registered guardians immediately with your location.</p>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-black tracking-tight">Emergency Response</h3>
+                  <p className="text-sm opacity-90 leading-relaxed font-medium">
+                    Triggering SOS notifies all your registered guardians immediately with your live coordinates.
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="secondary" className="h-24 rounded-2xl flex flex-col gap-2 font-bold bg-card shadow-sm border-none hover:shadow-md transition-all">
-                <MapPin className="h-6 w-6 text-primary" />
+              <Button 
+                variant="secondary" 
+                className="h-28 rounded-3xl flex flex-col gap-3 font-black bg-card shadow-sm border-none hover:shadow-xl hover:-translate-y-1 transition-all"
+                onClick={() => router.push("/journey")}
+              >
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
                 NEW JOURNEY
               </Button>
-              <Button variant="secondary" className="h-24 rounded-2xl flex flex-col gap-2 font-bold bg-card shadow-sm border-none hover:shadow-md transition-all">
-                <UserPlus className="h-6 w-6 text-primary" />
+              <Button 
+                variant="secondary" 
+                className="h-28 rounded-3xl flex flex-col gap-3 font-black bg-card shadow-sm border-none hover:shadow-xl hover:-translate-y-1 transition-all"
+                onClick={() => router.push("/contacts")}
+              >
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <UserPlus className="h-6 w-6 text-primary" />
+                </div>
                 ADD GUARDIAN
               </Button>
             </div>
 
-            <Card className="rounded-2xl border-none shadow-sm bg-accent/10 border-accent/20">
-              <CardContent className="p-6 flex gap-4">
-                <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <Zap className="h-5 w-5 text-primary" />
+            <Card className="rounded-3xl border-none shadow-sm bg-accent/5 border border-accent/10">
+              <CardContent className="p-6 flex gap-5">
+                <div className="h-12 w-12 rounded-2xl bg-accent/20 flex items-center justify-center shrink-0">
+                  <Zap className="h-6 w-6 text-accent" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm text-primary">Safety Intelligence</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                    System monitors your routes to suggest real-time safety measures.
+                <div className="space-y-1">
+                  <h4 className="font-black text-sm text-accent tracking-wide uppercase">Safety Intelligence</h4>
+                  <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
+                    Setu Guardian is monitoring your environment to suggest real-time safety measures.
                   </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="lg:col-span-2 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="rounded-2xl border-none shadow-sm">
+          {/* Right Column - Stats & Activity */}
+          <div className="lg:col-span-2 space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Active Guardians</CardTitle>
+                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Active Guardians</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-black text-primary">{contacts?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Total registered emergency contacts</p>
+                  <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified emergency contacts in your circle</p>
                 </CardContent>
               </Card>
-              <Card className="rounded-2xl border-none shadow-sm">
+              <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Safe Journeys</CardTitle>
+                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Safe Journeys</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-black text-accent">{allJourneys?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Total journeys logged securely</p>
+                  <p className="text-5xl font-black text-accent tracking-tighter">{allJourneys?.length || 0}</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-2">Total trips logged with end-to-end encryption</p>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex justify-between items-center px-1">
-                <h3 className="font-bold flex items-center gap-2">
+                <h3 className="font-black text-lg flex items-center gap-3">
                   <Clock className="h-5 w-5 text-primary" />
                   Recent Activity
                 </h3>
-                <Button variant="link" className="text-xs font-bold uppercase tracking-wider">View All</Button>
+                <Button 
+                  variant="link" 
+                  className="text-xs font-black uppercase tracking-widest text-primary hover:no-underline"
+                  onClick={() => router.push("/journey")}
+                >
+                  View All
+                </Button>
               </div>
 
               {isJourneysLoading ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />)}
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card/40 animate-pulse rounded-3xl" />)}
                 </div>
-              ) : !journeys || journeys.length === 0 ? (
-                <Card className="rounded-2xl border-dashed border-2 bg-transparent">
-                  <CardContent className="p-12 text-center">
-                    <p className="text-sm text-muted-foreground">No recent journeys found. Start your first safe journey today.</p>
+              ) : !filteredJourneys || filteredJourneys.length === 0 ? (
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
+                  <CardContent className="p-20 text-center space-y-4">
+                    <p className="text-sm font-bold text-muted-foreground">
+                      {searchQuery ? `No results found for "${searchQuery}"` : "Your journey history is empty. Start a trip to enable tracking."}
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {journeys.map((j) => (
-                    <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-shadow">
+                  {filteredJourneys.map((j) => (
+                    <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                              <MapPin className="h-6 w-6" />
+                          <div className="flex items-center gap-5">
+                            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                              <MapPin className="h-7 w-7" />
                             </div>
-                            <div>
-                              <p className="font-bold">{j.startLocationDescription}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active now"}
-                              </p>
+                            <div className="space-y-1">
+                              <p className="font-black text-lg tracking-tight">{j.startLocationDescription}</p>
+                              <div className="flex items-center gap-3">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                  {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active now"}
+                                </p>
+                                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest">
+                                  {j.journeyType}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant={j.status === 'Completed' ? 'secondary' : 'default'} className="uppercase text-[10px]">
+                          <div className="flex items-center gap-4">
+                            <Badge 
+                              variant={j.status === 'Completed' ? 'secondary' : 'default'} 
+                              className="uppercase text-[9px] font-black tracking-widest px-3 py-1 rounded-lg"
+                            >
                               {j.status}
                             </Badge>
-                            <Button size="icon" variant="ghost" className="rounded-full">
-                              <ArrowRight className="h-4 w-4" />
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all group-hover:translate-x-1"
+                              onClick={() => router.push("/journey")}
+                            >
+                              <ArrowRight className="h-5 w-5" />
                             </Button>
                           </div>
                         </div>
