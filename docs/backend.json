@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -20,7 +21,7 @@
         },
         "email": {
           "type": "string",
-          "description": "The email address of the user, used for contact and potentially login (handled by external auth).",
+          "description": "The email address of the user.",
           "format": "email"
         },
         "phoneNumber": {
@@ -53,317 +54,81 @@
         "updatedAt"
       ]
     },
+    "PublicProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PublicProfile",
+      "type": "object",
+      "description": "A searchable subset of user data available to all authenticated users.",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["userId", "displayName", "email"]
+    },
+    "Message": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Message",
+      "type": "object",
+      "description": "A single chat message between two connected users.",
+      "properties": {
+        "senderId": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderId", "content", "timestamp"]
+    },
     "TrustedContact": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "TrustedContact",
       "type": "object",
       "description": "Represents a trusted emergency contact designated by a User.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the TrustedContact entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who added this trusted contact. (Relationship: User 1:N TrustedContact)"
-        },
-        "contactName": {
-          "type": "string",
-          "description": "The name of the trusted contact."
-        },
-        "contactPhoneNumber": {
-          "type": "string",
-          "description": "The phone number of the trusted contact for communication."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "The email address of the trusted contact.",
-          "format": "email"
-        },
-        "relationshipToUser": {
-          "type": "string",
-          "description": "Describes the relationship of the trusted contact to the user (e.g., 'Parent', 'Friend', 'Sibling')."
-        },
-        "isAppUser": {
-          "type": "boolean",
-          "description": "Indicates if this trusted contact is also a registered user of the Setu Guardian app."
-        },
-        "appUserId": {
-          "type": "string",
-          "description": "Reference to the User entity if 'isAppUser' is true. (Relationship: TrustedContact N:1 User)"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "contactName": { "type": "string" },
+        "contactPhoneNumber": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "relationshipToUser": { "type": "string" },
+        "isAppUser": { "type": "boolean" },
+        "appUserId": { "type": "string" }
       },
-      "required": [
-        "id",
-        "userId",
-        "contactName",
-        "contactPhoneNumber",
-        "isAppUser"
-      ]
+      "required": ["id", "userId", "contactName", "contactPhoneNumber", "isAppUser"]
     },
     "Journey": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Journey",
       "type": "object",
-      "description": "Represents a specific journey initiated by a user for live tracking or virtual companionship.",
+      "description": "Represents a specific journey initiated by a user for live tracking.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Journey entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who initiated this journey. (Relationship: User 1:N Journey)"
-        },
-        "journeyType": {
-          "type": "string",
-          "description": "The type of journey (e.g., 'General', 'VirtualCompanionship', 'RideShare')."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the journey (e.g., 'Started', 'InProgress', 'Completed', 'Cancelled', 'Emergency')."
-        },
-        "startTime": {
-          "type": "string",
-          "description": "Timestamp when the journey officially started.",
-          "format": "date-time"
-        },
-        "endTime": {
-          "type": "string",
-          "description": "Timestamp when the journey was completed or cancelled. Null if the journey is ongoing.",
-          "format": "date-time"
-        },
-        "startLocationDescription": {
-          "type": "string",
-          "description": "A descriptive name or address of the journey's starting point."
-        },
-        "startLatitude": {
-          "type": "number",
-          "description": "The latitude coordinate of the journey's starting point."
-        },
-        "startLongitude": {
-          "type": "number",
-          "description": "The longitude coordinate of the journey's starting point."
-        },
-        "endLocationDescription": {
-          "type": "string",
-          "description": "A descriptive name or address of the journey's destination."
-        },
-        "endLatitude": {
-          "type": "number",
-          "description": "The latitude coordinate of the journey's destination."
-        },
-        "endLongitude": {
-          "type": "number",
-          "description": "The longitude coordinate of the journey's destination."
-        },
-        "estimatedArrivalTime": {
-          "type": "string",
-          "description": "The estimated time of arrival for the journey.",
-          "format": "date-time"
-        },
-        "sharedWithContactIds": {
-          "type": "array",
-          "description": "References to TrustedContact entities with whom this journey's live location is being shared. (Relationship: Journey N:N TrustedContact)",
-          "items": {
-            "type": "string"
-          }
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "journeyType": { "type": "string" },
+        "status": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "startLocationDescription": { "type": "string" },
+        "endLocationDescription": { "type": "string" },
+        "sharedWithContactIds": { "type": "array", "items": { "type": "string" } }
       },
-      "required": [
-        "id",
-        "userId",
-        "journeyType",
-        "status",
-        "startTime",
-        "startLocationDescription",
-        "startLatitude",
-        "startLongitude",
-        "endLocationDescription",
-        "endLatitude",
-        "endLongitude",
-        "sharedWithContactIds"
-      ]
-    },
-    "LocationUpdate": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LocationUpdate",
-      "type": "object",
-      "description": "Records a single location point during a live journey.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LocationUpdate entity."
-        },
-        "journeyId": {
-          "type": "string",
-          "description": "Reference to the Journey this location update belongs to. (Relationship: Journey 1:N LocationUpdate)"
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "Timestamp when this location update was recorded.",
-          "format": "date-time"
-        },
-        "latitude": {
-          "type": "number",
-          "description": "The latitude coordinate of the location update."
-        },
-        "longitude": {
-          "type": "number",
-          "description": "The longitude coordinate of the location update."
-        },
-        "accuracy": {
-          "type": "number",
-          "description": "The estimated accuracy of the location (e.g., in meters)."
-        },
-        "speed": {
-          "type": "number",
-          "description": "The speed of the user at the time of the update (e.g., in meters per second)."
-        },
-        "heading": {
-          "type": "number",
-          "description": "The direction of travel (e.g., in degrees from true north)."
-        }
-      },
-      "required": [
-        "id",
-        "journeyId",
-        "timestamp",
-        "latitude",
-        "longitude"
-      ]
-    },
-    "EmergencyAlert": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "EmergencyAlert",
-      "type": "object",
-      "description": "Represents a distress alert sent by a user to their trusted contacts.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the EmergencyAlert entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who sent this emergency alert. (Relationship: User 1:N EmergencyAlert)"
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "Timestamp when the emergency alert was sent.",
-          "format": "date-time"
-        },
-        "alertLocationDescription": {
-          "type": "string",
-          "description": "A descriptive name or address of the user's location when the alert was sent."
-        },
-        "alertLatitude": {
-          "type": "number",
-          "description": "The latitude coordinate of the user's location when the alert was sent."
-        },
-        "alertLongitude": {
-          "type": "number",
-          "description": "The longitude coordinate of the user's location when the alert was sent."
-        },
-        "currentJourneyId": {
-          "type": "string",
-          "description": "Reference to the Journey entity if the alert was sent during an active journey. (Relationship: EmergencyAlert N:1 Journey)"
-        },
-        "alertMessage": {
-          "type": "string",
-          "description": "The personalized emergency message sent with the alert, potentially composed by AI."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the alert (e.g., 'Sent', 'Acknowledged', 'Resolved')."
-        },
-        "recipientsContactIds": {
-          "type": "array",
-          "description": "References to TrustedContact entities who received this emergency alert. (Relationship: EmergencyAlert N:N TrustedContact)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "timestamp",
-        "alertLocationDescription",
-        "alertLatitude",
-        "alertLongitude",
-        "alertMessage",
-        "status",
-        "recipientsContactIds"
-      ]
+      "required": ["id", "userId", "journeyType", "status", "startTime", "startLocationDescription", "endLocationDescription", "sharedWithContactIds"]
     },
     "SupportRequest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "SupportRequest",
       "type": "object",
-      "description": "Represents a discrete request for assistance sent by a user to their trusted network.",
+      "description": "Represents connection requests, safety check-ins, or help requests.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the SupportRequest entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who sent this support request. (Relationship: User 1:N SupportRequest)"
-        },
-        "requestType": {
-          "type": "string",
-          "description": "The type of support requested (e.g., 'NeedARide', 'HelpWithDelivery', 'VirtualCompanionshipRequest')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description or message for the support request."
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "Timestamp when the support request was sent.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the support request (e.g., 'Pending', 'Accepted', 'Completed', 'Declined')."
-        },
-        "targetLocationDescription": {
-          "type": "string",
-          "description": "A descriptive name or address of the target location for requests like 'NeedARide' or 'HelpWithDelivery'."
-        },
-        "targetLatitude": {
-          "type": "number",
-          "description": "The latitude coordinate of the target location."
-        },
-        "targetLongitude": {
-          "type": "number",
-          "description": "The longitude coordinate of the target location."
-        },
-        "currentJourneyId": {
-          "type": "string",
-          "description": "Reference to an ongoing Journey if this request is related to it. (Relationship: SupportRequest N:1 Journey)"
-        },
-        "requestedContactIds": {
-          "type": "array",
-          "description": "References to TrustedContact entities to whom this support request was sent. (Relationship: SupportRequest N:N TrustedContact)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "respondingContactId": {
-          "type": "string",
-          "description": "Reference to the TrustedContact entity who accepted or is responding to this request. (Relationship: SupportRequest N:1 TrustedContact)"
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "requestType": { "type": "string", "enum": ["ConnectionRequest", "JourneyNotification", "NeedARide", "MeetingCompanion"] },
+        "description": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Declined", "Read"] },
+        "senderName": { "type": "string" },
+        "senderId": { "type": "string" }
       },
-      "required": [
-        "id",
-        "userId",
-        "requestType",
-        "description",
-        "timestamp",
-        "status",
-        "requestedContactIds"
-      ]
+      "required": ["id", "userId", "requestType", "description", "timestamp", "status"]
     }
   },
   "auth": {
@@ -375,126 +140,45 @@
   "firestore": {
     "structure": [
       {
+        "path": "/publicProfiles/{userId}",
+        "definition": {
+          "entityName": "PublicProfile",
+          "schema": { "$ref": "#/backend/entities/PublicProfile" },
+          "description": "Searchable user profiles."
+        }
+      },
+      {
         "path": "/users/{userId}",
         "definition": {
           "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores individual user profiles. Access is restricted to the user whose ID matches the document ID (request.auth.uid). This provides path-based ownership.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user, matching request.auth.uid."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/User" },
+          "description": "Private user profiles."
         }
       },
       {
         "path": "/users/{userId}/trustedContacts/{contactId}",
         "definition": {
           "entityName": "TrustedContact",
-          "schema": {
-            "$ref": "#/backend/entities/TrustedContact"
-          },
-          "description": "Stores trusted emergency contacts for a specific user. Each document includes 'userId' to explicitly link it to the owner, facilitating authorization independence (request.auth.uid must match path {userId} and resource.data.userId).",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who owns this trusted contact, matching request.auth.uid."
-            },
-            {
-              "name": "contactId",
-              "description": "The unique ID of the trusted contact."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/TrustedContact" },
+          "description": "User's trusted circle."
         }
       },
       {
-        "path": "/users/{userId}/journeys/{journeyId}",
+        "path": "/users/{userId}/chats/{friendId}/messages/{messageId}",
         "definition": {
-          "entityName": "Journey",
-          "schema": {
-            "$ref": "#/backend/entities/Journey"
-          },
-          "description": "Stores details of journeys initiated by a user. Ownership is established by the path {userId} and the 'userId' field in the document. It includes 'sharedWithContactIds' for explicit collaborative access, supporting authorization independence for those trusted contacts.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who initiated this journey, matching request.auth.uid."
-            },
-            {
-              "name": "journeyId",
-              "description": "The unique ID of the journey."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/journeys/{journeyId}/locationUpdates/{locationUpdateId}",
-        "definition": {
-          "entityName": "LocationUpdate",
-          "schema": {
-            "$ref": "#/backend/entities/LocationUpdate"
-          },
-          "description": "Records real-time location updates for a specific journey. To maintain authorization independence, each LocationUpdate document MUST denormalize the `userId` (journey owner's ID) and `sharedWithContactIds` from its parent Journey. Rules will check these denormalized fields (e.g., `request.auth.uid == resource.data.journeyOwnerId` or `request.auth.uid in resource.data.journeySharedWithContactIds`).",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who initiated the parent journey, matching request.auth.uid."
-            },
-            {
-              "name": "journeyId",
-              "description": "The unique ID of the parent journey."
-            },
-            {
-              "name": "locationUpdateId",
-              "description": "The unique ID of the location update."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/emergencyAlerts/{alertId}",
-        "definition": {
-          "entityName": "EmergencyAlert",
-          "schema": {
-            "$ref": "#/backend/entities/EmergencyAlert"
-          },
-          "description": "Stores emergency alerts sent by a user. Ownership is established by the path {userId} and the 'userId' field. It includes 'recipientsContactIds' for explicit collaborative access by trusted contacts, ensuring authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who sent this alert, matching request.auth.uid."
-            },
-            {
-              "name": "alertId",
-              "description": "The unique ID of the emergency alert."
-            }
-          ]
+          "entityName": "Message",
+          "schema": { "$ref": "#/backend/entities/Message" },
+          "description": "Direct messages between friends."
         }
       },
       {
         "path": "/users/{userId}/supportRequests/{requestId}",
         "definition": {
           "entityName": "SupportRequest",
-          "schema": {
-            "$ref": "#/backend/entities/SupportRequest"
-          },
-          "description": "Stores support requests initiated by a user. Ownership is established by the path {userId} and the 'userId' field. It includes 'requestedContactIds' and 'respondingContactId' for explicit collaborative access by trusted contacts, supporting authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user who sent this request, matching request.auth.uid."
-            },
-            {
-              "name": "requestId",
-              "description": "The unique ID of the support request."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/SupportRequest" },
+          "description": "Notifications and requests."
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed following a user-centric, hierarchical model to maximize security, scalability, and debuggability. The primary organizing principle is 'Path-Based Ownership' by the authenticated user (`request.auth.uid`). All user-specific data, including their profile, trusted contacts, initiated journeys, emergency alerts, and support requests, is nested directly under `/users/{userId}/`. This approach immediately satisfies authorization for private user data, as the `{userId}` wildcard in the path can be directly compared with `request.auth.uid`.\n\n**Authorization Independence (CRITICAL):**\nThis design heavily prioritizes Authorization Independence to eliminate the need for `get()` calls in security rules, which are costly, complex, and prone to breaking atomic operations. This is achieved through strategic denormalization:\n1.  **Direct Ownership Denormalization:** For collections like `trustedContacts`, `journeys`, `emergencyAlerts`, and `supportRequests`, the `userId` field (representing the owner) is explicitly stored within each document. This field matches the `{userId}` wildcard in the path, allowing rules to directly check `request.auth.uid == {userId}` AND `resource.data.userId == {userId}`. This makes ownership explicit and debuggable.\n2.  **Collaborative Access Denormalization:** For entities like `Journey`, `EmergencyAlert`, and `SupportRequest`, where multiple trusted contacts might need access, the relevant IDs (`sharedWithContactIds`, `recipientsContactIds`, `requestedContactIds`, `respondingContactId`) are denormalized directly into the document. Rules can then check if `request.auth.uid` is present in these arrays or matches a specific ID. This avoids `get()` to a parent `User` or `TrustedContact` document to determine permissions.\n3.  **Nested Denormalization (LocationUpdate):** The most critical denormalization is applied to `LocationUpdate`. Since a `LocationUpdate` is nested under a `Journey`, its access depends on the `Journey`'s owner and shared contacts. To avoid a `get()` call to the parent `Journey` document, each `LocationUpdate` document MUST include denormalized fields: `journeyOwnerId` (a copy of the `Journey.userId`) and `journeySharedWithContactIds` (a copy of the `Journey.sharedWithContactIds`). This allows rules to authorize access to a `LocationUpdate` by simply checking its own fields (`resource.data.journeyOwnerId` or `request.auth.uid in resource.data.journeySharedWithContactIds`).\n\n**QAPs (Rules are not Filters):**\nThe structure ensures Query-Accessible Permissions (QAPs) by:\n*   **Path-Based Security for Owners:** For data owned by `request.auth.uid` (e.g., `/users/{userId}/trustedContacts`), `list` operations are implicitly secured as Firestore's security rules apply to the entire collection path. The `{userId}` in the path ensures that only the owner can list their own items.\n*   **Denormalized Fields for Collaborators:** For `Journey`, `EmergencyAlert`, and `SupportRequest`, trusted contacts can perform `list` queries filtered on the denormalized `sharedWithContactIds`, `recipientsContactIds`, `requestedContactIds`, or `respondingContactId` fields where `request.auth.uid` is present. This relies on proper indexing in Firestore for efficient querying, but it maintains the security posture as the rule can check these fields directly on each document returned by the query, rather than filtering after a broad `list` operation.\n\n**Structural Segregation and Consistency:**\nAll documents within a given collection path (`/users/{userId}/journeys`, `/users/{userId}/trustedContacts`, etc.) share a homogeneous security posture (owned by the `{userId}` in the path, with specific collaborative access managed by denormalized fields). This simplifies security rules greatly, as the rules for a collection apply uniformly to all its documents. Wildcards are descriptive (`{userId}`, `{journeyId}`). Status fields (e.g., `status` in `Journey`, `EmergencyAlert`, `SupportRequest`) explicitly model state. This radical consistency and explicit modeling enhance debuggability and predictability."
+    ]
   }
 }

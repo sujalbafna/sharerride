@@ -1,144 +1,49 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * Setu Guardian Security Rules
-     *
-     * CORE PHILOSOPHY:
-     * This ruleset enforces a strict user-ownership model where all user-specific data is nested
-     * under the user's primary document. It prioritizes "Authorization Independence" to maximize 
-     * performance and reliability by avoiding cross-document lookups (get() calls).
-     *
-     * DATA STRUCTURE:
-     * All application data is organized hierarchically: /users/{userId}/[subcollections].
-     * The {userId} in the path serves as the primary authorization key.
-     *
-     * KEY SECURITY DECISIONS:
-     * 1. Path-Based Ownership: Users have full control over their own data tree.
-     * 2. Collaborative Safety: Safety features (Journeys, Alerts, Support) use denormalized 
-     *    ID lists (e.g., sharedWithContactIds) to grant read/update access to trusted contacts 
-     *    without requiring expensive joins.
-     * 3. Denormalization for Performance: Critical authorization data (like owner IDs and 
-     *    participant lists) are copied onto nested documents (like LocationUpdates) to ensure 
-     *    subcollection rules are fast and independent.
-     * 4. Prototyping Flexibility: Rules strictly enforce WHO can access data and relational 
-     *    integrity (userId matches path), but allow flexible data shapes for rapid iteration.
-     */
-
-    // --- Helper Functions ---
-
-    /** @description Checks if the user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user matches the provided ID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Checks if the user owns the existing document for destructive operations. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
+    // Public Profiles are searchable by any signed-in user
+    match /publicProfiles/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
     }
 
-    /** @description Checks if the authenticated user is present in a list of UIDs. */
-    function isCollaborator(contactList) {
-      return isSignedIn() && (request.auth.uid in contactList);
-    }
-
-    /** @description Checks if the authenticated user matches a specific collaborator ID. */
-    function isSpecificCollaborator(contactId) {
-      return isSignedIn() && request.auth.uid == contactId;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for User profiles. Users can only access and manage their own profile.
-     * @path /users/{userId}
-     * @allow (create) if auth.uid == "user_123" and doc ID is "user_123"
-     * @deny (read) if auth.uid == "user_456" tries to get "user_123"
-     * @principle Path-based ownership and self-creation.
-     */
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId) && request.resource.data.id == userId;
-      allow delete: if isExistingOwner(userId);
+      allow get, list, create, update, delete: if isOwner(userId);
 
-      /**
-       * @description Trusted contacts designated by the user. Managed only by the owner.
-       * @path /users/{userId}/trustedContacts/{contactId}
-       * @allow (create) if auth.uid == userId and data.userId matches path.
-       * @deny (list) if auth.uid is not the owner of this user's tree.
-       * @principle Restricts management of the trust network to the account owner.
-       */
       match /trustedContacts/{contactId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
       }
 
-      /**
-       * @description User journeys. Readable by the owner and contacts in the share list.
-       * @path /users/{userId}/journeys/{journeyId}
-       * @allow (get) if auth.uid is in resource.data.sharedWithContactIds.
-       * @deny (update) if auth.uid is a collaborator but tries to change owner-only fields.
-       * @principle Shared access via denormalized collaborator lists.
-       */
+      match /chats/{friendId}/messages/{messageId} {
+        // A user can read/write their own chat logs
+        // Note: For bi-directional chat, both users store a copy or we use a global chat path.
+        // For this prototype, we'll store messages under the owner's path.
+        allow read, write: if isOwner(userId);
+      }
+
       match /journeys/{journeyId} {
-        allow get: if isOwner(userId) || isCollaborator(resource.data.sharedWithContactIds);
-        allow list: if isOwner(userId) || isCollaborator(resource.data.sharedWithContactIds);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
-        allow delete: if isExistingOwner(userId);
-
-        /**
-         * @description Real-time location updates. Uses denormalized IDs for fast sub-rule evaluation.
-         * @path /users/{userId}/journeys/{journeyId}/locationUpdates/{locationUpdateId}
-         * @allow (list) if auth.uid is in journeySharedWithContactIds (denormalized on doc).
-         * @deny (create) if auth.uid is not the journey owner.
-         * @principle Authorization independence through nested denormalization.
-         */
-        match /locationUpdates/{locationUpdateId} {
-          allow get, list: if isOwner(userId) || isCollaborator(resource.data.journeySharedWithContactIds);
-          allow create: if isOwner(userId) && request.resource.data.journeyOwnerId == userId;
-          allow update: if isExistingOwner(userId);
-          allow delete: if isExistingOwner(userId);
-        }
+        allow read, write: if isOwner(userId);
       }
 
-      /**
-       * @description Emergency alerts. Shared with designated recipients for safety.
-       * @path /users/{userId}/emergencyAlerts/{alertId}
-       * @allow (get) if auth.uid is in recipientsContactIds.
-       * @deny (create) if auth.uid does not match the userId in the path.
-       * @principle Emergency visibility for trusted contacts.
-       */
       match /emergencyAlerts/{alertId} {
-        allow get: if isOwner(userId) || isCollaborator(resource.data.recipientsContactIds);
-        allow list: if isOwner(userId) || isCollaborator(resource.data.recipientsContactIds);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if (isOwner(userId) || isCollaborator(resource.data.recipientsContactIds)) && resource != null;
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
       }
 
-      /**
-       * @description Support requests for rides or companionship.
-       * @path /users/{userId}/supportRequests/{requestId}
-       * @allow (update) if auth.uid is in requestedContactIds (to accept the request).
-       * @deny (delete) if requester is not the original owner.
-       * @principle Multi-party interaction on a single document via role/ID fields.
-       */
       match /supportRequests/{requestId} {
-        allow get: if isOwner(userId) || isCollaborator(resource.data.requestedContactIds) || isSpecificCollaborator(resource.data.respondingContactId);
-        allow list: if isOwner(userId) || isCollaborator(resource.data.requestedContactIds) || isSpecificCollaborator(resource.data.respondingContactId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if (isOwner(userId) || isCollaborator(resource.data.requestedContactIds)) && resource != null;
-        allow delete: if isExistingOwner(userId);
+        // Recipients can read and update (accept/decline)
+        allow read, update: if isOwner(userId);
+        // Anyone signed in can send a request to a user's inbox
+        allow create: if isSignedIn();
       }
     }
   }

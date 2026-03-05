@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useState } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"
 import { 
   Dialog, 
   DialogContent, 
@@ -52,40 +53,54 @@ export function StartJourneyDialog() {
       status: "InProgress",
       startTime: new Date().toISOString(),
       startLocationDescription: startLoc,
-      startLatitude: 0, // In a real app, use Geolocation API
-      startLongitude: 0,
+      startLatitude: 12.9716, // Simulated
+      startLongitude: 77.5946,
       endLocationDescription: endLoc,
-      endLatitude: 0,
-      endLongitude: 0,
+      endLatitude: 12.9720,
+      endLongitude: 77.5950,
       sharedWithContactIds: selectedContacts,
-      sharePassengerDetails: sharePassengerDetails, // Privacy control
       createdAt: new Date().toISOString()
     }
 
     const journeysRef = collection(db, "users", user.uid, "journeys")
     
-    addDoc(journeysRef, journeyData)
-      .then(() => {
-        toast({
-          title: "Journey Started",
-          description: "Your live location is now being shared with your selected guardians.",
-        })
-        setIsOpen(false)
-        setStartLoc("")
-        setEndLoc("")
-        setSelectedContacts([])
+    try {
+      await addDoc(journeysRef, journeyData)
+      
+      // Notify Selected Guardians
+      for (const friendId of selectedContacts) {
+        const friendContact = contacts?.find(c => c.id === friendId)
+        if (friendContact?.appUserId) {
+          await addDoc(collection(db, "users", friendContact.appUserId, "supportRequests"), {
+            userId: friendContact.appUserId,
+            senderId: user.uid,
+            senderName: user.displayName || "Member",
+            requestType: "JourneyNotification",
+            description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated guardian.`,
+            timestamp: new Date().toISOString(),
+            status: "Pending"
+          })
+        }
+      }
+
+      toast({
+        title: "Journey Started",
+        description: "Your guardians have been notified and tracking is active.",
       })
-      .catch((error) => {
-        const contextualError = new FirestorePermissionError({
-          operation: 'create',
-          path: journeysRef.path,
-          requestResourceData: journeyData
-        })
-        errorEmitter.emit('permission-error', contextualError)
+      setIsOpen(false)
+      setStartLoc("")
+      setEndLoc("")
+      setSelectedContacts([])
+    } catch (error) {
+      const contextualError = new FirestorePermissionError({
+        operation: 'create',
+        path: journeysRef.path,
+        requestResourceData: journeyData
       })
-      .finally(() => {
-        setIsSubmitting(false)
-      })
+      errorEmitter.emit('permission-error', contextualError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const toggleContact = (id: string) => {
@@ -102,7 +117,7 @@ export function StartJourneyDialog() {
           START NEW JOURNEY
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
+      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
@@ -173,7 +188,7 @@ export function StartJourneyDialog() {
                       />
                       <label 
                         htmlFor={contact.id} 
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        className="text-sm font-medium leading-none cursor-pointer"
                       >
                         {contact.contactName} ({contact.relationshipToUser})
                       </label>
@@ -183,22 +198,11 @@ export function StartJourneyDialog() {
               )}
             </ScrollArea>
           </div>
-
-          <div className="flex items-center justify-between p-4 bg-accent/5 rounded-2xl border border-accent/20">
-            <div className="space-y-0.5">
-              <Label className="text-sm font-bold">Share Passenger Details</Label>
-              <p className="text-xs text-muted-foreground">Allow guardians to see specific transit info.</p>
-            </div>
-            <Switch 
-              checked={sharePassengerDetails} 
-              onCheckedChange={setSharePassengerDetails} 
-            />
-          </div>
         </div>
 
         <DialogFooter>
           <Button 
-            className="w-full h-14 rounded-2xl font-black text-lg" 
+            className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-xl" 
             onClick={handleStart}
             disabled={isSubmitting || !startLoc || !endLoc}
           >
