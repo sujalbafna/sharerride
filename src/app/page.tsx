@@ -59,7 +59,7 @@ export default function Home() {
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
 
-  // My Connections
+  // My Connections (Trusted Circle)
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -70,7 +70,7 @@ export default function Home() {
 
   const { data: contacts } = useCollection(contactsQuery)
 
-  // Pending Requests (Inbox)
+  // Incoming Friend Requests
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -86,6 +86,7 @@ export default function Home() {
     if (!db || !searchQuery.trim()) return
     setIsSearching(true)
     try {
+      // In a production app, we would use a more sophisticated search or lowercase indexing
       const q = query(
         collection(db, "publicProfiles"),
         where("displayName", ">=", searchQuery),
@@ -124,6 +125,7 @@ export default function Home() {
   const handleAccept = async (req: any) => {
     if (!db || !user) return
     try {
+      // 1. Add sender to my trusted contacts
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
@@ -134,6 +136,7 @@ export default function Home() {
         relationshipToUser: "Guardian"
       })
 
+      // 2. Add me to the sender's trusted contacts (mutual connection)
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -144,10 +147,22 @@ export default function Home() {
         relationshipToUser: "Guardian"
       })
 
+      // 3. Mark request as accepted in my inbox
       await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Accepted" })
+      
       toast({ title: "Connection Approved", description: `You are now connected with ${req.senderName}.` })
     } catch (e) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to accept request." })
+      toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
+    }
+  }
+
+  const handleDecline = async (req: any) => {
+    if (!db || !user) return
+    try {
+      await setDoc(doc(db, "users", user.uid, "supportRequests", req.id), { ...req, status: "Declined" })
+      toast({ title: "Request Declined", description: "The request has been removed from your inbox." })
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to decline request." })
     }
   }
 
@@ -183,7 +198,7 @@ export default function Home() {
 
       <main className="p-8 space-y-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Column - SOS & Actions */}
+          {/* Left Column - SOS & Network Actions */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
               <CardContent className="p-10 text-center space-y-8">
@@ -205,9 +220,9 @@ export default function Home() {
               START NEW JOURNEY
             </Button>
 
-            {/* Network Section */}
+            {/* Friend Search Section */}
             <section className="space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Connect with Guardians</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Guardians</h3>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -225,13 +240,13 @@ export default function Home() {
               </div>
 
               {searchResults.length > 0 && (
-                <div className="grid gap-2 mt-4">
+                <div className="grid gap-2 mt-4 animate-in slide-in-from-top-2 duration-300">
                   {searchResults.map((u) => (
                     <Card key={u.userId} className="rounded-xl border-none shadow-sm bg-accent/5">
                       <CardContent className="p-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                            {u.displayName[0]}
+                            {u.displayName?.[0]}
                           </div>
                           <p className="font-bold text-xs">{u.displayName}</p>
                         </div>
@@ -249,29 +264,32 @@ export default function Home() {
 
           {/* Right Column - Stats & Activity */}
           <div className="lg:col-span-2 space-y-10">
-            {/* Pending Requests */}
+            {/* Pending Requests Inbox */}
             {requests && requests.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Requests</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Inbox: Guardian Requests</h3>
                   <Badge className="bg-primary/20 text-primary border-none text-[10px] font-black">{requests.length} NEW</Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {requests.map((req) => (
-                    <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-primary/5">
+                    <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-primary/5 animate-in zoom-in-95">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black">
-                            {req.senderName[0]}
+                            {req.senderName?.[0]}
                           </div>
                           <div>
                             <p className="font-bold text-sm">{req.senderName}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Connection Request</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">Connection Pending</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <Button onClick={() => handleAccept(req)} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg h-8 px-3 font-bold text-xs">
-                            ACCEPT
+                            APPROVE
+                          </Button>
+                          <Button onClick={() => handleDecline(req)} size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       </CardContent>
@@ -308,7 +326,7 @@ export default function Home() {
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
-                Recent Journeys
+                Recent Activity
               </h3>
 
               {isJourneysLoading ? (
@@ -318,7 +336,7 @@ export default function Home() {
               ) : !journeys || journeys.length === 0 ? (
                 <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
                   <CardContent className="p-16 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">Your journey history is empty.</p>
+                    <p className="text-sm font-bold text-muted-foreground">No journeys tracked yet.</p>
                     <Button variant="link" onClick={() => router.push("/journey")} className="text-primary font-black">START YOUR FIRST TRIP</Button>
                   </CardContent>
                 </Card>
@@ -359,17 +377,17 @@ export default function Home() {
               )}
             </div>
 
-            {/* Circle Management */}
+            {/* My Circle Quick Access */}
             {contacts && contacts.length > 0 && (
               <section className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Guardians Circle</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Trusted Circle</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {contacts.map((contact) => (
                     <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:bg-card/80 transition-all">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                            {contact.contactName[0]}
+                            {contact.contactName?.[0]}
                           </div>
                           <div>
                             <h3 className="font-bold text-sm">{contact.contactName}</h3>
