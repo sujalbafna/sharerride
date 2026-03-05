@@ -67,7 +67,7 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
       timestamp: new Date().toISOString(),
       status: "Pending",
       targetLocationDescription: point.pointName,
-      requestedContactIds: point.nearbyGuardians,
+      requestedContactIds: point.nearbyFriends,
       currentJourneyId: "active-journey"
     }
 
@@ -106,7 +106,7 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
           <ShieldCheck className="h-4 w-4 text-accent" />
           Optimal Meeting Points
         </h4>
-        <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">KNN & CURVE CALCULATED</Badge>
+        <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">AI CALCULATED</Badge>
       </div>
 
       <div className="grid gap-3">
@@ -130,14 +130,14 @@ export function MeetingPointsDisplay({ startLocation, destination, userId }: Mee
                 <div className="flex flex-col gap-1">
                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-white/40">
                     <Users className="h-3 w-3" />
-                    {point.nearbyGuardians.length} Proximate Friends
+                    {point.nearbyFriends.length} Proximate Friends
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-white/40">
                     <Info className="h-3 w-3" />
                     ETA: {point.estimatedTimeFromStart}
                   </div>
                 </div>
-                {point.nearbyGuardians.length > 0 && (
+                {point.nearbyFriends.length > 0 && (
                   <Button 
                     size="sm" 
                     className="h-8 rounded-lg bg-accent text-primary hover:bg-accent/90 text-[10px] font-black uppercase"

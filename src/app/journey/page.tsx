@@ -221,7 +221,7 @@ export default function JourneyPage() {
                 Ready for your next safe travel?
               </h1>
               <p className="text-muted-foreground text-lg md:text-xl max-w-lg">
-                Setu Guardian provides discrete virtual companionship and real-time tracking for every step of your journey.
+                Setu provides discrete virtual companionship and real-time tracking for every step of your journey.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="w-full sm:w-auto">

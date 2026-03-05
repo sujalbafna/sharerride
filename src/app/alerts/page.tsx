@@ -165,7 +165,6 @@ export default function AlertsPage() {
                             <MapPin className="h-4 w-4 text-destructive" />
                             {alert.alertLocationDescription}
                           </div>
-                          {/* Mini Map Preview for Alerts */}
                           <div className="h-32 w-full rounded-xl overflow-hidden border">
                             <GoogleMap 
                               variant="alert" 
@@ -185,7 +184,7 @@ export default function AlertsPage() {
                             </div>
                             <div>
                               <p className="text-xs font-bold">Network Broadcast</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">{alert.recipientsContactIds?.length || 0} Guardians Contacted</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{alert.recipientsContactIds?.length || 0} Friends Contacted</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">

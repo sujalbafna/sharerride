@@ -1,8 +1,9 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that calculates optimal meeting points along a route.
  *
- * - calculateMeetingPoints - A function that suggests safety checkpoints and nearby guardians.
+ * - calculateMeetingPoints - A function that suggests safety checkpoints and nearby friends.
  * - MeetingPointsInput - The input type for the calculateMeetingPoints function.
  * - MeetingPointsOutput - The return type for the calculateMeetingPoints function.
  */
@@ -17,7 +18,7 @@ const MeetingPointsInputSchema = z.object({
     id: z.string(),
     name: z.string(),
     relationship: z.string(),
-  })).describe("The list of trusted contacts currently online and available in the network."),
+  })).describe("The list of trusted friends currently online and available in the network."),
 });
 export type MeetingPointsInput = z.infer<typeof MeetingPointsInputSchema>;
 
@@ -27,8 +28,8 @@ const MeetingPointsOutputSchema = z.object({
     pointName: z.string().describe("The name of the optimal meeting point."),
     description: z.string().describe("Why this point was chosen (e.g., proximity to a relative, safe public space)."),
     estimatedTimeFromStart: z.string().describe("Approximate time from the start of the journey."),
-    nearbyGuardians: z.array(z.string()).describe("IDs of guardians who are within a 2km radius of this point."),
-    safetyScore: z.number().describe("A score from 0-100 based on Curve-based and KNN proximity algorithms."),
+    nearbyFriends: z.array(z.string()).describe("IDs of friends who are within a 2km radius of this point."),
+    safetyScore: z.number().describe("A score from 0-100 based on safety and friend proximity."),
   })),
 });
 export type MeetingPointsOutput = z.infer<typeof MeetingPointsOutputSchema>;
@@ -43,18 +44,18 @@ const prompt = ai.definePrompt({
   name: 'meetingPointsPrompt',
   input: {schema: MeetingPointsInputSchema},
   output: {schema: MeetingPointsOutputSchema},
-  prompt: `You are an expert route safety analyzer for Setu Guardian. 
+  prompt: `You are an expert route safety analyzer. 
 Your task is to calculate 2-3 optimal "Meeting Points" along the route from {{{startLocation}}} to {{{destination}}}.
 
-Use a simulated Curve-based routing algorithm to find mid-points and a K-Nearest Neighbors (KNN) logic to check proximity of the following contacts:
+Analyze proximity of the following friends:
 {{#each availableContacts}}
 - {{name}} (ID: {{id}}, Relationship: {{relationship}})
 {{/each}}
 
 Instructions:
 1. Identify 2-3 logical safety checkpoints (e.g., "Central Metro Station", "Police Outpost", "Main Plaza").
-2. Assign contacts to these points if their proximity is high.
-3. Provide a safety score for each point based on lighting, public activity, and guardian availability.
+2. Assign friends to these points if their proximity is high.
+3. Provide a safety score for each point based on lighting, public activity, and friend availability.
 4. Keep descriptions concise and technical.`,
 });
 

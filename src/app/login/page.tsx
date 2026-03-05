@@ -122,7 +122,7 @@ export default function LoginPage() {
         <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg">
           <Shield className="h-7 w-7" />
         </div>
-        <h1 className="text-3xl font-black tracking-tighter uppercase">SETU GUARDIAN</h1>
+        <h1 className="text-3xl font-black tracking-tighter uppercase">SETU</h1>
       </div>
 
       <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card">

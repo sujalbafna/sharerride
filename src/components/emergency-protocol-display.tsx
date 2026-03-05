@@ -90,7 +90,7 @@ export function EmergencyProtocolDisplay() {
             disabled={isRequestingExtended}
           >
             {isRequestingExtended ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Find Mutual Guardian
+            Find Mutual Friend
           </Button>
         </CardContent>
       </Card>

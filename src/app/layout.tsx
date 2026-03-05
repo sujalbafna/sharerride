@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -7,8 +8,8 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Setu Guardian - Your Safety Companion',
-  description: 'Setu Guardian ensures traveler safety by connecting them with a network of trusted contacts.',
+  title: 'Setu - Your Safety Companion',
+  description: 'Setu ensures traveler safety by connecting them with a network of trusted friends.',
 };
 
 export default function RootLayout({

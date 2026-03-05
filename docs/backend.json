@@ -5,7 +5,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a registered user of the Setu Guardian application.",
+      "description": "Represents a registered user of the Setu application.",
       "properties": {
         "id": {
           "type": "string",
@@ -83,7 +83,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Friend",
       "type": "object",
-      "description": "Represents a trusted emergency contact designated by a User.",
+      "description": "Represents a trusted friend designated by a User.",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
