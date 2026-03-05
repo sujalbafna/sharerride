@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useUser, useFirestore } from "@/firebase"
 import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
-import { doc, setDoc, getDoc } from "firebase/firestore"
+import { doc, setDoc } from "firebase/firestore"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Shield, Loader2, Mail, Lock, UserPlus, LogIn, User, Phone } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { onAuthStateChanged } from "firebase/auth"
+import { onAuthStateChanged, updateProfile } from "firebase/auth"
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser()
@@ -44,29 +44,30 @@ export default function LoginPage() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (newUser) => {
       if (newUser && db && fullName) {
-        // Double check if documents exist before writing, but setDoc with merge is generally safe
-        const userRef = doc(db, "users", newUser.uid)
-        const publicRef = doc(db, "publicProfiles", newUser.uid)
-        
-        const userData = {
-          id: newUser.uid,
-          firstName: fullName.split(' ')[0] || "User",
-          lastName: fullName.split(' ').slice(1).join(' ') || "",
-          email: newUser.email || regEmail,
-          phoneNumber: mobileNumber,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-
-        const publicData = {
-          userId: newUser.uid,
-          displayName: fullName,
-          email: newUser.email || regEmail,
-          photoURL: newUser.photoURL || ""
-        }
-
         try {
-          // Robust write ensuring user data is in Firestore
+          // Update Auth Profile for sender identity
+          await updateProfile(newUser, { displayName: fullName })
+          
+          const userRef = doc(db, "users", newUser.uid)
+          const publicRef = doc(db, "publicProfiles", newUser.uid)
+          
+          const userData = {
+            id: newUser.uid,
+            firstName: fullName.split(' ')[0] || "User",
+            lastName: fullName.split(' ').slice(1).join(' ') || "",
+            email: newUser.email || regEmail,
+            phoneNumber: mobileNumber,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+
+          const publicData = {
+            userId: newUser.uid,
+            displayName: fullName,
+            email: newUser.email || regEmail,
+            photoURL: newUser.photoURL || ""
+          }
+
           await setDoc(userRef, userData, { merge: true })
           await setDoc(publicRef, publicData, { merge: true })
         } catch (e) {
