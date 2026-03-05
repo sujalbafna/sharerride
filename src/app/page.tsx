@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
-  Shield, 
   MapPin, 
   Clock, 
   ArrowRight, 
@@ -121,7 +120,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-2 space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card/50">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
@@ -129,18 +128,6 @@ export default function Home() {
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
                   <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-3xl border-none shadow-sm bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Security Rating</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end gap-2">
-                    <p className="text-5xl font-black text-accent tracking-tighter">98%</p>
-                    <Shield className="h-6 w-6 text-accent mb-2" />
-                  </div>
-                  <p className="text-xs font-bold text-muted-foreground mt-2">End-to-end encryption active</p>
                 </CardContent>
               </Card>
             </div>
