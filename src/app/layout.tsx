@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Setu Guardian - Your Safety Companion',
@@ -16,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -24,14 +25,21 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased selection:bg-accent/30 min-h-screen bg-background text-foreground">
         <FirebaseClientProvider>
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full">
-              <AppSidebar />
-              <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-                {children}
-              </main>
-            </div>
-          </SidebarProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider>
+              <div className="flex min-h-screen w-full">
+                <AppSidebar />
+                <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+                  {children}
+                </main>
+              </div>
+            </SidebarProvider>
+          </ThemeProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>

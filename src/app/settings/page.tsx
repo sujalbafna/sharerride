@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { useTheme } from "next-themes"
 import { 
   Select, 
   SelectContent, 
@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
+  const { theme: currentTheme, setTheme } = useTheme()
 
   // Fetch Current User Data
   const userRef = useMemoFirebase(() => {
@@ -51,7 +52,6 @@ export default function SettingsPage() {
   const [pushEnabled, setPushEnabled] = useState(true)
   const [emailEnabled, setEmailEnabled] = useState(true)
   const [language, setLanguage] = useState("english")
-  const [theme, setTheme] = useState("system")
   const [isSaving, setIsSaving] = useState(false)
 
   // Initialize state from Firestore
@@ -62,9 +62,12 @@ export default function SettingsPage() {
       setPushEnabled(userData.pushNotificationsEnabled ?? true)
       setEmailEnabled(userData.emailNotificationsEnabled ?? true)
       setLanguage(userData.language ?? "english")
-      setTheme(userData.theme ?? "system")
+      // Theme is managed via next-themes but we sync it
+      if (userData.theme) {
+        setTheme(userData.theme)
+      }
     }
-  }, [userData])
+  }, [userData, setTheme])
 
   const handleSave = async () => {
     if (!db || !user) return
@@ -77,7 +80,7 @@ export default function SettingsPage() {
         pushNotificationsEnabled: pushEnabled,
         emailNotificationsEnabled: emailEnabled,
         language: language,
-        theme: theme,
+        theme: currentTheme,
         updatedAt: new Date().toISOString()
       })
 
@@ -230,7 +233,7 @@ export default function SettingsPage() {
 
               <div className="space-y-3">
                 <Label className="font-bold">App Appearance</Label>
-                <Select value={theme} onValueChange={setTheme}>
+                <Select value={currentTheme} onValueChange={(val) => setTheme(val)}>
                   <SelectTrigger className="h-12 rounded-xl">
                     <SelectValue placeholder="Select Theme" />
                   </SelectTrigger>
