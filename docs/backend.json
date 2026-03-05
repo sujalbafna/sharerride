@@ -178,6 +178,22 @@
           "schema": { "$ref": "#/backend/entities/SupportRequest" },
           "description": "Notifications and requests."
         }
+      },
+      {
+        "path": "/users/{userId}/journeys/{journeyId}",
+        "definition": {
+          "entityName": "Journey",
+          "schema": { "$ref": "#/backend/entities/Journey" },
+          "description": "Tracked travel records."
+        }
+      },
+      {
+        "path": "/users/{userId}/emergencyAlerts/{alertId}",
+        "definition": {
+          "entityName": "SupportRequest",
+          "schema": { "$ref": "#/backend/entities/SupportRequest" },
+          "description": "Security incident logs."
+        }
       }
     ]
   }

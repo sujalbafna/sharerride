@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useUser, useFirestore } from "@/firebase"
 import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
-import { doc, setDoc } from "firebase/firestore"
+import { doc, setDoc, getDoc } from "firebase/firestore"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -44,6 +44,7 @@ export default function LoginPage() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (newUser) => {
       if (newUser && db && fullName) {
+        // Double check if documents exist before writing, but setDoc with merge is generally safe
         const userRef = doc(db, "users", newUser.uid)
         const publicRef = doc(db, "publicProfiles", newUser.uid)
         
@@ -51,7 +52,7 @@ export default function LoginPage() {
           id: newUser.uid,
           firstName: fullName.split(' ')[0] || "User",
           lastName: fullName.split(' ').slice(1).join(' ') || "",
-          email: regEmail,
+          email: newUser.email || regEmail,
           phoneNumber: mobileNumber,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -60,11 +61,12 @@ export default function LoginPage() {
         const publicData = {
           userId: newUser.uid,
           displayName: fullName,
-          email: regEmail,
-          photoURL: ""
+          email: newUser.email || regEmail,
+          photoURL: newUser.photoURL || ""
         }
 
         try {
+          // Robust write ensuring user data is in Firestore
           await setDoc(userRef, userData, { merge: true })
           await setDoc(publicRef, publicData, { merge: true })
         } catch (e) {
@@ -112,16 +114,16 @@ export default function LoginPage() {
         <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg">
           <Shield className="h-7 w-7" />
         </div>
-        <h1 className="text-3xl font-black tracking-tighter">SETU GUARDIAN</h1>
+        <h1 className="text-3xl font-black tracking-tighter uppercase">SETU GUARDIAN</h1>
       </div>
 
-      <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-[#0F293A]">
+      <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card">
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-16 bg-[#0B1E2B] p-0 rounded-t-[2.5rem] overflow-hidden">
-            <TabsTrigger value="login" className="rounded-none data-[state=active]:bg-[#0F293A] data-[state=active]:text-primary font-black text-xs tracking-widest h-full border-r border-white/5">
+          <TabsList className="grid w-full grid-cols-2 h-16 bg-muted p-0 rounded-t-[2.5rem] overflow-hidden">
+            <TabsTrigger value="login" className="rounded-none data-[state=active]:bg-card data-[state=active]:text-primary font-black text-xs tracking-widest h-full border-r border-white/5">
               LOGIN
             </TabsTrigger>
-            <TabsTrigger value="register" className="rounded-none data-[state=active]:bg-[#0F293A] data-[state=active]:text-primary font-black text-xs tracking-widest h-full">
+            <TabsTrigger value="register" className="rounded-none data-[state=active]:bg-card data-[state=active]:text-primary font-black text-xs tracking-widest h-full">
               REGISTER
             </TabsTrigger>
           </TabsList>
@@ -129,22 +131,22 @@ export default function LoginPage() {
           <TabsContent value="login" className="mt-0">
             <form onSubmit={handleSignIn}>
               <CardHeader className="pt-8 text-center">
-                <CardTitle className="text-2xl font-black text-white">Welcome Back</CardTitle>
-                <CardDescription className="text-slate-400">Secure entry to your safety hub.</CardDescription>
+                <CardTitle className="text-2xl font-black">Welcome Back</CardTitle>
+                <CardDescription>Secure entry to your safety hub.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email-login" className="text-slate-300">Email</Label>
+                  <Label htmlFor="email-login">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input id="email-login" type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="email-login" type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password-login" className="text-slate-300">Password</Label>
+                  <Label htmlFor="password-login">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input id="password-login" type="password" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="password-login" type="password" className="pl-10 h-12 rounded-xl" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                   </div>
                 </div>
               </CardContent>
@@ -160,43 +162,43 @@ export default function LoginPage() {
           <TabsContent value="register" className="mt-0">
             <form onSubmit={handleSignUp}>
               <CardHeader className="pt-8 text-center">
-                <CardTitle className="text-2xl font-black text-white">Join Network</CardTitle>
-                <CardDescription className="text-slate-400">Start your first safe journey today.</CardDescription>
+                <CardTitle className="text-2xl font-black">Join Network</CardTitle>
+                <CardDescription>Start your first safe journey today.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Full Name</Label>
+                  <Label>Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input placeholder="John Doe" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="John Doe" className="pl-10 h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Email</Label>
+                  <Label>Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Mobile Number</Label>
+                  <Label>Mobile Number</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input type="tel" placeholder="+1 (555) 000-0000" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input type="tel" placeholder="+1 (555) 000-0000" className="pl-10 h-12 rounded-xl" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Password</Label>
+                  <Label>Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input type="password" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input type="password" className="pl-10 h-12 rounded-xl" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Confirm Password</Label>
+                  <Label>Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                    <Input type="password" className="pl-10 h-12 rounded-xl bg-[#0B1E2B] border-none text-white" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input type="password" className="pl-10 h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                   </div>
                 </div>
               </CardContent>
