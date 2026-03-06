@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { MapPin, Navigation, CheckCircle2, ShieldAlert, Compass, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle, Menu } from "lucide-react"
-import { Badge } from "@/badge"
+import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
@@ -75,11 +75,13 @@ export default function JourneyPage() {
         endTime: currentTimestamp
       })
 
+      // Inform friends and clear start notifications
       if (contacts && contacts.length > 0) {
         for (const friendContact of contacts) {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
 
+          // Clear existing "Start" notifications for this friend
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("status", "==", "Pending"),
@@ -92,6 +94,7 @@ export default function JourneyPage() {
             })
           }
 
+          // Send "End" notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,

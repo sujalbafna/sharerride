@@ -7,7 +7,7 @@ import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getD
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/badge"
+import { Badge } from "@/components/ui/badge"
 import { 
   Search, 
   UserPlus, 
