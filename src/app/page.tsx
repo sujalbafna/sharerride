@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
+import { useUser, useCollection, useMemoFirebase, useFirestore, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs } from "firebase/firestore"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
@@ -41,6 +41,16 @@ export default function Home() {
       router.push("/login")
     }
   }, [user, isUserLoading, router])
+
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return doc(db, "users", user.uid)
+  }, [db, user])
+  const { data: userData } = useDoc(userRef)
+
+  const userName = userData?.firstName && userData?.lastName 
+    ? `${userData.firstName} ${userData.lastName}` 
+    : (user?.displayName || user?.email?.split('@')[0] || "User")
 
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -81,7 +91,7 @@ export default function Home() {
       await addDoc(collection(db, "users", alert.senderId, "supportRequests"), {
         userId: alert.senderId,
         senderId: user.uid,
-        senderName: user.displayName || user.email?.split('@')[0] || "Friend",
+        senderName: userName,
         requestType: "JoinJourneyRequest",
         description: "wants to join your journey.",
         timestamp: new Date().toISOString(),
@@ -134,26 +144,24 @@ export default function Home() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
           
-          // Use a simpler query to find and clear notifications
+          // Clear active JourneyNotifications
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
-            where("status", "==", "Pending")
+            where("status", "==", "Pending"),
+            where("targetJourneyId", "==", journeyId)
           )
           const snap = await getDocs(q)
           for (const d of snap.docs) {
-            const data = d.data();
-            if (data.targetJourneyId === journeyId && data.requestType === "JourneyNotification") {
-              updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
-                status: "Completed"
-              })
-            }
+            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+              status: "Completed"
+            })
           }
 
-          // Send destination reached alert
+          // Send the "End Journey" status notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
-            senderName: user.displayName || "User",
+            senderName: userName,
             requestType: "JourneyEndNotification",
             description: `has ended a journey from ${activeJourney.startLocationDescription} to ${activeJourney.endLocationDescription}.`,
             timestamp: currentTimestamp,

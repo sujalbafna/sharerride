@@ -38,7 +38,7 @@ export function StartJourneyDialog() {
   
   const userName = userData?.firstName && userData?.lastName 
     ? `${userData.firstName} ${userData.lastName}` 
-    : (user?.displayName || "User")
+    : (user?.displayName || user?.email?.split('@')[0] || "User")
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null

@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
+import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,16 @@ export default function JourneyPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return doc(db, "users", user.uid)
+  }, [db, user])
+  const { data: userData } = useDoc(userRef)
+
+  const userName = userData?.firstName && userData?.lastName 
+    ? `${userData.firstName} ${userData.lastName}` 
+    : (user?.displayName || user?.email?.split('@')[0] || "User")
 
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -69,26 +79,24 @@ export default function JourneyPage() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
 
-          // Clear active journey notifications for friends
+          // Find and mark existing JourneyNotifications as "Read" or "Completed"
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
-            where("status", "==", "Pending")
+            where("status", "==", "Pending"),
+            where("targetJourneyId", "==", journeyId)
           )
           const snap = await getDocs(q)
           for (const d of snap.docs) {
-            const data = d.data();
-            if (data.targetJourneyId === journeyId && data.requestType === "JourneyNotification") {
-              updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
-                status: "Completed"
-              })
-            }
+            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+              status: "Completed"
+            })
           }
 
-          // Send "Arrival" notification
+          // Send the specialized "End Journey" notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
-            senderName: user.displayName || "User",
+            senderName: userName,
             requestType: "JourneyEndNotification",
             description: `has ended a journey from ${activeJourney.startLocationDescription} to ${activeJourney.endLocationDescription}.`,
             timestamp: currentTimestamp,
