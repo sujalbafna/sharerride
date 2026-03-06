@@ -53,7 +53,6 @@ function RequestItem({
 }) {
   const db = useFirestore();
   
-  // Fetch sender profile directly from database to ensure name is correct
   const profileRef = useMemoFirebase(() => {
     if (!db || !req.senderId) return null;
     return doc(db, "publicProfiles", req.senderId);
@@ -166,14 +165,12 @@ export function AppSidebar() {
     setMounted(true)
   }, [])
 
-  // Fetch current user details from Firestore for personalized profile display
   const currentUserRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: currentUserDoc } = useDoc(currentUserRef)
 
-  // Simplified query: Fetch all requests and filter in-memory to avoid index issues
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return collection(db, "users", user.uid, "supportRequests")
@@ -182,7 +179,9 @@ export function AppSidebar() {
   const { data: allRequests } = useCollection(requestsQuery)
   
   const pendingRequests = React.useMemo(() => {
-    return allRequests?.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification")
+    // Only show requests with status "Pending".
+    // When a journey ends or a friend clicks "Join", status is updated to clear it from the inbox.
+    return allRequests?.filter(r => r.status === "Pending")
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
   }, [allRequests])
 

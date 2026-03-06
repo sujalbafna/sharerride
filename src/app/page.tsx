@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
-import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc } from "firebase/firestore"
+import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs } from "firebase/firestore"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
@@ -113,21 +113,42 @@ export default function Home() {
     }
   }
 
-  const handleEndJourney = () => {
+  const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
-    updateDoc(journeyRef, {
-      status: "Completed",
-      endTime: new Date().toISOString()
-    }).catch(async (error) => {
+    
+    try {
+      // 1. Mark journey as completed
+      await updateDoc(journeyRef, {
+        status: "Completed",
+        endTime: new Date().toISOString()
+      })
+
+      // 2. Clear out notifications for all designated friends
+      if (activeJourney.sharedWithContactIds && activeJourney.sharedWithContactIds.length > 0) {
+        for (const friendId of activeJourney.sharedWithContactIds) {
+          const q = query(
+            collection(db, "users", friendId, "supportRequests"),
+            where("targetJourneyId", "==", activeJourney.id)
+          )
+          const snap = await getDocs(q)
+          for (const d of snap.docs) {
+            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+              status: "Completed"
+            })
+          }
+        }
+      }
+
+      toast({ title: "Journey Completed", description: "You have safely ended your journey." })
+    } catch (error: any) {
       const permissionError = new FirestorePermissionError({
         path: journeyRef.path,
         operation: 'update',
         requestResourceData: { status: "Completed" },
       });
       errorEmitter.emit('permission-error', permissionError);
-    })
-    toast({ title: "Journey Completed", description: "You have safely ended your journey." })
+    }
   }
 
   const filteredJourneys = journeys?.filter(j => 

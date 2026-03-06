@@ -1,12 +1,11 @@
-
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit, doc, updateDoc } from "firebase/firestore"
+import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, Share2, Compass, ShieldAlert, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react"
+import { MapPin, Navigation, CheckCircle2, ShieldAlert, Compass, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
@@ -46,21 +45,42 @@ export default function JourneyPage() {
   const { data: latestAlerts } = useCollection(alertsQuery)
   const isEmergencyActive = latestAlerts && latestAlerts.length > 0 && latestAlerts[0].status !== 'Resolved'
 
-  const handleEndJourney = () => {
+  const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
-    updateDoc(journeyRef, {
-      status: "Completed",
-      endTime: new Date().toISOString()
-    }).catch(async (error) => {
+    
+    try {
+      // 1. End the journey status
+      await updateDoc(journeyRef, {
+        status: "Completed",
+        endTime: new Date().toISOString()
+      })
+
+      // 2. Automatically clear notifications for all friends who were notified
+      if (activeJourney.sharedWithContactIds && activeJourney.sharedWithContactIds.length > 0) {
+        for (const friendId of activeJourney.sharedWithContactIds) {
+          const q = query(
+            collection(db, "users", friendId, "supportRequests"),
+            where("targetJourneyId", "==", activeJourney.id)
+          )
+          const snap = await getDocs(q)
+          for (const d of snap.docs) {
+            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+              status: "Completed"
+            })
+          }
+        }
+      }
+
+      toast({ title: "Journey Completed", description: "You have safely ended your journey." })
+    } catch (error: any) {
       const permissionError = new FirestorePermissionError({
         path: journeyRef.path,
         operation: 'update',
         requestResourceData: { status: "Completed" },
       });
       errorEmitter.emit('permission-error', permissionError);
-    })
-    toast({ title: "Journey Completed", description: "You have safely ended your journey." })
+    }
   }
 
   return (
