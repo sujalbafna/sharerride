@@ -57,7 +57,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
             variant="outline"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-secondary"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary bg-secondary hover:bg-muted"
             onClick={() => onJoin(alert)}
           >
             WANTS TO JOIN
@@ -65,7 +65,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         ) : (
           <Button 
             variant="ghost"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted hover:bg-muted/80"
             onClick={() => onDismiss(alert.id)}
           >
             <Check className="h-4 w-4 mr-2" />
@@ -273,23 +273,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="h-20 border-b flex items-center justify-between px-6 bg-background sticky top-0 z-20">
+      <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
           <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
-          <Badge variant="outline" className="text-[9px] border-primary/20 bg-secondary px-3 py-1 rounded-full whitespace-nowrap">
-            <Activity className="h-3 w-3 mr-1.5 text-primary" />
+          <Badge variant="outline" className="text-[9px] border-primary/20 bg-secondary text-primary px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+            <Activity className="h-3 w-3 mr-1.5" />
             LIVE SYSTEM
           </Badge>
         </div>
-        <div className="flex-1 max-w-xs mx-4 lg:block">
+        <div className="flex-1 max-w-xs mx-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search people, origin or destination..." 
-              className="pl-10 h-10 bg-secondary border-none rounded-xl text-xs"
+              className="pl-10 h-10 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20"
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
             />
@@ -318,7 +318,7 @@ export default function Home() {
               </div>
             )}
 
-            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
+            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden">
               <CardContent className="p-10 text-center space-y-8">
                 <SOSButton />
                 <div className="space-y-3">
@@ -332,7 +332,7 @@ export default function Home() {
 
             {activeJourney ? (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive/10 hover:bg-destructive/20 text-destructive border-2 border-destructive/20"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl"
                 onClick={handleEndJourney}
               >
                 <CheckCircle2 className="mr-2 h-6 w-6" />
@@ -340,7 +340,7 @@ export default function Home() {
               </Button>
             ) : (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-secondary hover:bg-muted text-primary border-2 border-primary/20"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-secondary hover:bg-muted text-primary border-none shadow-lg"
                 onClick={() => router.push("/journey")}
               >
                 <MapPin className="mr-2 h-6 w-6" />
@@ -384,7 +384,7 @@ export default function Home() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-background border-primary/10">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10">
                   <CardContent className="p-12 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
                   </CardContent>
@@ -407,7 +407,7 @@ export default function Home() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 rounded-full text-primary hover:bg-secondary shrink-0"
+                            className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
                             onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
                           >
                             <MessageSquare className="h-4 w-4" />
@@ -416,7 +416,7 @@ export default function Home() {
                       </Card>
                     ))}
                     {filteredFriends.length === 0 && friendFilter && (
-                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest">
+                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none">
                         No matches found in your circle.
                       </div>
                     )}
@@ -436,7 +436,7 @@ export default function Home() {
                   {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card animate-pulse rounded-3xl" />)}
                 </div>
               ) : !filteredJourneys || filteredJourneys.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-background border-border">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-border">
                   <CardContent className="p-16 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">
                       {globalSearch ? "No matching journeys found." : "No recent journeys recorded."}
@@ -454,7 +454,7 @@ export default function Home() {
                               <Car className="h-7 w-7" />
                             </div>
                             <div className="space-y-1 min-w-0">
-                              <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary/60 tracking-widest">
+                              <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
                                 <Activity className="h-3 w-3" />
                                 {userName}
                               </div>
@@ -467,7 +467,7 @@ export default function Home() {
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                   {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
                                 </p>
-                                <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                <span className="h-1 w-1 rounded-full bg-border" />
                                 <Badge 
                                   variant={j.status === 'InProgress' || j.status === 'Started' ? 'default' : 'secondary'} 
                                   className="text-[9px] uppercase font-black"
@@ -480,7 +480,7 @@ export default function Home() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="rounded-xl h-10 w-10 hover:bg-secondary hover:text-primary transition-all shrink-0 ml-4"
+                            className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4"
                             onClick={() => router.push("/journey")}
                           >
                             <ArrowRight className="h-5 w-5" />
