@@ -125,7 +125,7 @@ export default function JourneyPage() {
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
-          <h2 className="text-xl font-bold tracking-tight">Journeys</h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Journeys</h2>
         </div>
         {activeJourney && (
           <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-secondary text-primary border-primary")}>
@@ -134,37 +134,37 @@ export default function JourneyPage() {
         )}
       </header>
 
-      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
+      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Loading journey records...</p>
           </div>
         ) : activeJourney ? (
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
               <Compass className="h-4 w-4" />
               Active Session
             </div>
             <Card className={cn(
-              "rounded-[2.5rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
+              "rounded-[2rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
               isEmergencyActive ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
             )}>
-              <CardContent className="p-6 md:p-12">
+              <CardContent className="p-6 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                  <div className="space-y-8 min-w-0">
+                  <div className="space-y-6 min-w-0">
                     <div>
-                      <h3 className="text-2xl md:text-4xl font-black mb-2 leading-tight">
+                      <h3 className="text-2xl md:text-3xl font-black mb-1 leading-tight">
                         {isEmergencyActive ? "Emergency Response" : "Transit in Progress"}
                       </h3>
-                      <p className="opacity-80 text-sm md:text-base">
+                      <p className="opacity-80 text-sm">
                         {isEmergencyActive 
                           ? "SOS Protocol is active." 
                           : "Safe sharing is enabled with your friends."}
                       </p>
                     </div>
 
-                    <div className="h-[250px] md:h-[300px] w-full">
+                    <div className="h-[200px] md:h-[250px] w-full">
                       <GoogleMap 
                         variant={isEmergencyActive ? "alert" : "active"}
                         address={activeJourney.endLocationDescription}
@@ -172,25 +172,25 @@ export default function JourneyPage() {
                       />
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex justify-between text-[10px] md:text-xs font-black uppercase tracking-widest opacity-80">
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
                         <span>Route Progress</span>
                         <span>{isEmergencyActive ? "SOS DISPATCHED" : "Tracking..."}</span>
                       </div>
-                      <Progress value={20} className={cn("h-3", isEmergencyActive ? "bg-destructive-foreground/20" : "bg-primary-foreground/20")} />
+                      <Progress value={20} className={cn("h-2.5", isEmergencyActive ? "bg-destructive-foreground/20" : "bg-primary-foreground/20")} />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Button 
                         variant="secondary" 
-                        className="h-14 rounded-2xl font-bold shadow-sm"
+                        className="h-12 rounded-xl font-bold shadow-sm"
                         onClick={handleEndJourney}
                       >
                         <CheckCircle2 className="mr-2 h-5 w-5" />
                         END JOURNEY
                       </Button>
                       {!isEmergencyActive && (
-                        <Button className="h-14 rounded-2xl bg-accent text-accent-foreground hover:bg-accent/90 font-black shadow-lg">
+                        <Button className="h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-black shadow-lg">
                           <ShieldAlert className="mr-2 h-5 w-5" />
                           SOS ALERT
                         </Button>
@@ -200,27 +200,27 @@ export default function JourneyPage() {
                     {isEmergencyActive ? (
                       <EmergencyProtocolDisplay />
                     ) : (
-                      <Card className="rounded-2xl border-none bg-secondary text-secondary-foreground shadow-inner">
-                        <CardContent className="p-6 space-y-4">
+                      <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner">
+                        <CardContent className="p-4 space-y-3">
                           <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
                               <ShieldCheck className="h-4 w-4 text-primary" />
                               Travel Capacity
                             </h4>
-                            <Badge variant="outline" className="text-[9px] border-primary/30 text-primary uppercase">
+                            <Badge variant="outline" className="text-[8px] border-primary/30 text-primary uppercase">
                               {activeJourney.availableSeats || 0} SEATS LEFT
                             </Badge>
                           </div>
-                          <div className="space-y-3">
-                            <p className="text-sm font-medium leading-relaxed">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium leading-relaxed">
                               {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
                             </p>
                             <div className="flex gap-2">
-                              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <Users className="h-4 w-4 text-primary" />
+                              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Users className="h-3.5 w-3.5 text-primary" />
                               </div>
-                              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <MessageCircle className="h-4 w-4 text-primary" />
+                              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <MessageCircle className="h-3.5 w-3.5 text-primary" />
                               </div>
                             </div>
                           </div>
@@ -230,7 +230,7 @@ export default function JourneyPage() {
                   </div>
                   
                   <div className={cn(
-                    "rounded-3xl p-6 md:p-8 space-y-6 min-w-0 bg-card text-card-foreground shadow-sm"
+                    "rounded-2xl p-6 md:p-8 space-y-6 min-w-0 bg-card text-card-foreground shadow-sm h-fit self-start"
                   )}>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
@@ -238,7 +238,7 @@ export default function JourneyPage() {
                           <MapPin className="h-5 w-5" />
                         </div>
                         <div className="min-w-0 overflow-hidden">
-                          <p className="text-xs font-black uppercase text-muted-foreground">Starting Point</p>
+                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Starting Point</p>
                           <p className="font-bold truncate text-sm">{activeJourney.startLocationDescription}</p>
                         </div>
                       </div>
@@ -248,7 +248,7 @@ export default function JourneyPage() {
                           <Navigation className="h-5 w-5" />
                         </div>
                         <div className="min-w-0 overflow-hidden">
-                          <p className="text-xs font-black uppercase text-muted-foreground">Destination</p>
+                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Destination</p>
                           <p className="font-bold truncate text-sm">{activeJourney.endLocationDescription}</p>
                         </div>
                       </div>
@@ -261,7 +261,7 @@ export default function JourneyPage() {
         ) : (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 md:py-12 text-center lg:text-left">
             <div className="space-y-8 min-w-0">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-foreground">
                 Ready for your next safe travel?
               </h1>
               <p className="text-muted-foreground text-lg md:text-xl max-w-lg mx-auto lg:mx-0">
@@ -277,29 +277,29 @@ export default function JourneyPage() {
           </section>
         )}
 
-        <section className="space-y-6">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
             <History className="h-4 w-4" />
             Recent History
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {!isLoading && (!journeys || journeys.filter(j => j.status === 'Completed').length === 0) && (
-              <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border-2 border-dashed border-border">
+              <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border-2 border-dashed border-border font-bold text-sm uppercase tracking-widest">
                 No past journeys recorded.
               </div>
             )}
             {journeys?.filter(j => j.status === 'Completed').map((j) => (
               <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all bg-card">
-                <CardHeader className="pb-3 border-b border-border">
+                <CardHeader className="pb-3 border-b border-border p-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
                       <span className="text-xs font-bold">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] bg-secondary text-primary border-none">COMPLETED</Badge>
+                    <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black">COMPLETED</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-4 space-y-4">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">From</p>
                     <p className="font-bold text-sm truncate">{j.startLocationDescription}</p>
