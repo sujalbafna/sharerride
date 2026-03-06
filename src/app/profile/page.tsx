@@ -6,7 +6,7 @@ import { doc, collection, query, where } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/badge"
 import { 
   User, 
   Mail, 
@@ -20,11 +20,13 @@ import {
   ChevronRight,
   ShieldCheck,
   Clock,
-  Loader2
+  Loader2,
+  Menu
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser()
@@ -78,14 +80,19 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
-        <h2 className="text-xl font-bold tracking-tight">Security Hub</h2>
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="md:hidden">
+            <Menu className="h-6 w-6" />
+          </SidebarTrigger>
+          <h2 className="text-xl font-bold tracking-tight">Security Hub</h2>
+        </div>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Settings className="h-5 w-5" />
         </Button>
       </header>
 
-      <main className="p-8 max-w-4xl mx-auto space-y-8">
+      <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8">
         <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border/50">
           <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl">
             <AvatarImage src={userData?.profileImageUrl || ""} />
@@ -98,18 +105,18 @@ export default function ProfilePage() {
             <div className="space-y-1">
               <h1 className="text-3xl font-black tracking-tight">{displayName}</h1>
               <div className="flex flex-col md:flex-row gap-4 text-sm text-muted-foreground font-medium">
-                <span className="flex items-center justify-center md:justify-start gap-1.5">
+                <span className="flex items-center justify-center md:justify-start gap-1.5 truncate">
                   <Mail className="h-3.5 w-3.5" />
                   {user?.email}
                 </span>
-                <span className="flex items-center justify-center md:justify-start gap-1.5">
+                <span className="flex items-center justify-center md:justify-start gap-1.5 truncate">
                   <Phone className="h-3.5 w-3.5" />
                   {userData?.phoneNumber || "No phone linked"}
                 </span>
               </div>
             </div>
             <Button 
-              className="rounded-xl px-6 font-bold shadow-lg shadow-primary/20"
+              className="rounded-xl px-6 font-bold shadow-lg shadow-primary/20 w-full md:w-auto"
               onClick={() => router.push("/profile/edit")}
             >
               <Edit2 className="h-4 w-4 mr-2" />
@@ -121,7 +128,7 @@ export default function ProfilePage() {
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="rounded-[2rem] border-none shadow-sm bg-primary/5">
             <CardContent className="p-8 flex items-center gap-6">
-              <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg">
+              <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shrink-0">
                 <Users className="h-8 w-8" />
               </div>
               <div>
@@ -133,7 +140,7 @@ export default function ProfilePage() {
 
           <Card className="rounded-[2rem] border-none shadow-sm bg-accent/10">
             <CardContent className="p-8 flex items-center gap-6">
-              <div className="h-16 w-16 bg-accent rounded-2xl flex items-center justify-center text-primary shadow-lg">
+              <div className="h-16 w-16 bg-accent rounded-2xl flex items-center justify-center text-primary shadow-lg shrink-0">
                 <Clock className="h-8 w-8" />
               </div>
               <div>
@@ -145,7 +152,7 @@ export default function ProfilePage() {
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences & Safety</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences</h3>
           <div className="bg-card rounded-[2rem] border border-border/50 overflow-hidden divide-y divide-border/50">
             {[
               { label: "Alerts Details", icon: Bell, href: "/alerts" },
@@ -169,14 +176,9 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <div className="flex items-center justify-center gap-3 p-6 bg-accent/5 rounded-[2rem] border-2 border-dashed border-accent/20">
-          <ShieldCheck className="h-6 w-6 text-accent" />
-          <p className="text-xs font-bold text-primary uppercase tracking-widest">End-to-End Encryption Active</p>
-        </div>
-
         <Button 
           variant="destructive" 
-          className="w-full h-16 rounded-[2rem] font-black text-lg shadow-xl shadow-destructive/20"
+          className="w-full h-16 rounded-[2rem] font-black text-lg shadow-xl shadow-destructive/20 mt-8"
           onClick={handleLogout}
         >
           <LogOut className="h-6 w-6 mr-3" />

@@ -6,8 +6,8 @@ import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addD
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, ShieldAlert, Compass, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { MapPin, Navigation, CheckCircle2, ShieldAlert, Compass, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle, Menu } from "lucide-react"
+import { Badge } from "@/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -79,7 +80,6 @@ export default function JourneyPage() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
 
-          // Find and mark existing JourneyNotifications as "Read" or "Completed"
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("status", "==", "Pending"),
@@ -92,7 +92,6 @@ export default function JourneyPage() {
             })
           }
 
-          // Send the specialized "End Journey" notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
@@ -119,8 +118,13 @@ export default function JourneyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
-        <h2 className="text-xl font-bold tracking-tight">Journeys</h2>
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="md:hidden">
+            <Menu className="h-6 w-6" />
+          </SidebarTrigger>
+          <h2 className="text-xl font-bold tracking-tight">Journeys</h2>
+        </div>
         {activeJourney && (
           <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-accent/20 text-primary border-accent animate-pulse")}>
             {isEmergencyActive ? "EMERGENCY PROTOCOL" : "LIVE TRACKING"}
@@ -148,7 +152,7 @@ export default function JourneyPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="space-y-8 min-w-0">
                     <div>
-                      <h3 className="text-3xl md:text-4xl font-black mb-2">
+                      <h3 className="text-2xl md:text-4xl font-black mb-2 leading-tight">
                         {isEmergencyActive ? "Emergency Response" : "Transit in Progress"}
                       </h3>
                       <p className="opacity-80 text-sm md:text-base">
@@ -158,7 +162,7 @@ export default function JourneyPage() {
                       </p>
                     </div>
 
-                    <div className="h-[300px] w-full">
+                    <div className="h-[250px] md:h-[300px] w-full">
                       <GoogleMap 
                         variant={isEmergencyActive ? "alert" : "active"}
                         address={activeJourney.endLocationDescription}
@@ -237,7 +241,7 @@ export default function JourneyPage() {
                         </div>
                         <div className="min-w-0 overflow-hidden">
                           <p className="text-xs font-black uppercase opacity-60">Starting Point</p>
-                          <p className="font-bold truncate">{activeJourney.startLocationDescription}</p>
+                          <p className="font-bold truncate text-sm">{activeJourney.startLocationDescription}</p>
                         </div>
                       </div>
                       <div className="h-8 w-px bg-white/20 ml-5" />
@@ -247,46 +251,25 @@ export default function JourneyPage() {
                         </div>
                         <div className="min-w-0 overflow-hidden">
                           <p className="text-xs font-black uppercase opacity-60">Destination</p>
-                          <p className="font-bold truncate">{activeJourney.endLocationDescription}</p>
+                          <p className="font-bold truncate text-sm">{activeJourney.endLocationDescription}</p>
                         </div>
                       </div>
                     </div>
-                    <div className="border-t border-white/10 pt-6">
-                      <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Watching Friends</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Users className="h-4 w-4 opacity-60" />
-                        <span>{activeJourney.sharedWithContactIds?.length || 0} friends are receiving updates.</span>
-                      </div>
-                    </div>
-
-                    {isEmergencyActive && (
-                      <div className="p-4 bg-white/20 rounded-2xl border-2 border-dashed border-white/40">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center animate-bounce">
-                            <AlertTriangle className="h-4 w-4 text-destructive" />
-                          </div>
-                          <div className="space-y-0.5">
-                            <p className="text-[10px] font-black uppercase">Responder Status</p>
-                            <p className="text-xs font-bold">Help is being coordinated.</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           </section>
         ) : (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 md:py-12">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 md:py-12 text-center lg:text-left">
             <div className="space-y-8 min-w-0">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight">
                 Ready for your next safe travel?
               </h1>
-              <p className="text-muted-foreground text-lg md:text-xl max-w-lg">
+              <p className="text-muted-foreground text-lg md:text-xl max-w-lg mx-auto lg:mx-0">
                 Setu provides virtual companionship and real-time tracking for every step of your journey.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <div className="w-full sm:w-auto">
                   <StartJourneyDialog />
                 </div>
@@ -296,7 +279,7 @@ export default function JourneyPage() {
                 </Button>
               </div>
             </div>
-            <GoogleMap variant="hero" className="h-[300px] md:h-[400px] w-full" />
+            <GoogleMap variant="hero" className="h-[250px] md:h-[400px] w-full" />
           </section>
         )}
 
@@ -323,12 +306,12 @@ export default function JourneyPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">From</p>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">From</p>
                     <p className="font-bold text-sm truncate">{j.startLocationDescription}</p>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">To</p>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">To</p>
                     <p className="font-bold text-sm truncate">{j.endLocationDescription}</p>
                   </div>
                 </CardContent>

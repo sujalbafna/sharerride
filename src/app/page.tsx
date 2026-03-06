@@ -17,7 +17,8 @@ import {
   Car,
   Bell,
   CheckCircle2,
-  Check
+  Check,
+  Menu
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,9 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
-function JourneyAlertCard({ alert, onJoin, onDismiss, currentUserName }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void, currentUserName: string }) {
+function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
   const db = useFirestore()
   const profileRef = useMemoFirebase(() => {
     if (!db || !alert.senderId) return null
@@ -37,7 +39,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss, currentUserName }: { alert
   }, [db, alert.senderId])
   const { data: profile } = useDoc(profileRef)
   
-  const senderName = profile?.displayName || alert.senderName || "User"
+  const senderName = profile?.displayName || alert.senderName || "Friend"
 
   return (
     <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
@@ -242,20 +244,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-background/50 backdrop-blur-md sticky top-0 z-20">
-        <div className="flex items-center gap-6">
-          <h2 className="text-2xl font-black tracking-tighter">Overview</h2>
-          <Badge variant="outline" className="text-[10px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full">
+      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-background/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="md:hidden">
+            <Menu className="h-6 w-6" />
+          </SidebarTrigger>
+          <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
+          <Badge variant="outline" className="text-[9px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full whitespace-nowrap">
             <Activity className="h-3 w-3 mr-1.5 text-primary" />
             LIVE SYSTEM
           </Badge>
         </div>
-        <div className="flex-1 max-w-md mx-8 hidden md:block">
+        <div className="flex-1 max-w-xs mx-4 hidden lg:block">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search journeys or status..." 
-              className="pl-12 h-12 bg-white/5 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-primary/40 transition-all text-sm"
+              placeholder="Search..." 
+              className="pl-10 h-10 bg-white/5 border-none rounded-xl text-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -263,7 +268,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="p-8 space-y-12 max-w-7xl mx-auto">
+      <main className="p-4 sm:p-8 space-y-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
@@ -275,7 +280,6 @@ export default function Home() {
                     alert={alert} 
                     onJoin={handleJoinRequest} 
                     onDismiss={handleDismiss} 
-                    currentUserName={userName}
                   />
                 ))}
               </div>
@@ -287,7 +291,7 @@ export default function Home() {
                 <div className="space-y-3">
                   <h3 className="text-2xl font-black tracking-tight">Emergency Response</h3>
                   <p className="text-sm opacity-90 leading-relaxed font-medium">
-                    Triggering SOS notifies all your registered friends immediately with your live coordinates.
+                    Triggering SOS notifies all your registered friends immediately.
                   </p>
                 </div>
               </CardContent>

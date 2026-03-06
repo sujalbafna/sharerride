@@ -6,6 +6,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
+import { BottomNav } from '@/components/layout/bottom-nav';
 
 export const metadata: Metadata = {
   title: 'Setu - Your Safety Companion',
@@ -33,11 +34,14 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SidebarProvider>
-              <div className="flex min-h-screen w-full">
+              <div className="flex min-h-screen w-full relative">
                 <AppSidebar />
-                <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-                  {children}
-                </main>
+                <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+                  <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+                    {children}
+                  </main>
+                  <BottomNav />
+                </div>
               </div>
             </SidebarProvider>
           </ThemeProvider>

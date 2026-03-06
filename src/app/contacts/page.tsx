@@ -7,7 +7,7 @@ import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getD
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/badge"
 import { 
   Search, 
   UserPlus, 
@@ -19,10 +19,12 @@ import {
   X,
   User,
   MessageSquare,
-  Clock
+  Clock,
+  Menu
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 export default function ContactsPage() {
   const { user } = useUser()
@@ -139,14 +141,19 @@ export default function ContactsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
-        <h2 className="text-xl font-bold tracking-tight">Network & Connections</h2>
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="md:hidden">
+            <Menu className="h-6 w-6" />
+          </SidebarTrigger>
+          <h2 className="text-xl font-bold tracking-tight">Network</h2>
+        </div>
       </header>
 
-      <main className="p-8 max-w-5xl mx-auto space-y-12">
+      <main className="p-4 sm:p-8 max-w-5xl mx-auto space-y-12">
         <section className="space-y-4">
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Find Friends</h3>
-          <div className="flex gap-2 max-w-md">
+          <div className="flex flex-col sm:flex-row gap-2 max-w-md">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
@@ -171,12 +178,12 @@ export default function ContactsPage() {
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                         {u.displayName[0]}
                       </div>
-                      <div>
-                        <p className="font-bold text-sm">{u.displayName}</p>
-                        <p className="text-[10px] text-muted-foreground">{u.email}</p>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm truncate">{u.displayName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-bold">
+                    <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-bold shrink-0">
                       <UserPlus className="h-4 w-4 mr-2" />
                       ADD
                     </Button>
@@ -189,7 +196,7 @@ export default function ContactsPage() {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Requests</h3>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Requests</h3>
             <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold">
               {requests?.length || 0} NEW
             </Badge>
@@ -201,7 +208,7 @@ export default function ContactsPage() {
             </div>
           ) : !requests || requests.length === 0 ? (
             <div className="p-10 text-center bg-card rounded-[2rem] border-2 border-dashed border-border/50 text-muted-foreground text-sm font-medium">
-              No pending requests at this time.
+              No pending requests.
             </div>
           ) : (
             <div className="grid gap-4">
@@ -212,13 +219,13 @@ export default function ContactsPage() {
                       <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black">
                         {req.senderName[0]}
                       </div>
-                      <div>
-                        <p className="font-bold text-sm">{req.senderName}</p>
-                        <p className="text-xs text-muted-foreground">wants to connect</p>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm truncate">{req.senderName}</p>
+                        <p className="text-xs text-muted-foreground truncate">wants to connect</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleAccept(req)} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg h-9 px-4 font-bold">
+                    <div className="flex gap-2 shrink-0">
+                      <Button onClick={() => handleAccept(req)} size="sm" className="bg-primary hover:bg-primary/90 rounded-lg h-9 px-4 font-bold text-[10px]">
                         ACCEPT
                       </Button>
                       <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-destructive hover:bg-destructive/5">
@@ -243,8 +250,8 @@ export default function ContactsPage() {
             <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent">
               <CardContent className="p-16 text-center space-y-6">
                 <Shield className="h-16 w-16 text-primary mx-auto opacity-20" />
-                <h4 className="text-xl font-bold">Your Circle is Empty</h4>
-                <p className="text-muted-foreground text-sm max-w-xs mx-auto">Add friends to ensure you're never alone during your journeys.</p>
+                <h4 className="text-xl font-bold">Empty Circle</h4>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto">Add friends to ensure you're never alone.</p>
               </CardContent>
             </Card>
           ) : (
@@ -256,12 +263,12 @@ export default function ContactsPage() {
                       <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
                         {contact.contactName[0]}
                       </div>
-                      <div>
-                        <h3 className="font-bold text-sm">{contact.contactName}</h3>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm truncate">{contact.contactName}</h3>
                         <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary">{contact.relationshipToUser}</Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button 
                         size="icon" 
                         variant="ghost" 
