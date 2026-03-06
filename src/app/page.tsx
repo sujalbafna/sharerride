@@ -13,19 +13,23 @@ import {
   Loader2, 
   MessageSquare,
   Search,
-  Users
+  Users,
+  Car,
+  Bell
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebase"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc } from "firebase/firestore"
 import { format } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Home() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const router = useRouter()
+  const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
@@ -56,6 +60,47 @@ export default function Home() {
   }, [db, user])
 
   const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
+
+  // Friend Journey Alerts (Inbox)
+  const alertsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "supportRequests"),
+      where("requestType", "==", "JourneyNotification"),
+      where("status", "==", "Pending")
+    )
+  }, [db, user])
+
+  const { data: journeyAlerts, isLoading: isAlertsLoading } = useCollection(alertsQuery)
+
+  const handleJoinRequest = async (alert: any) => {
+    if (!db || !user) return
+    try {
+      await addDoc(collection(db, "users", alert.senderId, "supportRequests"), {
+        userId: alert.senderId,
+        senderId: user.uid,
+        senderName: user.displayName || user.email?.split('@')[0] || "Friend",
+        requestType: "JoinJourneyRequest",
+        description: "wants to join your journey.",
+        timestamp: new Date().toISOString(),
+        status: "Pending",
+        targetJourneyId: alert.targetJourneyId
+      })
+      
+      // Mark as read/processed locally
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", alert.id), {
+        status: "Read"
+      })
+
+      toast({ 
+        title: "Request Sent", 
+        description: "Your request to join has been sent to your friend." 
+      })
+    } catch (e) {
+      console.error(e)
+      toast({ variant: "destructive", title: "Error", description: "Failed to send join request." })
+    }
+  }
 
   const filteredJourneys = journeys?.filter(j => 
     j.endLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,6 +143,33 @@ export default function Home() {
       <main className="p-8 space-y-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
+            
+            {/* Travel Alerts Section - Priority Top */}
+            {journeyAlerts && journeyAlerts.length > 0 && (
+              <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
+                {journeyAlerts.map((alert) => (
+                  <Card key={alert.id} className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Car className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase text-primary tracking-widest">Travel Alert</span>
+                      </div>
+                      <p className="text-sm font-bold leading-tight">
+                        <span className="text-primary">{alert.senderName}</span> {alert.description}
+                      </p>
+                      <Button 
+                        variant="outline"
+                        className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
+                        onClick={() => handleJoinRequest(alert)}
+                      >
+                        WANTS TO JOIN
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
             <Card className="rounded-[2.5rem] border-none shadow-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden">
               <CardContent className="p-10 text-center space-y-8">
                 <SOSButton />
