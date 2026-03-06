@@ -34,6 +34,12 @@ export default function JourneyPage() {
   const { data: journeys, isLoading } = useCollection(journeysQuery)
   const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
 
+  const contactsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return collection(db, "users", user.uid, "trustedContacts")
+  }, [db, user])
+  const { data: contacts } = useCollection(contactsQuery)
+
   const alertsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -58,9 +64,12 @@ export default function JourneyPage() {
         endTime: new Date().toISOString()
       })
 
-      // 2. Automatically clear notifications for all friends who were notified
-      if (activeJourney.sharedWithContactIds && activeJourney.sharedWithContactIds.length > 0) {
-        for (const friendId of activeJourney.sharedWithContactIds) {
+      // 2. Clear out notifications for all designated friends
+      if (contacts && contacts.length > 0) {
+        for (const friendContact of contacts) {
+          const friendId = friendContact.appUserId;
+          if (!friendId) continue;
+
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("targetJourneyId", "==", journeyId),

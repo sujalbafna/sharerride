@@ -50,28 +50,29 @@ export function StartJourneyDialog() {
     if (!user || !db || !startLoc || !endLoc) return
 
     setIsSubmitting(true)
-    const allFriendIds = contacts?.map(c => c.id) || []
     const availableSeatsCount = parseInt(seats) || 0
+    const currentTimestamp = new Date().toISOString()
     
     const journeyData = {
       userId: user.uid,
       journeyType: "General",
       status: "InProgress",
-      startTime: new Date().toISOString(),
+      startTime: currentTimestamp,
       startLocationDescription: startLoc,
       startLatitude: 12.9716,
       startLongitude: 77.5946,
       endLocationDescription: endLoc,
       endLatitude: 12.9720,
       endLongitude: 77.5950,
-      sharedWithContactIds: allFriendIds,
+      sharedWithContactIds: contacts?.map(c => c.id) || [],
       availableSeats: availableSeatsCount,
       joinedUserIds: [],
-      createdAt: new Date().toISOString()
+      createdAt: currentTimestamp
     }
 
     try {
       const journeyDoc = await addDoc(collection(db, "users", user.uid, "journeys"), journeyData)
+      const journeyId = journeyDoc.id;
       
       // Notify all friends automatically
       if (contacts && contacts.length > 0) {
@@ -83,9 +84,9 @@ export function StartJourneyDialog() {
               senderName: userName,
               requestType: "JourneyNotification",
               description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
-              timestamp: new Date().toISOString(),
+              timestamp: currentTimestamp,
               status: "Pending",
-              targetJourneyId: journeyDoc.id
+              targetJourneyId: journeyId
             })
           }
         }
@@ -100,6 +101,7 @@ export function StartJourneyDialog() {
       setEndLoc("")
       setSeats("0")
     } catch (error) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Error",

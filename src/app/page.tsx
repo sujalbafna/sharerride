@@ -78,7 +78,7 @@ export default function Home() {
   const { data: journeyAlerts, isLoading: isAlertsLoading } = useCollection(alertsQuery)
 
   const handleJoinRequest = async (alert: any) => {
-    if (!db || !user) return
+    if (!db || !user || !alert.targetJourneyId) return
     try {
       await addDoc(collection(db, "users", alert.senderId, "supportRequests"), {
         userId: alert.senderId,
@@ -125,9 +125,13 @@ export default function Home() {
         endTime: new Date().toISOString()
       })
 
-      // 2. Clear out notifications for all designated friends
-      if (activeJourney.sharedWithContactIds && activeJourney.sharedWithContactIds.length > 0) {
-        for (const friendId of activeJourney.sharedWithContactIds) {
+      // 2. Clear out notifications for all designated friends (including those who aren't in sharedWithContactIds explicitly)
+      // We search across all users for pending notifications for this journey
+      if (contacts && contacts.length > 0) {
+        for (const friendContact of contacts) {
+          const friendId = friendContact.appUserId;
+          if (!friendId) continue;
+          
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("targetJourneyId", "==", journeyId),
