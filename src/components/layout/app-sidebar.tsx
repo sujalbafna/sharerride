@@ -37,7 +37,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, orderBy, increment, arrayUnion } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 function RequestItem({ 
@@ -53,6 +53,7 @@ function RequestItem({
 }) {
   const db = useFirestore();
   
+  // Fetch sender profile directly from database to ensure name is correct
   const profileRef = useMemoFirebase(() => {
     if (!db || !req.senderId) return null;
     return doc(db, "publicProfiles", req.senderId);
@@ -165,29 +166,29 @@ export function AppSidebar() {
     setMounted(true)
   }, [])
 
+  // Fetch current user details from Firestore for personalized profile display
   const currentUserRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: currentUserDoc } = useDoc(currentUserRef)
 
+  // Simplified query: Fetch all requests and filter in-memory to avoid index issues
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "supportRequests"),
-      where("status", "==", "Pending"),
-      orderBy("timestamp", "desc")
-    )
+    return collection(db, "users", user.uid, "supportRequests")
   }, [db, user])
 
-  const { data: requests } = useCollection(requestsQuery)
+  const { data: allRequests } = useCollection(requestsQuery)
+  
+  const pendingRequests = React.useMemo(() => {
+    return allRequests?.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification")
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
+  }, [allRequests])
 
   const friendsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "trustedContacts"),
-      orderBy("contactName", "asc")
-    )
+    return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
 
   const { data: friends } = useCollection(friendsQuery)
@@ -243,7 +244,6 @@ export function AppSidebar() {
     if (!db || !user) return
     try {
       if (req.requestType === "ConnectionRequest") {
-        // 1. Add sender to my friends
         await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
           id: req.senderId,
           userId: user.uid,
@@ -254,7 +254,6 @@ export function AppSidebar() {
           relationshipToUser: "Friend"
         })
 
-        // 2. Add me to sender's friends
         await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
           id: user.uid,
           userId: req.senderId,
@@ -265,7 +264,6 @@ export function AppSidebar() {
           relationshipToUser: "Friend"
         })
       } else if (req.requestType === "JoinJourneyRequest") {
-        // Handle journey join approval
         const journeyRef = doc(db, "users", user.uid, "journeys", req.targetJourneyId);
         await updateDoc(journeyRef, {
           availableSeats: increment(-1),
@@ -274,7 +272,6 @@ export function AppSidebar() {
         toast({ title: "Join Approved", description: `${resolvedSenderName} has joined your journey.` });
       }
 
-      // Mark request as accepted
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
       
       if (req.requestType === "ConnectionRequest") {
@@ -310,7 +307,6 @@ export function AppSidebar() {
         targetJourneyId: req.targetJourneyId
       });
       
-      // Update the original notification so user doesn't request twice
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
 
       toast({ title: "Request Sent", description: "Your request to join has been sent to your friend." });
@@ -393,18 +389,18 @@ export function AppSidebar() {
                 <span className="text-[9px] font-black uppercase text-muted-foreground flex items-center gap-1.5">
                   <Bell className="h-3 w-3" /> Inbox
                 </span>
-                {requests && requests.filter(r => r.status === "Pending").length > 0 && (
+                {pendingRequests.length > 0 && (
                   <Badge className="h-4 px-1.5 text-[8px] bg-primary/20 text-primary border-none">
-                    {requests.filter(r => r.status === "Pending").length} NEW
+                    {pendingRequests.length} NEW
                   </Badge>
                 )}
               </div>
               
-              {!requests || requests.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification").length === 0 ? (
+              {pendingRequests.length === 0 ? (
                 <p className="text-[9px] text-center text-muted-foreground opacity-50 py-2">No pending requests</p>
               ) : (
                 <div className="space-y-2">
-                  {requests.filter(r => r.status === "Pending" || r.requestType === "JourneyNotification").map((req) => (
+                  {pendingRequests.map((req) => (
                     <RequestItem 
                       key={req.id} 
                       req={req} 
@@ -434,7 +430,7 @@ export function AppSidebar() {
                   isActive={activeChatId === friend.appUserId}
                 >
                   <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                    {friend.contactName[0]}
+                    {friend.contactName?.[0]}
                   </div>
                   <span className="text-sm font-medium">{friend.contactName}</span>
                 </SidebarMenuButton>
