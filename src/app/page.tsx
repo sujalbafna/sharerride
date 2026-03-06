@@ -52,7 +52,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
           </span>
         </div>
         <p className="text-sm font-bold leading-tight">
-          <span className="text-primary">{senderName}</span> {alert.description}
+          <span className="text-primary font-black">{senderName}</span> {alert.description}
         </p>
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
@@ -362,69 +362,7 @@ export default function Home() {
               </Card>
             </div>
 
-            <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="font-black text-lg flex items-center gap-3 text-primary">
-                  <Users className="h-5 w-5" />
-                  My Friend Circle
-                </h3>
-                <div className="relative w-full sm:w-64">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input 
-                    placeholder="Filter your circle..." 
-                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs"
-                    value={friendFilter}
-                    onChange={(e) => setFriendFilter(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              {isContactsLoading ? (
-                <div className="flex justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10">
-                  <CardContent className="p-12 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <ScrollArea className="h-[300px] pr-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {filteredFriends.map((contact) => (
-                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
-                        <CardContent className="p-3 flex items-center justify-between h-full">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
-                              {contact.contactName?.[0]}
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
-                              <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
-                            </div>
-                          </div>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
-                            onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {filteredFriends.length === 0 && friendFilter && (
-                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none">
-                        No matches found in your circle.
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              )}
-            </section>
-
+            {/* RECENT ACTIVITY SECTION - MOVED UP */}
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
@@ -492,6 +430,70 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            {/* MY FRIEND CIRCLE SECTION - MOVED DOWN */}
+            <section className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h3 className="font-black text-lg flex items-center gap-3 text-primary">
+                  <Users className="h-5 w-5" />
+                  My Friend Circle
+                </h3>
+                <div className="relative w-full sm:w-64">
+                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input 
+                    placeholder="Filter your circle..." 
+                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20"
+                    value={friendFilter}
+                    onChange={(e) => setFriendFilter(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              {isContactsLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : !contacts || contacts.length === 0 ? (
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10">
+                  <CardContent className="p-12 text-center space-y-4">
+                    <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {filteredFriends.map((contact) => (
+                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
+                        <CardContent className="p-3 flex items-center justify-between h-full">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
+                              {contact.contactName?.[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
+                              <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
+                            </div>
+                          </div>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
+                            onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {filteredFriends.length === 0 && friendFilter && (
+                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none">
+                        No matches found in your circle.
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              )}
+            </section>
           </div>
         </div>
       </main>
