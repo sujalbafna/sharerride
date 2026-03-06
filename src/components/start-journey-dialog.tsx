@@ -36,7 +36,9 @@ export function StartJourneyDialog() {
   }, [db, user])
   const { data: userData } = useDoc(userRef)
   
-  const userName = userData ? `${userData.firstName} ${userData.lastName}` : (user?.displayName || "User")
+  const userName = userData?.firstName && userData?.lastName 
+    ? `${userData.firstName} ${userData.lastName}` 
+    : (user?.displayName || "User")
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null

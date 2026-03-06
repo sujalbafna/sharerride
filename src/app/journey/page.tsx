@@ -69,18 +69,22 @@ export default function JourneyPage() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
 
+          // Clear active journey notifications for friends
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
-            where("targetJourneyId", "==", journeyId),
             where("status", "==", "Pending")
           )
           const snap = await getDocs(q)
           for (const d of snap.docs) {
-            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
-              status: "Completed"
-            })
+            const data = d.data();
+            if (data.targetJourneyId === journeyId && data.requestType === "JourneyNotification") {
+              updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+                status: "Completed"
+              })
+            }
           }
 
+          // Send "Arrival" notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,

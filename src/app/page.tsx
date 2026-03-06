@@ -134,18 +134,22 @@ export default function Home() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
           
+          // Use a simpler query to find and clear notifications
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
-            where("targetJourneyId", "==", journeyId),
             where("status", "==", "Pending")
           )
           const snap = await getDocs(q)
           for (const d of snap.docs) {
-            updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
-              status: "Completed"
-            })
+            const data = d.data();
+            if (data.targetJourneyId === journeyId && data.requestType === "JourneyNotification") {
+              updateDoc(doc(db, "users", friendId, "supportRequests", d.id), {
+                status: "Completed"
+              })
+            }
           }
 
+          // Send destination reached alert
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
@@ -241,7 +245,7 @@ export default function Home() {
                           onClick={() => handleDismiss(alert.id)}
                         >
                           <Check className="h-4 w-4 mr-2" />
-                          ACKNOWLEDGEMENT
+                          OKAY
                         </Button>
                       )}
                     </CardContent>
