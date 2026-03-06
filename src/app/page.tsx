@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,10 +15,10 @@ import {
   Search,
   Users,
   Car,
-  Bell,
   CheckCircle2,
   Check,
-  Menu
+  Menu,
+  Filter
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
   const db = useFirestore()
@@ -81,7 +82,8 @@ export default function Home() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
-  const [searchQuery, setSearchQuery] = useState("")
+  const [globalSearch, setGlobalSearch] = useState("")
+  const [friendFilter, setFriendFilter] = useState("")
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -120,6 +122,13 @@ export default function Home() {
   }, [db, user])
 
   const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
+
+  const filteredFriends = useMemo(() => {
+    if (!contacts) return []
+    return contacts.filter(c => 
+      c.contactName.toLowerCase().includes(friendFilter.toLowerCase())
+    )
+  }, [contacts, friendFilter])
 
   const alertsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -228,8 +237,8 @@ export default function Home() {
   }
 
   const filteredJourneys = journeys?.filter(j => 
-    j.endLocationDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    j.status.toLowerCase().includes(searchQuery.toLowerCase())
+    j.endLocationDescription.toLowerCase().includes(globalSearch.toLowerCase()) ||
+    j.status.toLowerCase().includes(globalSearch.toLowerCase())
   )
 
   if (isUserLoading) {
@@ -261,8 +270,8 @@ export default function Home() {
             <Input 
               placeholder="Search..." 
               className="pl-10 h-10 bg-white/5 border-none rounded-xl text-xs"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
             />
           </div>
         </div>
@@ -330,10 +339,21 @@ export default function Home() {
             </div>
 
             <section className="space-y-6">
-              <h3 className="font-black text-lg flex items-center gap-3 text-primary">
-                <Users className="h-5 w-5" />
-                My Friend Circle
-              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h3 className="font-black text-lg flex items-center gap-3 text-primary">
+                  <Users className="h-5 w-5" />
+                  My Friend Circle
+                </h3>
+                <div className="relative w-full sm:w-64">
+                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input 
+                    placeholder="Filter your circle..." 
+                    className="pl-9 h-9 bg-muted/30 border-none rounded-xl text-xs"
+                    value={friendFilter}
+                    onChange={(e) => setFriendFilter(e.target.value)}
+                  />
+                </div>
+              </div>
               
               {isContactsLoading ? (
                 <div className="flex justify-center p-8">
@@ -346,31 +366,38 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contacts.map((contact) => (
-                    <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
-                            {contact.contactName?.[0]}
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {filteredFriends.map((contact) => (
+                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
+                        <CardContent className="p-3 flex items-center justify-between h-full">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0">
+                              {contact.contactName?.[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
+                              <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-bold text-sm tracking-tight">{contact.contactName}</h3>
-                            <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary font-bold">CONNECTED</Badge>
-                          </div>
-                        </div>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-10 w-10 rounded-full text-primary hover:bg-primary/10"
-                          onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                        >
-                          <MessageSquare className="h-5 w-5" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 rounded-full text-primary hover:bg-primary/10 shrink-0"
+                            onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {filteredFriends.length === 0 && friendFilter && (
+                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest">
+                        No matches found in your circle.
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
               )}
             </section>
 

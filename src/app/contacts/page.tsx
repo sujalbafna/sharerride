@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getDocs, limit } from "firebase/firestore"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,11 +20,13 @@ import {
   User,
   MessageSquare,
   Clock,
-  Menu
+  Menu,
+  Filter
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function ContactsPage() {
   const { user } = useUser()
@@ -34,6 +36,7 @@ export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [circleFilter, setCircleFilter] = useState("")
 
   // My Connections
   const contactsQuery = useMemoFirebase(() => {
@@ -45,6 +48,13 @@ export default function ContactsPage() {
   }, [db, user])
 
   const { data: contacts, isLoading: loadingContacts } = useCollection(contactsQuery)
+
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return []
+    return contacts.filter(c => 
+      c.contactName.toLowerCase().includes(circleFilter.toLowerCase())
+    )
+  }, [contacts, circleFilter])
 
   // Pending Requests (Inbox)
   const requestsQuery = useMemoFirebase(() => {
@@ -140,7 +150,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background pb-20 md:pb-12">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
@@ -239,8 +249,19 @@ export default function ContactsPage() {
           )}
         </section>
 
-        <section className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">My Friend Circle</h3>
+        <section className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">My Friend Circle</h3>
+            <div className="relative w-full sm:w-64">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input 
+                placeholder="Filter circle..." 
+                className="pl-9 h-10 bg-card rounded-xl border-none shadow-sm text-xs"
+                value={circleFilter}
+                onChange={(e) => setCircleFilter(e.target.value)}
+              />
+            </div>
+          </div>
           
           {loadingContacts ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -255,41 +276,48 @@ export default function ContactsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {contacts.map((contact) => (
-                <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                        {contact.contactName[0]}
+            <ScrollArea className="h-[600px] rounded-3xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pr-4">
+                {filteredContacts.map((contact) => (
+                  <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
+                    <CardContent className="p-3 flex items-center justify-between h-full">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base">
+                          {contact.contactName[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-xs truncate">{contact.contactName}</h3>
+                          <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-sm truncate">{contact.contactName}</h3>
-                        <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary">{contact.relationshipToUser}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8 rounded-full text-primary"
+                          onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive"
+                          onClick={() => handleRemoveContact(contact.id)}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-10 w-10 rounded-full text-primary"
-                        onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                      >
-                        <MessageSquare className="h-5 w-5" />
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-10 w-10 rounded-full text-muted-foreground hover:text-destructive"
-                        onClick={() => handleRemoveContact(contact.id)}
-                      >
-                        <UserMinus className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {filteredContacts.length === 0 && circleFilter && (
+                  <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-card rounded-2xl border-2 border-dashed">
+                    No friends matching your search.
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           )}
         </section>
       </main>
