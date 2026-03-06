@@ -15,7 +15,9 @@ import {
   Loader2,
   Bell,
   MessageSquare,
-  Car
+  Car,
+  CheckCircle2,
+  Check
 } from "lucide-react"
 
 import {
@@ -44,12 +46,14 @@ function RequestItem({
   req, 
   onAccept, 
   onDecline,
-  onJoinRequest
+  onJoinRequest,
+  onDismiss
 }: { 
   req: any, 
   onAccept: (req: any, name: string) => void, 
   onDecline: (req: any) => void,
-  onJoinRequest: (req: any) => void
+  onJoinRequest: (req: any) => void,
+  onDismiss: (id: string) => void
 }) {
   const db = useFirestore();
   
@@ -79,6 +83,29 @@ function RequestItem({
           onClick={() => onJoinRequest(req)}
         >
           WANTS TO JOIN
+        </Button>
+      </div>
+    );
+  }
+
+  if (req.requestType === "JourneyEndNotification") {
+    return (
+      <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-3 w-3 text-accent" />
+          <span className="text-[10px] font-bold uppercase text-accent">Arrival Update</span>
+        </div>
+        <p className="text-[11px] leading-tight font-medium">
+          <span className="font-bold">{senderName}</span> {req.description}
+        </p>
+        <Button 
+          size="sm" 
+          variant="ghost"
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground hover:bg-accent/5"
+          onClick={() => onDismiss(req.id)}
+        >
+          <Check className="h-3 w-3 mr-1" />
+          OKAY
         </Button>
       </div>
     );
@@ -173,7 +200,10 @@ export function AppSidebar() {
 
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
-    return collection(db, "users", user.uid, "supportRequests")
+    return query(
+      collection(db, "users", user.uid, "supportRequests"),
+      where("status", "==", "Pending")
+    )
   }, [db, user])
 
   const { data: allRequests } = useCollection(requestsQuery)
@@ -292,13 +322,17 @@ export function AppSidebar() {
     }
   }
 
+  const handleDismiss = async (id: string) => {
+    if (!db || !user) return
+    try {
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", id), { status: "Read" })
+    } catch (e) {
+      console.error("Dismiss error:", e)
+    }
+  }
+
   const handleJoinRequest = async (req: any) => {
-    if (!db || !user || !req.targetJourneyId) {
-      if (!req.targetJourneyId) {
-        toast({ variant: "destructive", title: "Action Failed", description: "Cannot join this journey as it may have expired or is invalid." });
-      }
-      return;
-    };
+    if (!db || !user || !req.targetJourneyId) return;
     
     try {
       await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
@@ -412,6 +446,7 @@ export function AppSidebar() {
                       onAccept={handleAccept} 
                       onDecline={handleDecline}
                       onJoinRequest={handleJoinRequest}
+                      onDismiss={handleDismiss}
                     />
                   ))}
                 </div>

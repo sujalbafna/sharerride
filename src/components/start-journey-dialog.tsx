@@ -30,7 +30,6 @@ export function StartJourneyDialog() {
   const [endLoc, setEndLoc] = useState("")
   const [seats, setSeats] = useState("0")
 
-  // Fetch current user details from DB to get the actual name
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
@@ -64,7 +63,7 @@ export function StartJourneyDialog() {
       endLocationDescription: endLoc,
       endLatitude: 12.9720,
       endLongitude: 77.5950,
-      sharedWithContactIds: contacts?.map(c => c.id) || [],
+      sharedWithContactIds: contacts?.map(c => c.appUserId).filter(Boolean) || [],
       availableSeats: availableSeatsCount,
       joinedUserIds: [],
       createdAt: currentTimestamp
@@ -74,7 +73,6 @@ export function StartJourneyDialog() {
       const journeyDoc = await addDoc(collection(db, "users", user.uid, "journeys"), journeyData)
       const journeyId = journeyDoc.id;
       
-      // Notify all friends automatically
       if (contacts && contacts.length > 0) {
         for (const friendContact of contacts) {
           if (friendContact.appUserId) {
@@ -86,7 +84,9 @@ export function StartJourneyDialog() {
               description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
               timestamp: currentTimestamp,
               status: "Pending",
-              targetJourneyId: journeyId
+              targetJourneyId: journeyId,
+              startLocation: startLoc,
+              endLocation: endLoc
             })
           }
         }

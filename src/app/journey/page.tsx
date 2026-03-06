@@ -2,7 +2,7 @@
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where } from "firebase/firestore"
+import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -56,15 +56,14 @@ export default function JourneyPage() {
     if (!db || !user || !activeJourney) return
     const journeyId = activeJourney.id
     const journeyRef = doc(db, "users", user.uid, "journeys", journeyId)
+    const currentTimestamp = new Date().toISOString()
     
     try {
-      // 1. End the journey status
       await updateDoc(journeyRef, {
         status: "Completed",
-        endTime: new Date().toISOString()
+        endTime: currentTimestamp
       })
 
-      // 2. Clear out notifications for all designated friends
       if (contacts && contacts.length > 0) {
         for (const friendContact of contacts) {
           const friendId = friendContact.appUserId;
@@ -81,6 +80,17 @@ export default function JourneyPage() {
               status: "Completed"
             })
           }
+
+          await addDoc(collection(db, "users", friendId, "supportRequests"), {
+            userId: friendId,
+            senderId: user.uid,
+            senderName: user.displayName || "User",
+            requestType: "JourneyEndNotification",
+            description: `has ended a journey from ${activeJourney.startLocationDescription} to ${activeJourney.endLocationDescription}.`,
+            timestamp: currentTimestamp,
+            status: "Pending",
+            targetJourneyId: journeyId
+          })
         }
       }
 

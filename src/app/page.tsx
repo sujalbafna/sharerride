@@ -16,7 +16,8 @@ import {
   Users,
   Car,
   Bell,
-  CheckCircle2
+  CheckCircle2,
+  Check
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,7 +42,6 @@ export default function Home() {
     }
   }, [user, isUserLoading, router])
 
-  // Journeys
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -54,7 +54,6 @@ export default function Home() {
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
   const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
 
-  // My Connections (Friend Circle)
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -65,13 +64,12 @@ export default function Home() {
 
   const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
 
-  // Friend Journey Alerts (Inbox)
   const alertsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
       collection(db, "users", user.uid, "supportRequests"),
-      where("requestType", "==", "JourneyNotification"),
-      where("status", "==", "Pending")
+      where("status", "==", "Pending"),
+      where("requestType", "in", ["JourneyNotification", "JourneyEndNotification"])
     )
   }, [db, user])
 
@@ -113,20 +111,24 @@ export default function Home() {
     }
   }
 
+  const handleDismiss = async (alertId: string) => {
+    if (!db || !user) return
+    const alertRef = doc(db, "users", user.uid, "supportRequests", alertId)
+    updateDoc(alertRef, { status: "Read" })
+  }
+
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyId = activeJourney.id
     const journeyRef = doc(db, "users", user.uid, "journeys", journeyId)
+    const currentTimestamp = new Date().toISOString()
     
     try {
-      // 1. Mark journey as completed
       await updateDoc(journeyRef, {
         status: "Completed",
-        endTime: new Date().toISOString()
+        endTime: currentTimestamp
       })
 
-      // 2. Clear out notifications for all designated friends (including those who aren't in sharedWithContactIds explicitly)
-      // We search across all users for pending notifications for this journey
       if (contacts && contacts.length > 0) {
         for (const friendContact of contacts) {
           const friendId = friendContact.appUserId;
@@ -143,6 +145,17 @@ export default function Home() {
               status: "Completed"
             })
           }
+
+          await addDoc(collection(db, "users", friendId, "supportRequests"), {
+            userId: friendId,
+            senderId: user.uid,
+            senderName: user.displayName || "User",
+            requestType: "JourneyEndNotification",
+            description: `has ended a journey from ${activeJourney.startLocationDescription} to ${activeJourney.endLocationDescription}.`,
+            timestamp: currentTimestamp,
+            status: "Pending",
+            targetJourneyId: journeyId
+          })
         }
       }
 
@@ -199,26 +212,38 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
-            {/* Travel Alerts Section - Priority Top */}
             {journeyAlerts && journeyAlerts.length > 0 && (
               <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
                 {journeyAlerts.map((alert) => (
                   <Card key={alert.id} className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-center gap-2">
-                        <Car className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase text-primary tracking-widest">Travel Alert</span>
+                        {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
+                        <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+                          {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
+                        </span>
                       </div>
                       <p className="text-sm font-bold leading-tight">
                         <span className="text-primary">{alert.senderName}</span> {alert.description}
                       </p>
-                      <Button 
-                        variant="outline"
-                        className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
-                        onClick={() => handleJoinRequest(alert)}
-                      >
-                        WANTS TO JOIN
-                      </Button>
+                      {alert.requestType === 'JourneyNotification' ? (
+                        <Button 
+                          variant="outline"
+                          className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
+                          onClick={() => handleJoinRequest(alert)}
+                        >
+                          WANTS TO JOIN
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost"
+                          className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-accent/5"
+                          onClick={() => handleDismiss(alert.id)}
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          ACKNOWLEDGEMENT
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
