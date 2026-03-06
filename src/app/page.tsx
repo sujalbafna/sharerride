@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -18,7 +19,8 @@ import {
   Check,
   Menu,
   Filter,
-  Navigation
+  Navigation,
+  UserPlus
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -82,14 +84,45 @@ export default function Home() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
+  
   const [globalSearch, setGlobalSearch] = useState("")
   const [friendFilter, setFriendFilter] = useState("")
+  const [dbSearchResults, setDbSearchResults] = useState<any[]>([])
+  const [isDbSearching, setIsDbSearching] = useState(false)
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/login")
     }
   }, [user, isUserLoading, router])
+
+  // Global Search Database Fetching
+  useEffect(() => {
+    const performDbSearch = async () => {
+      if (!db || globalSearch.length < 3) {
+        setDbSearchResults([])
+        return
+      }
+      setIsDbSearching(true)
+      try {
+        const q = query(
+          collection(db, "publicProfiles"),
+          where("displayName", ">=", globalSearch),
+          where("displayName", "<=", globalSearch + "\uf8ff"),
+          limit(5)
+        )
+        const snap = await getDocs(q)
+        setDbSearchResults(snap.docs.map(d => d.data()).filter(u => u.userId !== user?.uid))
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsDbSearching(false)
+      }
+    }
+
+    const timer = setTimeout(performDbSearch, 500)
+    return () => clearTimeout(timer)
+  }, [db, globalSearch, user?.uid])
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -106,7 +139,7 @@ export default function Home() {
     return query(
       collection(db, "users", user.uid, "journeys"),
       orderBy("startTime", "desc"),
-      limit(10)
+      limit(20)
     )
   }, [db, user])
 
@@ -141,7 +174,7 @@ export default function Home() {
 
   const { data: journeyAlerts, isLoading: isAlertsLoading } = useCollection(alertsQuery)
 
-  // Advanced Global Filtering
+  // Comprehensive Search Logic
   const search = globalSearch.toLowerCase();
 
   const filteredAlerts = useMemo(() => {
@@ -261,6 +294,26 @@ export default function Home() {
     }
   }
 
+  const sendFriendRequest = async (targetUser: any) => {
+    if (!db || !user) return
+    try {
+      await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
+        userId: targetUser.userId,
+        senderId: user.uid,
+        senderName: userName,
+        requestType: "ConnectionRequest",
+        description: "wants to join your trusted network.",
+        timestamp: new Date().toISOString(),
+        status: "Pending"
+      })
+      toast({ title: "Request Sent", description: `Connection request sent to ${targetUser.displayName}.` })
+      setGlobalSearch("")
+      setDbSearchResults([])
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to send request." })
+    }
+  }
+
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -280,7 +333,7 @@ export default function Home() {
           </SidebarTrigger>
           <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
         </div>
-        <div className="flex-1 max-w-xs mx-4">
+        <div className="flex-1 max-w-sm mx-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
@@ -297,6 +350,35 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
+            {/* SEARCH RESULTS FROM DATABASE */}
+            {dbSearchResults.length > 0 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary ml-2">
+                  <Users className="h-3.5 w-3.5" />
+                  Global Network Matches
+                </div>
+                {dbSearchResults.map((u) => (
+                  <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-card overflow-hidden">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold">
+                          {u.displayName[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm truncate">{u.displayName}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase">{u.email}</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="rounded-xl font-bold h-8 border-primary/20 text-primary" onClick={() => sendFriendRequest(u)}>
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        ADD
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
             {filteredAlerts && filteredAlerts.length > 0 && (
               <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary ml-2">

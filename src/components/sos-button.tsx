@@ -19,10 +19,10 @@ import { collection, addDoc, doc } from "firebase/firestore"
 import { cn } from "@/lib/utils"
 
 const emergencyTypes = [
-  { id: "accident", label: "Accident", icon: Car, color: "text-red-500", bg: "bg-red-50" },
-  { id: "vehicle", label: "Vehicle Issue", icon: Wrench, color: "text-orange-500", bg: "bg-orange-50" },
-  { id: "natural", label: "Natural Disaster", icon: Mountain, color: "text-blue-500", bg: "bg-blue-50" },
-  { id: "medical", label: "Medical", icon: HeartPulse, color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "accident", label: "Accident", icon: Car, color: "text-destructive", bg: "bg-secondary" },
+  { id: "vehicle", label: "Vehicle Issue", icon: Wrench, color: "text-primary", bg: "bg-secondary" },
+  { id: "natural", label: "Natural Disaster", icon: Mountain, color: "text-primary", bg: "bg-secondary" },
+  { id: "medical", label: "Medical", icon: HeartPulse, color: "text-destructive", bg: "bg-secondary" },
 ]
 
 export function SOSButton() {
@@ -86,16 +86,16 @@ export function SOSButton() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <button className="relative group">
-          <div className="absolute inset-0 bg-white/20 rounded-full animate-ping group-active:animate-none group-hover:bg-white/40" />
-          <div className="relative h-40 w-40 rounded-full bg-destructive flex flex-col items-center justify-center shadow-[0_0_50px_rgba(239,68,68,0.4)] active:scale-90 transition-all duration-300 border-8 border-white/10 group-hover:border-white/20">
+          <div className="absolute inset-0 bg-white/20 rounded-full animate-ping group-active:animate-none" />
+          <div className="relative h-40 w-40 rounded-full bg-destructive flex flex-col items-center justify-center shadow-xl active:scale-90 transition-all duration-300 border-8 border-white/10">
             <ShieldAlert className="h-10 w-10 text-white mb-2" />
             <span className="text-white text-4xl font-black tracking-tighter">SOS</span>
           </div>
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md rounded-3xl p-8 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-md rounded-3xl p-8 border-none shadow-2xl bg-card">
         <DialogHeader className="text-center space-y-4">
-          <div className="h-16 w-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
+          <div className="h-16 w-16 bg-secondary rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="h-10 w-10 text-destructive" />
           </div>
           <DialogTitle className="text-3xl font-black tracking-tight text-destructive">
@@ -114,8 +114,8 @@ export function SOSButton() {
               className={cn(
                 "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2",
                 selectedType === type.id 
-                  ? "border-destructive bg-destructive/5" 
-                  : "border-muted hover:border-destructive/30"
+                  ? "border-destructive bg-secondary" 
+                  : "border-muted hover:border-destructive/30 bg-card"
               )}
             >
               <div className={cn("p-2 rounded-xl", type.bg)}>
@@ -129,7 +129,7 @@ export function SOSButton() {
         <DialogFooter className="flex flex-col gap-3">
           <Button 
             variant="destructive" 
-            className="w-full h-16 text-xl font-black rounded-2xl shadow-lg shadow-destructive/20"
+            className="w-full h-16 text-xl font-black rounded-2xl shadow-lg"
             onClick={handleSOS}
             disabled={isSending || !selectedType}
           >
