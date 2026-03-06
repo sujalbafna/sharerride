@@ -29,6 +29,51 @@ import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 
+function JourneyAlertCard({ alert, onJoin, onDismiss, currentUserName }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void, currentUserName: string }) {
+  const db = useFirestore()
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !alert.senderId) return null
+    return doc(db, "publicProfiles", alert.senderId)
+  }, [db, alert.senderId])
+  const { data: profile } = useDoc(profileRef)
+  
+  const senderName = profile?.displayName || alert.senderName || "User"
+
+  return (
+    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
+      <CardContent className="p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
+          <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+            {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
+          </span>
+        </div>
+        <p className="text-sm font-bold leading-tight">
+          <span className="text-primary">{senderName}</span> {alert.description}
+        </p>
+        {alert.requestType === 'JourneyNotification' ? (
+          <Button 
+            variant="outline"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
+            onClick={() => onJoin(alert)}
+          >
+            WANTS TO JOIN
+          </Button>
+        ) : (
+          <Button 
+            variant="ghost"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-accent/5"
+            onClick={() => onDismiss(alert.id)}
+          >
+            <Check className="h-4 w-4 mr-2" />
+            OKAY
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function Home() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
@@ -144,7 +189,6 @@ export default function Home() {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
           
-          // Clear active JourneyNotifications
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("status", "==", "Pending"),
@@ -157,7 +201,6 @@ export default function Home() {
             })
           }
 
-          // Send the "End Journey" status notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
@@ -227,37 +270,13 @@ export default function Home() {
             {journeyAlerts && journeyAlerts.length > 0 && (
               <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
                 {journeyAlerts.map((alert) => (
-                  <Card key={alert.id} className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
-                    <CardContent className="p-6 space-y-4">
-                      <div className="flex items-center gap-2">
-                        {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
-                        <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-                          {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold leading-tight">
-                        <span className="text-primary">{alert.senderName}</span> {alert.description}
-                      </p>
-                      {alert.requestType === 'JourneyNotification' ? (
-                        <Button 
-                          variant="outline"
-                          className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
-                          onClick={() => handleJoinRequest(alert)}
-                        >
-                          WANTS TO JOIN
-                        </Button>
-                      ) : (
-                        <Button 
-                          variant="ghost"
-                          className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-accent/5"
-                          onClick={() => handleDismiss(alert.id)}
-                        >
-                          <Check className="h-4 w-4 mr-2" />
-                          OKAY
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <JourneyAlertCard 
+                    key={alert.id} 
+                    alert={alert} 
+                    onJoin={handleJoinRequest} 
+                    onDismiss={handleDismiss} 
+                    currentUserName={userName}
+                  />
                 ))}
               </div>
             )}

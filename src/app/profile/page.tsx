@@ -33,21 +33,18 @@ export default function ProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Fetch User Document
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: userData, isLoading: isUserDocLoading } = useDoc(userRef)
 
-  // Fetch Trusted Contacts (Close Friends)
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
 
-  // Fetch Pending Support Requests
   const pendingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -77,7 +74,7 @@ export default function ProfilePage() {
 
   const displayName = userData?.firstName && userData?.lastName 
     ? `${userData.firstName} ${userData.lastName}`
-    : user?.displayName || "Member"
+    : user?.displayName || "User"
 
   return (
     <div className="min-h-screen bg-background pb-12">

@@ -60,11 +60,11 @@ export function StartJourneyDialog() {
       status: "InProgress",
       startTime: currentTimestamp,
       startLocationDescription: startLoc,
-      startLatitude: 12.9716,
-      startLongitude: 77.5946,
+      startLatitude: 0,
+      startLongitude: 0,
       endLocationDescription: endLoc,
-      endLatitude: 12.9720,
-      endLongitude: 77.5950,
+      endLatitude: 0,
+      endLongitude: 0,
       sharedWithContactIds: contacts?.map(c => c.appUserId).filter(Boolean) || [],
       availableSeats: availableSeatsCount,
       joinedUserIds: [],
@@ -129,19 +129,19 @@ export function StartJourneyDialog() {
             Initialize Journey
           </DialogTitle>
           <DialogDescription>
-            Enter your route details. Your friends will be notified automatically.
+            Enter your route details to notify your network.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="start">Starting Point</Label>
+              <Label htmlFor="start">Origin</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="start" 
-                  placeholder="e.g. Pune" 
+                  placeholder="Starting point..." 
                   className="pl-10 h-12 rounded-xl"
                   value={startLoc}
                   onChange={(e) => setStartLoc(e.target.value)}
@@ -149,12 +149,12 @@ export function StartJourneyDialog() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end">Final Destination</Label>
+              <Label htmlFor="end">Destination</Label>
               <div className="relative">
                 <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="end" 
-                  placeholder="e.g. Mumbai" 
+                  placeholder="Where are you going?" 
                   className="pl-10 h-12 rounded-xl"
                   value={endLoc}
                   onChange={(e) => setEndLoc(e.target.value)}
@@ -169,7 +169,7 @@ export function StartJourneyDialog() {
                   id="seats" 
                   type="number"
                   min="0"
-                  placeholder="0" 
+                  placeholder="Enter capacity" 
                   className="pl-10 h-12 rounded-xl"
                   value={seats}
                   onChange={(e) => setSeats(e.target.value)}
