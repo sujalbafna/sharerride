@@ -271,7 +271,7 @@ export default function Home() {
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
-          <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
+          <h2 className="text-xl font-black tracking-tighter hidden sm:block">Setu</h2>
         </div>
       </header>
 
