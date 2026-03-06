@@ -2,7 +2,7 @@
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, orderBy, limit, doc, updateDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -13,10 +13,14 @@ import { StartJourneyDialog } from "@/components/start-journey-dialog"
 import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
 import { GoogleMap } from "@/components/google-map"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function JourneyPage() {
   const { user } = useUser()
   const db = useFirestore()
+  const { toast } = useToast()
 
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -41,6 +45,23 @@ export default function JourneyPage() {
 
   const { data: latestAlerts } = useCollection(alertsQuery)
   const isEmergencyActive = latestAlerts && latestAlerts.length > 0 && latestAlerts[0].status !== 'Resolved'
+
+  const handleEndJourney = () => {
+    if (!db || !user || !activeJourney) return
+    const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+    updateDoc(journeyRef, {
+      status: "Completed",
+      endTime: new Date().toISOString()
+    }).catch(async (error) => {
+      const permissionError = new FirestorePermissionError({
+        path: journeyRef.path,
+        operation: 'update',
+        requestResourceData: { status: "Completed" },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    })
+    toast({ title: "Journey Completed", description: "You have safely ended your journey." })
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,9 +121,13 @@ export default function JourneyPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Button className="h-14 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold">
-                        <Share2 className="mr-2 h-5 w-5" />
-                        Share Link
+                      <Button 
+                        variant="outline" 
+                        className="h-14 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold"
+                        onClick={handleEndJourney}
+                      >
+                        <CheckCircle2 className="mr-2 h-5 w-5" />
+                        END JOURNEY
                       </Button>
                       {!isEmergencyActive && (
                         <Button className="h-14 rounded-2xl bg-accent text-primary hover:bg-accent/90 font-black">

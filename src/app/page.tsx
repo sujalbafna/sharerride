@@ -15,7 +15,8 @@ import {
   Search,
   Users,
   Car,
-  Bell
+  Bell,
+  CheckCircle2
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,8 @@ import { useUser, useCollection, useMemoFirebase, useFirestore } from "@/firebas
 import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc } from "firebase/firestore"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
+import { errorEmitter } from '@/firebase/error-emitter'
+import { FirestorePermissionError } from '@/firebase/errors'
 
 export default function Home() {
   const { user, isUserLoading } = useUser()
@@ -49,6 +52,7 @@ export default function Home() {
   }, [db, user])
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
+  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
 
   // My Connections (Friend Circle)
   const contactsQuery = useMemoFirebase(() => {
@@ -87,9 +91,16 @@ export default function Home() {
         targetJourneyId: alert.targetJourneyId
       })
       
-      // Mark as read/processed locally
-      await updateDoc(doc(db, "users", user.uid, "supportRequests", alert.id), {
+      const alertRef = doc(db, "users", user.uid, "supportRequests", alert.id)
+      updateDoc(alertRef, {
         status: "Read"
+      }).catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: alertRef.path,
+          operation: 'update',
+          requestResourceData: { status: "Read" },
+        });
+        errorEmitter.emit('permission-error', permissionError);
       })
 
       toast({ 
@@ -100,6 +111,23 @@ export default function Home() {
       console.error(e)
       toast({ variant: "destructive", title: "Error", description: "Failed to send join request." })
     }
+  }
+
+  const handleEndJourney = () => {
+    if (!db || !user || !activeJourney) return
+    const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+    updateDoc(journeyRef, {
+      status: "Completed",
+      endTime: new Date().toISOString()
+    }).catch(async (error) => {
+      const permissionError = new FirestorePermissionError({
+        path: journeyRef.path,
+        operation: 'update',
+        requestResourceData: { status: "Completed" },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    })
+    toast({ title: "Journey Completed", description: "You have safely ended your journey." })
   }
 
   const filteredJourneys = journeys?.filter(j => 
@@ -182,13 +210,23 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Button 
-              className="w-full h-16 rounded-2xl text-lg font-black bg-white/5 hover:bg-white/10 text-primary border-2 border-primary/20"
-              onClick={() => router.push("/journey")}
-            >
-              <MapPin className="mr-2 h-6 w-6" />
-              START NEW JOURNEY
-            </Button>
+            {activeJourney ? (
+              <Button 
+                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive/10 hover:bg-destructive/20 text-destructive border-2 border-destructive/20"
+                onClick={handleEndJourney}
+              >
+                <CheckCircle2 className="mr-2 h-6 w-6" />
+                END ACTIVE JOURNEY
+              </Button>
+            ) : (
+              <Button 
+                className="w-full h-16 rounded-2xl text-lg font-black bg-white/5 hover:bg-white/10 text-primary border-2 border-primary/20"
+                onClick={() => router.push("/journey")}
+              >
+                <MapPin className="mr-2 h-6 w-6" />
+                START NEW JOURNEY
+              </Button>
+            )}
           </div>
 
           <div className="lg:col-span-2 space-y-10">
