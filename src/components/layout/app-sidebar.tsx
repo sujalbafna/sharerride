@@ -179,8 +179,6 @@ export function AppSidebar() {
   const { data: allRequests } = useCollection(requestsQuery)
   
   const pendingRequests = React.useMemo(() => {
-    // Only show requests with status "Pending".
-    // When a journey ends or a friend clicks "Join", status is updated to clear it from the inbox.
     return allRequests?.filter(r => r.status === "Pending")
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
   }, [allRequests])
@@ -263,6 +261,8 @@ export function AppSidebar() {
           relationshipToUser: "Friend"
         })
       } else if (req.requestType === "JoinJourneyRequest") {
+        if (!req.targetJourneyId) throw new Error("Missing targetJourneyId");
+        
         const journeyRef = doc(db, "users", user.uid, "journeys", req.targetJourneyId);
         await updateDoc(journeyRef, {
           availableSeats: increment(-1),
@@ -293,7 +293,13 @@ export function AppSidebar() {
   }
 
   const handleJoinRequest = async (req: any) => {
-    if (!db || !user) return;
+    if (!db || !user || !req.targetJourneyId) {
+      if (!req.targetJourneyId) {
+        toast({ variant: "destructive", title: "Action Failed", description: "Cannot join this journey as it may have expired or is invalid." });
+      }
+      return;
+    };
+    
     try {
       await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
         userId: req.senderId,
