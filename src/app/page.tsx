@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -58,7 +57,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
             variant="outline"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary hover:bg-secondary"
             onClick={() => onJoin(alert)}
           >
             WANTS TO JOIN
@@ -66,7 +65,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         ) : (
           <Button 
             variant="ghost"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-accent/5"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
             onClick={() => onDismiss(alert.id)}
           >
             <Check className="h-4 w-4 mr-2" />
@@ -264,7 +263,7 @@ export default function Home() {
 
   if (isUserLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
@@ -274,13 +273,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-background/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-20 border-b flex items-center justify-between px-6 bg-background sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
           <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
-          <Badge variant="outline" className="text-[9px] border-primary/20 bg-primary/5 px-3 py-1 rounded-full whitespace-nowrap">
+          <Badge variant="outline" className="text-[9px] border-primary/20 bg-secondary px-3 py-1 rounded-full whitespace-nowrap">
             <Activity className="h-3 w-3 mr-1.5 text-primary" />
             LIVE SYSTEM
           </Badge>
@@ -290,7 +289,7 @@ export default function Home() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search people, origin or destination..." 
-              className="pl-10 h-10 bg-white/5 border-none rounded-xl text-xs"
+              className="pl-10 h-10 bg-secondary border-none rounded-xl text-xs"
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
             />
@@ -341,7 +340,7 @@ export default function Home() {
               </Button>
             ) : (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-white/5 hover:bg-white/10 text-primary border-2 border-primary/20"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-secondary hover:bg-muted text-primary border-2 border-primary/20"
                 onClick={() => router.push("/journey")}
               >
                 <MapPin className="mr-2 h-6 w-6" />
@@ -352,7 +351,7 @@ export default function Home() {
 
           <div className="lg:col-span-2 space-y-10">
             <div className="grid grid-cols-1 gap-6">
-              <Card className="rounded-3xl border-none shadow-sm bg-card/50">
+              <Card className="rounded-3xl border-none shadow-sm bg-card">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
                 </CardHeader>
@@ -373,7 +372,7 @@ export default function Home() {
                   <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input 
                     placeholder="Filter your circle..." 
-                    className="pl-9 h-9 bg-muted/30 border-none rounded-xl text-xs"
+                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs"
                     value={friendFilter}
                     onChange={(e) => setFriendFilter(e.target.value)}
                   />
@@ -385,7 +384,7 @@ export default function Home() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-primary/10">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-background border-primary/10">
                   <CardContent className="p-12 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
                   </CardContent>
@@ -397,7 +396,7 @@ export default function Home() {
                       <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
                         <CardContent className="p-3 flex items-center justify-between h-full">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0">
+                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
                               {contact.contactName?.[0]}
                             </div>
                             <div className="min-w-0">
@@ -408,7 +407,7 @@ export default function Home() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 rounded-full text-primary hover:bg-primary/10 shrink-0"
+                            className="h-8 w-8 rounded-full text-primary hover:bg-secondary shrink-0"
                             onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
                           >
                             <MessageSquare className="h-4 w-4" />
@@ -434,10 +433,10 @@ export default function Home() {
 
               {isJourneysLoading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card/40 animate-pulse rounded-3xl" />)}
+                  {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card animate-pulse rounded-3xl" />)}
                 </div>
               ) : !filteredJourneys || filteredJourneys.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-background border-border">
                   <CardContent className="p-16 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">
                       {globalSearch ? "No matching journeys found." : "No recent journeys recorded."}
@@ -447,11 +446,11 @@ export default function Home() {
               ) : (
                 <div className="space-y-4">
                   {filteredJourneys.map((j) => (
-                    <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
+                    <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-5 flex-1 min-w-0">
-                            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner shrink-0">
+                            <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0">
                               <Car className="h-7 w-7" />
                             </div>
                             <div className="space-y-1 min-w-0">
@@ -481,7 +480,7 @@ export default function Home() {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all shrink-0 ml-4"
+                            className="rounded-xl h-10 w-10 hover:bg-secondary hover:text-primary transition-all shrink-0 ml-4"
                             onClick={() => router.push("/journey")}
                           >
                             <ArrowRight className="h-5 w-5" />

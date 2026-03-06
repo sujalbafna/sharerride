@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -23,7 +22,7 @@ export function BottomNav() {
   if (isLoginPage || !user) return null
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-md pb-safe md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-safe md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
       <div className="flex justify-around items-center h-16 px-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href

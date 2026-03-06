@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -68,7 +67,7 @@ function RequestItem({
 
   if (req.requestType === "JourneyNotification") {
     return (
-      <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 space-y-2">
+      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
         <div className="flex items-center gap-2">
           <Car className="h-3 w-3 text-primary" />
           <span className="text-[10px] font-bold uppercase text-primary">Travel Alert</span>
@@ -79,7 +78,7 @@ function RequestItem({
         <Button 
           size="sm" 
           variant="outline"
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg border-primary/20 text-primary bg-background hover:bg-primary/5"
           onClick={() => onJoinRequest(req)}
         >
           WANTS TO JOIN
@@ -90,7 +89,7 @@ function RequestItem({
 
   if (req.requestType === "JourneyEndNotification") {
     return (
-      <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2">
+      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-3 w-3 text-accent" />
           <span className="text-[10px] font-bold uppercase text-accent">Arrival Update</span>
@@ -101,7 +100,7 @@ function RequestItem({
         <Button 
           size="sm" 
           variant="ghost"
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground hover:bg-accent/5"
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground bg-background hover:bg-muted"
           onClick={() => onDismiss(req.id)}
         >
           <Check className="h-3 w-3 mr-1" />
@@ -113,7 +112,7 @@ function RequestItem({
 
   if (req.requestType === "JoinJourneyRequest") {
     return (
-      <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2">
+      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
         <div className="flex items-center gap-2">
           <User className="h-3 w-3 text-primary" />
           <span className="text-[10px] font-bold uppercase text-primary">Join Request</span>
@@ -132,7 +131,7 @@ function RequestItem({
           <Button 
             size="sm" 
             variant="ghost"
-            className="h-8 w-8 p-0 rounded-lg text-destructive" 
+            className="h-8 w-8 p-0 rounded-lg text-destructive bg-background" 
             onClick={() => onDecline(req)}
           >
             <X className="h-4 w-4" />
@@ -143,17 +142,17 @@ function RequestItem({
   }
 
   return (
-    <div className="p-3 bg-accent/5 rounded-xl border border-accent/10 space-y-2 animate-in slide-in-from-left-2">
+    <div className="p-3 bg-secondary rounded-xl border border-border space-y-2 animate-in slide-in-from-left-2">
       <div className="flex items-center gap-2">
         <Avatar className="h-6 w-6">
-          <AvatarFallback className="text-[9px] font-black bg-accent/20 text-primary">
+          <AvatarFallback className="text-[9px] font-black bg-background text-primary">
             {senderName[0] || "F"}
           </AvatarFallback>
         </Avatar>
         <span className="text-[11px] font-bold truncate flex-1">
           {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : senderName}
         </span>
-        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => onDecline(req)}>
+        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground hover:text-destructive bg-background" onClick={() => onDecline(req)}>
           <X className="h-3 w-3" />
         </Button>
       </div>
@@ -370,16 +369,16 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-16 flex items-center justify-center border-b">
+      <SidebarHeader className="h-16 flex items-center justify-center border-b bg-sidebar">
         <div className="flex items-center gap-2 px-4 w-full">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Shield className="h-5 w-5" />
           </div>
-          <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase">SETU</span>
+          <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase text-sidebar-foreground">SETU</span>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="py-4 space-y-4">
+      <SidebarContent className="py-4 space-y-4 bg-sidebar">
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -394,16 +393,16 @@ export function AppSidebar() {
         </SidebarMenu>
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
             Friend Network
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div className="space-y-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
                 <Input 
                   placeholder="Find name..." 
-                  className="pl-9 h-10 bg-muted/30 border-none rounded-xl text-xs"
+                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -412,7 +411,7 @@ export function AppSidebar() {
               {searchResults.length > 0 && (
                 <div className="space-y-2 pt-2">
                   {searchResults.map((u) => (
-                    <div key={u.userId} className="flex items-center justify-between bg-primary/5 p-2 rounded-lg">
+                    <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg">
                       <span className="text-[10px] font-bold truncate pr-2">{u.displayName}</span>
                       <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white" onClick={() => sendRequest(u)}>
                         <UserPlus className="h-3.5 w-3.5" />
@@ -425,18 +424,18 @@ export function AppSidebar() {
 
             <div className="pt-2 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase text-muted-foreground flex items-center gap-1.5">
+                <span className="text-[9px] font-black uppercase text-sidebar-foreground/70 flex items-center gap-1.5">
                   <Bell className="h-3 w-3" /> Inbox
                 </span>
                 {pendingRequests.length > 0 && (
-                  <Badge className="h-4 px-1.5 text-[8px] bg-primary/20 text-primary border-none">
+                  <Badge className="h-4 px-1.5 text-[8px] bg-primary text-primary-foreground border-none">
                     {pendingRequests.length} NEW
                   </Badge>
                 )}
               </div>
               
               {pendingRequests.length === 0 ? (
-                <p className="text-[9px] text-center text-muted-foreground opacity-50 py-2">No pending requests</p>
+                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No pending requests</p>
               ) : (
                 <div className="space-y-2">
                   {pendingRequests.map((req) => (
@@ -456,12 +455,12 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
             Friend Circle
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-1">
             {!friends || friends.length === 0 ? (
-              <p className="text-[9px] text-center text-muted-foreground opacity-50 py-2">No friends yet</p>
+              <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No friends yet</p>
             ) : (
               friends.map((friend) => (
                 <SidebarMenuButton 
@@ -469,7 +468,7 @@ export function AppSidebar() {
                   onClick={() => router.push(`/chat?with=${friend.appUserId}&name=${encodeURIComponent(friend.contactName)}`)}
                   isActive={activeChatId === friend.appUserId}
                 >
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                  <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-primary">
                     {friend.contactName?.[0]}
                   </div>
                   <span className="text-sm font-medium">{friend.contactName}</span>
@@ -480,13 +479,13 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t p-4 bg-sidebar">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="h-auto py-2" onClick={() => router.push("/profile")}>
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.photoURL || ""} alt={currentUserDisplayName} />
-                <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+                <AvatarFallback className="rounded-lg bg-secondary text-primary">
                   {currentUserDisplayName[0]?.toUpperCase() || <User className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>

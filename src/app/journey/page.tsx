@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
@@ -121,7 +120,7 @@ export default function JourneyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
@@ -129,7 +128,7 @@ export default function JourneyPage() {
           <h2 className="text-xl font-bold tracking-tight">Journeys</h2>
         </div>
         {activeJourney && (
-          <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-accent/20 text-primary border-accent animate-pulse")}>
+          <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-secondary text-primary border-accent animate-pulse")}>
             {isEmergencyActive ? "EMERGENCY PROTOCOL" : "LIVE TRACKING"}
           </Badge>
         )}
@@ -201,7 +200,7 @@ export default function JourneyPage() {
                     {isEmergencyActive ? (
                       <EmergencyProtocolDisplay />
                     ) : (
-                      <Card className="rounded-2xl border-none bg-white/10 backdrop-blur-md border border-white/10">
+                      <Card className="rounded-2xl border-none bg-white/10 border border-white/10">
                         <CardContent className="p-6 space-y-4">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
@@ -231,7 +230,7 @@ export default function JourneyPage() {
                   </div>
                   
                   <div className={cn(
-                    "rounded-3xl p-6 md:p-8 backdrop-blur-sm space-y-6 min-w-0",
+                    "rounded-3xl p-6 md:p-8 space-y-6 min-w-0",
                     isEmergencyActive ? "bg-white/20" : "bg-white/10"
                   )}>
                     <div className="space-y-4">
@@ -298,8 +297,8 @@ export default function JourneyPage() {
               </div>
             )}
             {journeys?.filter(j => j.status === 'Completed').map((j) => (
-              <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all">
-                <CardHeader className="pb-3 border-b border-muted/30">
+              <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all bg-card">
+                <CardHeader className="pb-3 border-b border-border">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
