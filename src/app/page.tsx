@@ -279,10 +279,6 @@ export default function Home() {
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
           <h2 className="text-xl font-black tracking-tighter hidden sm:block">Overview</h2>
-          <Badge variant="outline" className="text-[9px] border-primary/20 bg-secondary text-primary px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
-            <Activity className="h-3 w-3 mr-1.5" />
-            LIVE SYSTEM
-          </Badge>
         </div>
         <div className="flex-1 max-w-xs mx-4">
           <div className="relative">
@@ -362,7 +358,7 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* RECENT ACTIVITY SECTION - MOVED UP */}
+            {/* RECENT ACTIVITY SECTION */}
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
@@ -431,7 +427,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* MY FRIEND CIRCLE SECTION - MOVED DOWN */}
+            {/* MY FRIEND CIRCLE SECTION */}
             <section className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 className="font-black text-lg flex items-center gap-3 text-primary">
