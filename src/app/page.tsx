@@ -18,7 +18,8 @@ import {
   Check,
   Menu,
   Filter,
-  UserPlus
+  UserPlus,
+  Settings
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,7 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
 
 function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
   const db = useFirestore()
@@ -236,24 +238,6 @@ export default function Home() {
     }
   }
 
-  const sendFriendRequest = async (targetUser: any) => {
-    if (!db || !user) return
-    try {
-      await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
-        userId: targetUser.userId,
-        senderId: user.uid,
-        senderName: userName,
-        requestType: "ConnectionRequest",
-        description: "wants to join your trusted network.",
-        timestamp: new Date().toISOString(),
-        status: "Pending"
-      })
-      toast({ title: "Request Sent", description: `Connection request sent to ${targetUser.displayName}.` })
-    } catch (e) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to send request." })
-    }
-  }
-
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -294,13 +278,14 @@ export default function Home() {
               </div>
             )}
 
-            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden">
+            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden relative">
+              <EmergencyContactsDialog />
               <CardContent className="p-10 text-center space-y-8">
                 <SOSButton />
                 <div className="space-y-3">
                   <h3 className="text-2xl font-black tracking-tight">Emergency Response</h3>
                   <p className="text-sm opacity-90 leading-relaxed font-medium">
-                    Triggering SOS notifies all your registered friends immediately.
+                    Tap for broadcast, or <span className="font-black text-accent">Hold for 3s</span> to SMS your 3 emergency contacts.
                   </p>
                 </div>
               </CardContent>
@@ -338,7 +323,6 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* RECENT ACTIVITY SECTION */}
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
@@ -407,7 +391,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* MY FRIEND CIRCLE SECTION */}
             <section className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 className="font-black text-lg flex items-center gap-3 text-primary">

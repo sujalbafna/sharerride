@@ -33,6 +33,11 @@
           "description": "URL to the user's profile picture.",
           "format": "uri"
         },
+        "emergencySmsNumbers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of 3 mobile numbers for SMS emergency alerts."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp when the user account was created.",

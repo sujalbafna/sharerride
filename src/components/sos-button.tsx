@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useRef, useCallback } from "react"
 import { AlertCircle, Loader2, ShieldAlert, Car, Wrench, Mountain, HeartPulse } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
 import { collection, addDoc, doc } from "firebase/firestore"
 import { cn } from "@/lib/utils"
+import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 
 const emergencyTypes = [
   { id: "accident", label: "Accident", icon: Car, color: "text-destructive", bg: "bg-secondary" },
@@ -25,15 +26,19 @@ const emergencyTypes = [
   { id: "medical", label: "Medical", icon: HeartPulse, color: "text-destructive", bg: "bg-secondary" },
 ]
 
+const HOLD_DURATION = 3000
+
 export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<string | null>(null)
+  const [isHolding, setIsHolding] = useState(false)
+  const holdTimer = useRef<NodeJS.Timeout | null>(null)
+  
   const { toast } = useToast()
   const { user } = useUser()
   const db = useFirestore()
 
-  // Fetch user data for name
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
@@ -41,6 +46,73 @@ export function SOSButton() {
   const { data: userData } = useDoc(userRef)
   
   const senderName = userData ? `${userData.firstName} ${userData.lastName}` : (user?.displayName || "User")
+
+  const triggerSmsAlert = useCallback(async () => {
+    if (!user || !db || !userData?.emergencySmsNumbers?.length) {
+      toast({ 
+        variant: "destructive", 
+        title: "Setup Required", 
+        description: "Please configure 3 emergency mobile numbers in the SOS settings first." 
+      })
+      return
+    }
+
+    setIsSending(true)
+    try {
+      // Composition with AI
+      const { message: baseMessage } = await generateEmergencyMessage({
+        location: "My Current Live GPS Location",
+        situation: "Immediate Emergency Assistance Required"
+      })
+
+      const googleMapsUrl = `https://www.google.com/maps?q=12.9716,77.5946`
+      const finalMessage = `${baseMessage}\n\nTrack me: ${googleMapsUrl}`
+      const numbers = userData.emergencySmsNumbers.join(",")
+      
+      // Open SMS app with recipient numbers and body
+      const smsUri = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
+      window.open(smsUri, '_blank')
+
+      // Also record in Firestore
+      await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
+        userId: user.uid,
+        timestamp: new Date().toISOString(),
+        alertLocationDescription: "Current GPS Location",
+        alertLatitude: 12.9716,
+        alertLongitude: 77.5946,
+        alertMessage: finalMessage,
+        status: "Sent",
+        emergencyType: "QuickHold",
+        recipientsContactIds: []
+      })
+
+      toast({
+        title: "SMS Protocol Triggered",
+        description: "Emergency message composed for your 3 trusted contacts.",
+      })
+    } catch (error) {
+      console.error(error)
+      toast({ variant: "destructive", title: "Protocol Failed", description: "Failed to initialize SMS alert." })
+    } finally {
+      setIsSending(false)
+      setIsHolding(false)
+    }
+  }, [user, db, userData, toast])
+
+  const startHold = () => {
+    setIsHolding(true)
+    holdTimer.current = setTimeout(() => {
+      triggerSmsAlert()
+    }, HOLD_DURATION)
+  }
+
+  const cancelHold = () => {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current)
+      holdTimer.current = null
+    }
+    setIsHolding(false)
+  }
 
   const handleSOS = async () => {
     if (!user || !db || !selectedType) {
@@ -85,11 +157,35 @@ export function SOSButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="relative group">
-          <div className="absolute inset-0 bg-white/20 rounded-full animate-ping group-active:animate-none" />
-          <div className="relative h-40 w-40 rounded-full bg-destructive flex flex-col items-center justify-center shadow-xl active:scale-90 transition-all duration-300 border-8 border-white/10">
-            <ShieldAlert className="h-10 w-10 text-white mb-2" />
-            <span className="text-white text-4xl font-black tracking-tighter">SOS</span>
+        <button 
+          className="relative group outline-none"
+          onMouseDown={startHold}
+          onMouseUp={cancelHold}
+          onMouseLeave={cancelHold}
+          onTouchStart={startHold}
+          onTouchEnd={cancelHold}
+        >
+          <div className={cn(
+            "absolute inset-0 bg-white/20 rounded-full transition-all duration-300",
+            isHolding ? "animate-none scale-110" : "animate-ping"
+          )} />
+          <div className={cn(
+            "relative h-40 w-40 rounded-full bg-destructive flex flex-col items-center justify-center shadow-xl transition-all duration-300 border-8 border-white/10",
+            isHolding ? "scale-95 bg-red-800" : "active:scale-90"
+          )}>
+            {isSending ? (
+              <Loader2 className="h-10 w-10 text-white animate-spin" />
+            ) : (
+              <>
+                <ShieldAlert className="h-10 w-10 text-white mb-2" />
+                <span className="text-white text-4xl font-black tracking-tighter">SOS</span>
+                {isHolding && (
+                  <span className="absolute bottom-4 text-[8px] font-black text-white uppercase tracking-widest animate-pulse">
+                    HOLDING...
+                  </span>
+                )}
+              </>
+            )}
           </div>
         </button>
       </DialogTrigger>
@@ -101,8 +197,8 @@ export function SOSButton() {
           <DialogTitle className="text-3xl font-black tracking-tight text-destructive">
             Emergency Dispatch
           </DialogTitle>
-          <DialogDescription className="text-base">
-            Select the emergency category to notify your friends.
+          <DialogDescription className="text-base font-medium">
+            Select emergency type for system broadcast, or <span className="text-destructive font-black">Hold for 3s</span> to trigger SMS.
           </DialogDescription>
         </DialogHeader>
         
