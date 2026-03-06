@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Check,
   Menu,
-  Filter
+  Filter,
+  Navigation
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -106,7 +107,7 @@ export default function Home() {
     return query(
       collection(db, "users", user.uid, "journeys"),
       orderBy("startTime", "desc"),
-      limit(5)
+      limit(10)
     )
   }, [db, user])
 
@@ -140,6 +141,31 @@ export default function Home() {
   }, [db, user])
 
   const { data: journeyAlerts, isLoading: isAlertsLoading } = useCollection(alertsQuery)
+
+  // Advanced Global Filtering
+  const search = globalSearch.toLowerCase();
+
+  const filteredAlerts = useMemo(() => {
+    if (!journeyAlerts) return []
+    if (!search) return journeyAlerts
+    return journeyAlerts.filter(a => 
+      (a.senderName || "").toLowerCase().includes(search) ||
+      (a.description || "").toLowerCase().includes(search) ||
+      (a.startLocation || "").toLowerCase().includes(search) ||
+      (a.endLocation || "").toLowerCase().includes(search)
+    )
+  }, [journeyAlerts, search])
+
+  const filteredJourneys = useMemo(() => {
+    if (!journeys) return []
+    if (!search) return journeys
+    return journeys.filter(j => 
+      userName.toLowerCase().includes(search) ||
+      (j.startLocationDescription || "").toLowerCase().includes(search) ||
+      (j.endLocationDescription || "").toLowerCase().includes(search) ||
+      (j.status || "").toLowerCase().includes(search)
+    )
+  }, [journeys, search, userName])
 
   const handleJoinRequest = async (alert: any) => {
     if (!db || !user || !alert.targetJourneyId) return
@@ -236,11 +262,6 @@ export default function Home() {
     }
   }
 
-  const filteredJourneys = journeys?.filter(j => 
-    j.endLocationDescription.toLowerCase().includes(globalSearch.toLowerCase()) ||
-    j.status.toLowerCase().includes(globalSearch.toLowerCase())
-  )
-
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -264,11 +285,11 @@ export default function Home() {
             LIVE SYSTEM
           </Badge>
         </div>
-        <div className="flex-1 max-w-xs mx-4 hidden lg:block">
+        <div className="flex-1 max-w-xs mx-4 lg:block">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search..." 
+              placeholder="Search people, origin or destination..." 
               className="pl-10 h-10 bg-white/5 border-none rounded-xl text-xs"
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
@@ -281,9 +302,13 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
-            {journeyAlerts && journeyAlerts.length > 0 && (
+            {filteredAlerts && filteredAlerts.length > 0 && (
               <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
-                {journeyAlerts.map((alert) => (
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary ml-2">
+                  <Activity className="h-3.5 w-3.5" />
+                  Live Travel Updates
+                </div>
+                {filteredAlerts.map((alert) => (
                   <JourneyAlertCard 
                     key={alert.id} 
                     alert={alert} 
@@ -366,7 +391,7 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ) : (
-                <ScrollArea className="h-[400px] pr-4">
+                <ScrollArea className="h-[300px] pr-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {filteredFriends.map((contact) => (
                       <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
@@ -414,7 +439,9 @@ export default function Home() {
               ) : !filteredJourneys || filteredJourneys.length === 0 ? (
                 <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-white/5">
                   <CardContent className="p-16 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">No recent journeys recorded.</p>
+                    <p className="text-sm font-bold text-muted-foreground">
+                      {globalSearch ? "No matching journeys found." : "No recent journeys recorded."}
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
@@ -423,25 +450,38 @@ export default function Home() {
                     <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl hover:bg-card/80 transition-all group">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-5">
-                            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
-                              <MapPin className="h-7 w-7" />
+                          <div className="flex items-center gap-5 flex-1 min-w-0">
+                            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner shrink-0">
+                              <Car className="h-7 w-7" />
                             </div>
-                            <div className="space-y-1">
-                              <p className="font-black text-lg tracking-tight truncate max-w-[200px]">{j.endLocationDescription}</p>
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary/60 tracking-widest">
+                                <Activity className="h-3 w-3" />
+                                {userName}
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-bold text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
+                                <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
+                                <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
+                              </div>
                               <div className="flex items-center gap-3">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                   {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
                                 </p>
                                 <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                                <Badge variant="secondary" className="text-[9px] uppercase font-black">{j.status}</Badge>
+                                <Badge 
+                                  variant={j.status === 'InProgress' || j.status === 'Started' ? 'default' : 'secondary'} 
+                                  className="text-[9px] uppercase font-black"
+                                >
+                                  {j.status}
+                                </Badge>
                               </div>
                             </div>
                           </div>
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all"
+                            className="rounded-xl h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all shrink-0 ml-4"
                             onClick={() => router.push("/journey")}
                           >
                             <ArrowRight className="h-5 w-5" />
