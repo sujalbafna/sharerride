@@ -115,7 +115,8 @@ export default function Home() {
 
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
-    const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+    const journeyId = activeJourney.id
+    const journeyRef = doc(db, "users", user.uid, "journeys", journeyId)
     
     try {
       // 1. Mark journey as completed
@@ -129,7 +130,8 @@ export default function Home() {
         for (const friendId of activeJourney.sharedWithContactIds) {
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
-            where("targetJourneyId", "==", activeJourney.id)
+            where("targetJourneyId", "==", journeyId),
+            where("status", "==", "Pending")
           )
           const snap = await getDocs(q)
           for (const d of snap.docs) {

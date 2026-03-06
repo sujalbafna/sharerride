@@ -82,7 +82,7 @@ export function StartJourneyDialog() {
               senderId: user.uid,
               senderName: userName,
               requestType: "JourneyNotification",
-              description: `is traveling from ${startLoc} to ${endLoc}. ${availableSeatsCount > 0 ? `${availableSeatsCount} seats available.` : "No seats available."}`,
+              description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
               timestamp: new Date().toISOString(),
               status: "Pending",
               targetJourneyId: journeyDoc.id
@@ -137,7 +137,7 @@ export function StartJourneyDialog() {
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="start" 
-                  placeholder="e.g. Current Location or Home" 
+                  placeholder="e.g. Pune" 
                   className="pl-10 h-12 rounded-xl"
                   value={startLoc}
                   onChange={(e) => setStartLoc(e.target.value)}
@@ -150,7 +150,7 @@ export function StartJourneyDialog() {
                 <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="end" 
-                  placeholder="e.g. Office or Central Mall" 
+                  placeholder="e.g. Mumbai" 
                   className="pl-10 h-12 rounded-xl"
                   value={endLoc}
                   onChange={(e) => setEndLoc(e.target.value)}
