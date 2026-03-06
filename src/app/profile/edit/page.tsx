@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -128,7 +127,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-8 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -217,7 +216,7 @@ export default function EditProfilePage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-border/50">
+              <div className="pt-4 border-t border-border">
                 <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4">Security Update</h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -250,7 +249,7 @@ export default function EditProfilePage() {
               </div>
             </CardContent>
 
-            <CardFooter className="p-8 bg-muted/30">
+            <CardFooter className="p-8 bg-muted">
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
@@ -263,9 +262,9 @@ export default function EditProfilePage() {
           </Card>
         </form>
 
-        <div className="flex items-center justify-center gap-3 p-6 bg-accent/5 rounded-[2.5rem] border-2 border-dashed border-accent/20">
-          <ShieldCheck className="h-6 w-6 text-accent" />
-          <p className="text-[10px] font-bold text-primary uppercase tracking-widest text-center">
+        <div className="flex items-center justify-center gap-3 p-6 bg-accent rounded-[2.5rem] border-2 border-dashed border-accent/20">
+          <ShieldCheck className="h-6 w-6 text-primary-foreground" />
+          <p className="text-[10px] font-bold text-primary-foreground uppercase tracking-widest text-center">
             Your data is protected by industry-standard encryption protocols
           </p>
         </div>

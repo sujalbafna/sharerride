@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -56,7 +55,7 @@ export default function AlertsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-8 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -128,7 +127,7 @@ export default function AlertsPage() {
             <div className="grid gap-6">
               {alerts.map((alert, index) => (
                 <Card key={alert.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all overflow-hidden group">
-                  <CardHeader className="p-6 pb-4 bg-muted/20">
+                  <CardHeader className="p-6 pb-4 bg-muted">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
@@ -175,7 +174,7 @@ export default function AlertsPage() {
                         </div>
                       </div>
                       
-                      <div className="space-y-4 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-border/50 md:pl-6">
+                      <div className="space-y-4 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-border md:pl-6">
                         <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Action Taken</p>
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
@@ -206,8 +205,8 @@ export default function AlertsPage() {
           )}
         </section>
 
-        <div className="p-6 bg-accent/5 rounded-[2.5rem] border-2 border-dashed border-accent/20 text-center">
-          <p className="text-[10px] font-bold text-primary uppercase tracking-widest leading-relaxed">
+        <div className="p-6 bg-accent rounded-[2.5rem] border-2 border-dashed border-accent/20 text-center">
+          <p className="text-[10px] font-bold text-primary-foreground uppercase tracking-widest leading-relaxed">
             All security logs are cryptographically sealed and stored for 90 days in compliance with transit safety protocols.
           </p>
         </div>

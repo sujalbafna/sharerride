@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -151,7 +150,7 @@ export default function ContactsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
@@ -182,7 +181,7 @@ export default function ContactsPage() {
           {searchResults.length > 0 && (
             <div className="grid gap-3 mt-4">
               {searchResults.map((u) => (
-                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-accent/5">
+                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-muted">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
@@ -217,7 +216,7 @@ export default function ContactsPage() {
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : !requests || requests.length === 0 ? (
-            <div className="p-10 text-center bg-card rounded-[2rem] border-2 border-dashed border-border/50 text-muted-foreground text-sm font-medium">
+            <div className="p-10 text-center bg-card rounded-[2rem] border-2 border-dashed border-border text-muted-foreground text-sm font-medium">
               No pending requests.
             </div>
           ) : (
@@ -282,7 +281,7 @@ export default function ContactsPage() {
                   <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
                     <CardContent className="p-3 flex items-center justify-between h-full">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base">
+                        <div className="h-10 w-10 rounded-full bg-muted text-primary flex items-center justify-center font-bold text-base">
                           {contact.contactName[0]}
                         </div>
                         <div className="min-w-0">

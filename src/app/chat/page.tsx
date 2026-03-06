@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -84,8 +83,8 @@ export default function ChatPage() {
   if (!friendId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-8">
-        <div className="h-20 w-20 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-          <MessageSquare className="h-10 w-10 text-primary/20" />
+        <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-6">
+          <MessageSquare className="h-10 w-10 text-primary" />
         </div>
         <h3 className="text-xl font-bold mb-2">No Active Chat</h3>
         <p className="text-muted-foreground text-sm text-center max-w-xs mb-6">Select a friend from your circle to start a secure conversation.</p>
@@ -96,13 +95,13 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <header className="h-20 border-b flex items-center justify-between px-6 bg-card/80 backdrop-blur-md shrink-0 z-10 shadow-sm">
+      <header className="h-20 border-b flex items-center justify-between px-6 bg-card shrink-0 z-10 shadow-sm">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="rounded-full">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-4">
-            <Avatar className="h-10 w-10 border-2 border-primary/20">
+            <Avatar className="h-10 w-10 border-2 border-primary">
               <AvatarFallback className="bg-primary/10 text-primary font-black">
                 {friendName[0]}
               </AvatarFallback>
@@ -117,24 +116,24 @@ export default function ChatPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="rounded-xl text-primary/60">
+          <Button variant="ghost" size="icon" className="rounded-xl text-primary">
             <Phone className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-xl text-primary/60">
+          <Button variant="ghost" size="icon" className="rounded-xl text-primary">
             <Info className="h-5 w-5" />
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-accent/5">
+      <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-muted">
         <div className="flex flex-col items-center py-10 space-y-4">
-          <div className="p-4 bg-background rounded-2xl border-2 border-dashed border-primary/20 text-center max-w-xs">
+          <div className="p-4 bg-card rounded-2xl border-2 border-dashed border-primary/20 text-center max-w-xs">
             <ShieldCheck className="h-6 w-6 text-primary mx-auto mb-2" />
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
               Messages are encrypted end-to-end. Only you and {friendName} can read them.
             </p>
           </div>
-          <Badge variant="secondary" className="bg-muted/50 text-muted-foreground border-none text-[9px] uppercase tracking-tighter">
+          <Badge variant="secondary" className="bg-card text-muted-foreground border-none text-[9px] uppercase tracking-tighter">
             Conversation Started
           </Badge>
         </div>
@@ -178,7 +177,7 @@ export default function ChatPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={`Message ${friendName}...`} 
-            className="h-14 bg-accent/5 border-none rounded-2xl shadow-inner px-6 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary/20"
+            className="h-14 bg-muted border-none rounded-2xl shadow-inner px-6 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary/20"
           />
           <Button 
             type="submit" 

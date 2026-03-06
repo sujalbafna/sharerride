@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
@@ -48,7 +47,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-8 bg-card sticky top-0 z-20">
         <h2 className="text-xl font-bold tracking-tight">On-Demand Support</h2>
       </header>
 
@@ -115,7 +114,7 @@ export default function SupportPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {requests.map((req) => (
                 <Card key={req.id} className="rounded-2xl border-none shadow-sm overflow-hidden hover:shadow-md transition-all">
-                  <CardHeader className="bg-muted/30 pb-3">
+                  <CardHeader className="bg-muted pb-3">
                     <div className="flex justify-between items-center">
                       <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
                         {req.requestType === 'MeetingCompanion' ? <Handshake className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}

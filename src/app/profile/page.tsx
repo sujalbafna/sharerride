@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth } from "@/firebase"
@@ -80,7 +79,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
@@ -93,7 +92,7 @@ export default function ProfilePage() {
       </header>
 
       <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8">
-        <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border/50">
+        <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border">
           <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl">
             <AvatarImage src={userData?.profileImageUrl || ""} />
             <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
@@ -153,7 +152,7 @@ export default function ProfilePage() {
 
         <section className="space-y-4">
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences</h3>
-          <div className="bg-card rounded-[2rem] border border-border/50 overflow-hidden divide-y divide-border/50">
+          <div className="bg-card rounded-[2rem] border border-border overflow-hidden divide-y divide-border">
             {[
               { label: "Alerts Details", icon: Bell, href: "/alerts" },
               { label: "Settings", icon: Settings, href: "/settings" },
@@ -162,7 +161,7 @@ export default function ProfilePage() {
               <button 
                 key={item.label}
                 onClick={() => router.push(item.href)}
-                className="w-full p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group"
+                className="w-full p-6 flex items-center justify-between hover:bg-muted transition-colors group"
               >
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">

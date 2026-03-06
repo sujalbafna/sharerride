@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -106,7 +105,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="h-16 border-b flex items-center justify-between px-8 bg-card/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-8 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -127,7 +126,7 @@ export default function SettingsPage() {
             Privacy & Data Controls
           </div>
           <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0 divide-y divide-border/50">
+            <CardContent className="p-0 divide-y divide-border">
               <div className="p-6 flex items-center justify-between">
                 <div className="space-y-1">
                   <Label className="text-base font-bold flex items-center gap-2">
@@ -168,7 +167,7 @@ export default function SettingsPage() {
             Alert Preferences
           </div>
           <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0 divide-y divide-border/50">
+            <CardContent className="p-0 divide-y divide-border">
               <div className="p-6 flex items-center justify-between">
                 <div className="space-y-1">
                   <Label className="text-base font-bold flex items-center gap-2">
