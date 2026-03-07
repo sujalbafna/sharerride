@@ -38,6 +38,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser()
@@ -46,6 +56,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
   const [friendSearch, setFriendSearch] = useState("")
+  const [contactToDelete, setContactToDelete] = useState<{id: string, name: string} | null>(null)
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -85,11 +96,12 @@ export default function ProfilePage() {
     }
   }
 
-  const handleRemoveFriend = async (contactId: string) => {
-    if (!db || !user) return
+  const handleConfirmRemove = async () => {
+    if (!db || !user || !contactToDelete) return
     try {
-      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
-      toast({ title: "Friend Removed", description: "The contact has been removed from your circle." })
+      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactToDelete.id))
+      toast({ title: "Friend Removed", description: `${contactToDelete.name} has been removed from your circle.` })
+      setContactToDelete(null)
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: "Failed to remove friend." })
     }
@@ -246,7 +258,7 @@ export default function ProfilePage() {
                             size="icon" 
                             variant="ghost" 
                             className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
-                            onClick={() => handleRemoveFriend(contact.id)}
+                            onClick={() => setContactToDelete({id: contact.id, name: contact.contactName})}
                           >
                             <UserMinus className="h-4 w-4" />
                           </Button>
@@ -294,6 +306,26 @@ export default function ProfilePage() {
           LOG OUT
         </Button>
       </main>
+
+      <AlertDialog open={!!contactToDelete} onOpenChange={(open) => !open && setContactToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black">Remove Friend?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium">
+              Are you sure you want to remove <span className="text-primary font-bold">{contactToDelete?.name}</span> from your trusted circle? They will no longer receive your journey updates or SOS alerts.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">CANCEL</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmRemove}
+              className="rounded-xl font-black bg-destructive hover:bg-destructive/90"
+            >
+              REMOVE FRIEND
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
