@@ -257,9 +257,11 @@ export default function JourneyPage() {
                       </p>
                     </div>
 
-                    <div className="h-[200px] md:h-[250px] w-full">
+                    <div className="h-[250px] md:h-[350px] w-full">
                       <GoogleMap 
                         variant={isEmergencyActive ? "alert" : "active"}
+                        origin={activeJourney.startLocationDescription}
+                        destination={activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
                         className="h-full w-full"
                         lat={userLocation?.lat}
@@ -295,7 +297,7 @@ export default function JourneyPage() {
                     {isEmergencyActive ? (
                       <EmergencyProtocolDisplay />
                     ) : (
-                      <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner">
+                      <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner h-fit self-start">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-center justify-between">
                             <h4 className="text-[10px] font-black uppercase tracking-widest opacity-70 flex items-center gap-2">

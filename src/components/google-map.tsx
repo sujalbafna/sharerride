@@ -1,17 +1,17 @@
 
 "use client"
 
-import React, { useMemo } from "react"
-import Image from "next/image"
-import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Layers, Loader2 } from "lucide-react"
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
+import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Layers, Loader2, Flag, ArrowRight, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
-import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker } from '@react-google-maps/api'
+import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api'
 
 interface GoogleMapProps {
   className?: string
   address?: string
+  origin?: string
+  destination?: string
   lat?: number
   lng?: number
   zoom?: number
@@ -28,6 +28,8 @@ const containerStyle = {
 export function GoogleMap({ 
   className, 
   address, 
+  origin,
+  destination,
   lat,
   lng,
   zoom = 14, 
@@ -36,93 +38,99 @@ export function GoogleMap({
   variant = 'active'
 }: GoogleMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const directionsRequested = useRef(false);
   
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey || ""
   });
 
-  const mapImage = PlaceHolderImages.find(img => img.id === `map-${variant}`) || PlaceHolderImages[0]
+  useEffect(() => {
+    setDirections(null);
+    directionsRequested.current = false;
+  }, [origin, destination]);
+
+  const directionsCallback = useCallback((result: google.maps.DirectionsResult | null, status: google.maps.DirectionsStatus) => {
+    if (result !== null && status === 'OK' && !directionsRequested.current) {
+      setDirections(result);
+      directionsRequested.current = true;
+    }
+  }, []);
 
   // Fallback to simulation if no API key or load error
   if (!apiKey || loadError) {
     return (
-      <div className={cn("relative rounded-[2rem] overflow-hidden bg-muted border-4 border-card shadow-2xl group", className)}>
-        {/* Simulated Map Background */}
-        <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
-          <Image
-            src={mapImage.imageUrl}
-            alt={mapImage.description}
-            fill
-            className="object-cover opacity-60 grayscale-[0.2]"
-            data-ai-hint={mapImage.imageHint}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+      <div className={cn("relative rounded-[2rem] overflow-hidden bg-background border-4 border-card shadow-2xl group flex flex-col", className)}>
+        {/* Simulated Route Timeline View */}
+        <div className="flex-1 p-8 flex flex-col justify-center gap-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Navigation className="h-64 w-64 rotate-45 text-primary" />
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-12">
+            <div className="flex items-start gap-6 animate-in slide-in-from-left duration-500">
+              <div className="mt-1 relative">
+                <div className="h-6 w-6 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center">
+                  <div className="h-1.5 w-1.5 bg-white rounded-full" />
+                </div>
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-primary to-accent" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Starting Point</p>
+                <p className="text-lg font-black tracking-tight text-foreground">{origin || "Current Location"}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-6 animate-in slide-in-from-left duration-700 delay-200">
+              <div className="mt-1 relative">
+                <div className="h-6 w-6 rounded-full bg-accent border-4 border-white shadow-lg flex items-center justify-center">
+                  <Flag className="h-3 w-3 text-white" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Destination</p>
+                <p className="text-lg font-black tracking-tight text-foreground">{destination || "Target Point"}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute bottom-8 left-8 right-8 p-4 bg-muted/50 rounded-2xl border border-dashed flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Navigation className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest">Route Mode</p>
+                <p className="text-xs font-bold">Fastest Path</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-black text-primary">LIVE</p>
+              <p className="text-[10px] font-bold opacity-60 uppercase">Tracking</p>
+            </div>
+          </div>
         </div>
 
-        {/* Simulated UI Overlays */}
         {interactive && (
-          <>
-            <div className="absolute top-4 right-4 flex flex-col gap-2">
-              <Button size="icon" variant="secondary" className="h-10 w-10 rounded-xl shadow-lg bg-card/90 backdrop-blur-md">
-                <Layers className="h-5 w-5" />
-              </Button>
-              <div className="flex flex-col rounded-xl overflow-hidden shadow-lg border bg-card/90 backdrop-blur-md">
-                <Button size="icon" variant="ghost" className="h-10 w-10 rounded-none border-b">
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" className="h-10 w-10 rounded-none">
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-              </div>
+          <div className="p-4 border-t bg-card/50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-accent" />
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Security Link Active</span>
             </div>
-            
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-              <div className="bg-card/90 backdrop-blur-md px-4 py-2 rounded-xl border shadow-lg flex items-center gap-2 max-w-[70%]">
-                <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-[10px] font-bold uppercase truncate">{address || "Real-time Tracking Active"}</span>
-              </div>
-              <Button size="icon" className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30">
-                <Navigation className="h-6 w-6" />
+            <div className="flex gap-2">
+              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg bg-background shadow-sm">
+                <ZoomIn className="h-3 w-3" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg bg-background shadow-sm">
+                <ZoomOut className="h-3 w-3" />
               </Button>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Simulated Markers */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          {variant === 'active' && (
-            <div className="relative">
-               <div className="absolute -inset-8 bg-primary/20 rounded-full animate-ping" />
-               <div className="relative h-6 w-6 bg-primary rounded-full border-4 border-white shadow-xl flex items-center justify-center">
-                 <div className="h-1.5 w-1.5 bg-white rounded-full" />
-               </div>
-            </div>
-          )}
-          
-          {variant === 'alert' && (
-            <div className="relative">
-               <div className="absolute -inset-10 bg-destructive/30 rounded-full animate-ping" />
-               <MapPin className="h-10 w-10 text-destructive drop-shadow-2xl fill-destructive/20" />
-            </div>
-          )}
-
-          {markers.map((marker, i) => (
-            <div 
-              key={i} 
-              className="absolute"
-              style={{ 
-                top: `${50 + (i * 10)}%`, 
-                left: `${50 + (i * 15)}%` 
-              }}
-            >
-               <Shield className="h-6 w-6 text-accent drop-shadow-lg" />
-            </div>
-          ))}
-        </div>
-
-        <div className="absolute bottom-1 right-2 text-[8px] font-medium opacity-40 select-none">
-          Simulated Map View
+        <div className="absolute bottom-1 right-2 text-[8px] font-medium opacity-20 select-none">
+          Simulated Route Interface
         </div>
       </div>
     );
@@ -167,17 +175,43 @@ export function GoogleMap({
           ]
         }}
       >
-        <Marker 
-          position={center} 
-          icon={{
-            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-            fillColor: variant === 'alert' ? "#ef4444" : "#2563eb",
-            fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: "#ffffff",
-            scale: 1.5,
-          }}
-        />
+        {origin && destination && !directions && (
+          <DirectionsService
+            options={{
+              destination: destination,
+              origin: origin,
+              travelMode: google.maps.TravelMode.DRIVING
+            }}
+            callback={directionsCallback}
+          />
+        )}
+
+        {directions && (
+          <DirectionsRenderer
+            options={{
+              directions: directions,
+              polylineOptions: {
+                strokeColor: "#2280B3",
+                strokeWeight: 6,
+                strokeOpacity: 0.8
+              }
+            }}
+          />
+        )}
+
+        {!directions && (
+          <Marker 
+            position={center} 
+            icon={{
+              path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+              fillColor: variant === 'alert' ? "#ef4444" : "#2280B3",
+              fillOpacity: 1,
+              strokeWeight: 2,
+              strokeColor: "#ffffff",
+              scale: 1.5,
+            }}
+          />
+        )}
         
         {markers.map((marker, i) => (
           <Marker key={i} position={{ lat: marker.lat, lng: marker.lng }} />
@@ -188,7 +222,7 @@ export function GoogleMap({
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
           <div className="bg-card/90 backdrop-blur-md px-4 py-2 rounded-xl border shadow-lg flex items-center gap-2 max-w-[70%] pointer-events-auto">
             <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-[10px] font-bold uppercase truncate">{address || "Live Location Active"}</span>
+            <span className="text-[10px] font-bold uppercase truncate">{address || "Live Directions Active"}</span>
           </div>
           <Button size="icon" className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto">
             <Navigation className="h-6 w-6" />
