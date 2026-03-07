@@ -21,12 +21,19 @@ import {
   Clock,
   Loader2,
   Menu,
-  UserMinus
+  UserMinus,
+  ShieldAlert
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser()
@@ -92,9 +99,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background pb-12">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="md:hidden">
-            <Menu className="h-6 w-6" />
-          </SidebarTrigger>
+          <SidebarTrigger className="md:hidden" />
           <h2 className="text-xl font-bold tracking-tight">Security Hub</h2>
         </div>
         <Button 
@@ -167,46 +172,60 @@ export default function ProfilePage() {
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Trusted Circle</h3>
-            <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">{contacts?.length || 0} FRIENDS</Badge>
-          </div>
-          
-          {isContactsLoading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : !contacts || contacts.length === 0 ? (
-            <div className="p-10 text-center bg-card rounded-[2rem] border-2 border-dashed border-border text-muted-foreground text-sm font-medium">
-              No friends in your network yet.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {contacts.map((contact) => (
-                <Card key={contact.id} className="rounded-2xl border-none shadow-sm bg-card hover:shadow-md transition-all h-20">
-                  <CardContent className="p-3 flex items-center justify-between h-full">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
-                        {contact.contactName?.[0]}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
-                        <p className="text-[9px] text-muted-foreground uppercase font-medium">Verified Connection</p>
-                      </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="remove-friends" className="border-none">
+              <AccordionTrigger className="hover:no-underline p-0">
+                <div className="flex items-center justify-between w-full px-2 py-4 bg-muted/50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-destructive/10 text-destructive rounded-xl flex items-center justify-center">
+                      <UserMinus className="h-5 w-5" />
                     </div>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
-                      onClick={() => handleRemoveFriend(contact.id)}
-                    >
-                      <UserMinus className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                    <span className="text-sm font-black uppercase tracking-widest">Remove Friend</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold mr-4">
+                    {contacts?.length || 0} TOTAL
+                  </Badge>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-4 px-2">
+                {isContactsLoading ? (
+                  <div className="flex justify-center p-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : !contacts || contacts.length === 0 ? (
+                  <div className="p-8 text-center bg-card rounded-2xl border-2 border-dashed border-border text-muted-foreground text-sm font-medium">
+                    No friends in your network yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {contacts.map((contact) => (
+                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm bg-card hover:shadow-md transition-all h-20">
+                        <CardContent className="p-3 flex items-center justify-between h-full">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
+                              {contact.contactName?.[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
+                              <p className="text-[9px] text-muted-foreground uppercase font-medium">Verified Connection</p>
+                            </div>
+                          </div>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
+                            onClick={() => handleRemoveFriend(contact.id)}
+                          >
+                            <UserMinus className="h-4 w-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
 
         <section className="space-y-4">
