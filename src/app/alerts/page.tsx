@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -164,11 +165,13 @@ export default function AlertsPage() {
                             <MapPin className="h-4 w-4 text-destructive" />
                             {alert.alertLocationDescription}
                           </div>
-                          <div className="h-32 w-full rounded-xl overflow-hidden border">
+                          <div className="h-48 w-full rounded-xl overflow-hidden border">
                             <GoogleMap 
                               variant="alert" 
                               interactive={false} 
-                              className="h-full w-full rounded-none border-none" 
+                              className="h-full w-full rounded-none border-none"
+                              lat={alert.alertLatitude}
+                              lng={alert.alertLongitude}
                             />
                           </div>
                         </div>

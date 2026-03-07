@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
-import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Layers, Loader2, Flag, ArrowRight, Circle } from "lucide-react"
+import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Loader2, Flag, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api'
@@ -58,80 +58,25 @@ export function GoogleMap({
     }
   }, []);
 
-  // Fallback to simulation if no API key or load error
-  if (!apiKey || loadError) {
+  if (!apiKey) {
     return (
-      <div className={cn("relative rounded-[2rem] overflow-hidden bg-background border-4 border-card shadow-2xl group flex flex-col", className)}>
-        {/* Simulated Route Timeline View */}
-        <div className="flex-1 p-8 flex flex-col justify-center gap-12 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Navigation className="h-64 w-64 rotate-45 text-primary" />
-          </div>
-
-          <div className="relative z-10 flex flex-col gap-12">
-            <div className="flex items-start gap-6 animate-in slide-in-from-left duration-500">
-              <div className="mt-1 relative">
-                <div className="h-6 w-6 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 bg-white rounded-full" />
-                </div>
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-primary to-accent" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Starting Point</p>
-                <p className="text-lg font-black tracking-tight text-foreground">{origin || "Current Location"}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-6 animate-in slide-in-from-left duration-700 delay-200">
-              <div className="mt-1 relative">
-                <div className="h-6 w-6 rounded-full bg-accent border-4 border-white shadow-lg flex items-center justify-center">
-                  <Flag className="h-3 w-3 text-white" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Destination</p>
-                <p className="text-lg font-black tracking-tight text-foreground">{destination || "Target Point"}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-8 left-8 right-8 p-4 bg-muted/50 rounded-2xl border border-dashed flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <Navigation className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest">Route Mode</p>
-                <p className="text-xs font-bold">Fastest Path</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-black text-primary">LIVE</p>
-              <p className="text-[10px] font-bold opacity-60 uppercase">Tracking</p>
-            </div>
-          </div>
+      <div className={cn("flex flex-col items-center justify-center bg-muted/50 rounded-[2rem] border-4 border-dashed p-8 text-center gap-4", className)}>
+        <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+          <AlertTriangle className="h-6 w-6" />
         </div>
-
-        {interactive && (
-          <div className="p-4 border-t bg-card/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-accent" />
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Security Link Active</span>
-            </div>
-            <div className="flex gap-2">
-              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg bg-background shadow-sm">
-                <ZoomIn className="h-3 w-3" />
-              </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg bg-background shadow-sm">
-                <ZoomOut className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="absolute bottom-1 right-2 text-[8px] font-medium opacity-20 select-none">
-          Simulated Route Interface
+        <div className="space-y-1">
+          <p className="text-sm font-black uppercase tracking-widest">Maps API Key Missing</p>
+          <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env file to enable live tracking.</p>
         </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className={cn("flex flex-col items-center justify-center bg-destructive/5 rounded-[2rem] border-4 border-destructive/20 p-8 text-center gap-2", className)}>
+        <AlertTriangle className="h-6 w-6 text-destructive" />
+        <p className="text-xs font-bold text-destructive uppercase tracking-widest">Map Load Error</p>
       </div>
     );
   }
@@ -222,7 +167,7 @@ export function GoogleMap({
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
           <div className="bg-card/90 backdrop-blur-md px-4 py-2 rounded-xl border shadow-lg flex items-center gap-2 max-w-[70%] pointer-events-auto">
             <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-[10px] font-bold uppercase truncate">{address || "Live Directions Active"}</span>
+            <span className="text-[10px] font-bold uppercase truncate">{address || (directions ? "Route Tracking" : "Live Location Active")}</span>
           </div>
           <Button size="icon" className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto">
             <Navigation className="h-6 w-6" />
