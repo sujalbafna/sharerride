@@ -1,12 +1,14 @@
 
 "use client"
 
+import { useState, useMemo } from "react"
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth } from "@/firebase"
 import { doc, collection, query, where, deleteDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { 
   User, 
   Mail, 
@@ -22,7 +24,9 @@ import {
   Loader2,
   Menu,
   UserMinus,
-  ShieldAlert
+  ShieldAlert,
+  Search,
+  X
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -41,6 +45,7 @@ export default function ProfilePage() {
   const auth = useAuth()
   const router = useRouter()
   const { toast } = useToast()
+  const [friendSearch, setFriendSearch] = useState("")
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -62,6 +67,13 @@ export default function ProfilePage() {
     )
   }, [db, user])
   const { data: pendingRequests } = useCollection(pendingRequestsQuery)
+
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return []
+    return contacts.filter(c => 
+      c.contactName?.toLowerCase().includes(friendSearch.toLowerCase())
+    )
+  }, [contacts, friendSearch])
 
   const handleLogout = async () => {
     try {
@@ -187,18 +199,38 @@ export default function ProfilePage() {
                   </Badge>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-4 px-2">
+              <AccordionContent className="pt-6 px-2 space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search friend by name..." 
+                    className="pl-10 h-12 bg-secondary border-none rounded-xl text-sm font-bold"
+                    value={friendSearch}
+                    onChange={(e) => setFriendSearch(e.target.value)}
+                  />
+                  {friendSearch && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                      onClick={() => setFriendSearch("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
                 {isContactsLoading ? (
                   <div className="flex justify-center p-8">
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
-                ) : !contacts || contacts.length === 0 ? (
+                ) : filteredContacts.length === 0 ? (
                   <div className="p-8 text-center bg-card rounded-2xl border-2 border-dashed border-border text-muted-foreground text-sm font-medium">
-                    No friends in your network yet.
+                    {friendSearch ? "No friends found matching your search." : "No friends in your network yet."}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {contacts.map((contact) => (
+                    {filteredContacts.map((contact) => (
                       <Card key={contact.id} className="rounded-2xl border-none shadow-sm bg-card hover:shadow-md transition-all h-20">
                         <CardContent className="p-3 flex items-center justify-between h-full">
                           <div className="flex items-center gap-3 min-w-0">
