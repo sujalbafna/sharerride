@@ -346,26 +346,16 @@ export default function JourneyPage() {
             </Card>
           </section>
         ) : (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center py-8 md:py-12 text-center lg:text-left">
-            <div className="space-y-8 min-w-0">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-foreground">
-                Ready for your next safe travel?
-              </h1>
-              <p className="text-muted-foreground text-lg md:text-xl max-w-lg mx-auto lg:mx-0">
-                Setu provides virtual companionship and real-time tracking for every step of your journey.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <div className="w-full sm:w-auto">
-                  <StartJourneyDialog />
-                </div>
-              </div>
+          <section className="flex flex-col items-center justify-center py-12 md:py-20 text-center space-y-8 max-w-3xl mx-auto">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-tight text-foreground">
+              Ready for your next safe travel?
+            </h1>
+            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
+              Setu provides virtual companionship and real-time tracking for every step of your journey.
+            </p>
+            <div className="pt-4">
+              <StartJourneyDialog />
             </div>
-            <GoogleMap 
-              variant="hero" 
-              className="h-[250px] md:h-[400px] w-full" 
-              lat={userLocation?.lat}
-              lng={userLocation?.lng}
-            />
           </section>
         )}
 
