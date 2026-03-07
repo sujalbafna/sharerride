@@ -1,11 +1,28 @@
+
 "use client"
 
+import { useState, useEffect } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { MapPin, Navigation, CheckCircle2, ShieldAlert, Compass, Clock, History, Loader2, Users, ShieldCheck, MessageCircle, AlertTriangle, Menu } from "lucide-react"
+import { 
+  MapPin, 
+  Navigation, 
+  CheckCircle2, 
+  ShieldAlert, 
+  Compass, 
+  Clock, 
+  History, 
+  Loader2, 
+  Users, 
+  ShieldCheck, 
+  MessageCircle, 
+  AlertTriangle, 
+  Menu,
+  LocateFixed
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
@@ -21,6 +38,9 @@ export default function JourneyPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
+  const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -62,6 +82,61 @@ export default function JourneyPage() {
   const { data: latestAlerts } = useCollection(alertsQuery)
   const isEmergencyActive = latestAlerts && latestAlerts.length > 0 && latestAlerts[0].status !== 'Resolved'
 
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('unsupported')
+      return
+    }
+
+    const startTracking = () => {
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+          setLocationStatus('granted')
+        },
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) {
+            setLocationStatus('denied')
+          }
+        },
+        { enableHighAccuracy: true }
+      )
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        setLocationStatus(result.state as any)
+        if (result.state === 'granted') {
+          startTracking()
+        }
+        result.onchange = () => {
+          setLocationStatus(result.state as any)
+          if (result.state === 'granted') startTracking()
+        }
+      })
+    } else {
+      startTracking()
+    }
+  }, [])
+
+  const handleRequestLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocationStatus('granted')
+        toast({ title: "Location Enabled", description: "Live tracking is now active." })
+      },
+      (err) => {
+        setLocationStatus('denied')
+        toast({ 
+          variant: "destructive", 
+          title: "Permission Denied", 
+          description: "Please enable location in your browser settings to use live tracking." 
+        })
+      }
+    )
+  }
+
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyId = activeJourney.id
@@ -74,13 +149,11 @@ export default function JourneyPage() {
         endTime: currentTimestamp
       })
 
-      // Inform friends and clear start notifications
       if (contacts && contacts.length > 0) {
         for (const friendContact of contacts) {
           const friendId = friendContact.appUserId;
           if (!friendId) continue;
 
-          // Clear existing "Start" notifications for this friend
           const q = query(
             collection(db, "users", friendId, "supportRequests"),
             where("status", "==", "Pending"),
@@ -93,7 +166,6 @@ export default function JourneyPage() {
             })
           }
 
-          // Send "End" notification
           await addDoc(collection(db, "users", friendId, "supportRequests"), {
             userId: friendId,
             senderId: user.uid,
@@ -135,6 +207,27 @@ export default function JourneyPage() {
       </header>
 
       <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+        {locationStatus === 'denied' && (
+          <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
+            <CardContent className="p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+                <p className="text-[10px] font-black uppercase tracking-widest leading-tight">
+                  Location services are disabled. Live tracking will not be accurate.
+                </p>
+              </div>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-8 rounded-lg text-[10px] font-black shrink-0 px-4"
+                onClick={handleRequestLocation}
+              >
+                ENABLE LOCATION
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -143,14 +236,14 @@ export default function JourneyPage() {
         ) : activeJourney ? (
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
-              <Compass className="h-4 w-4" />
+              <LocateFixed className="h-4 w-4" />
               Active Session
             </div>
             <Card className={cn(
               "rounded-[2rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
               isEmergencyActive ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
             )}>
-              <CardContent className="p-6 md:p-8">
+              <CardContent className="p-4 md:p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="space-y-6 min-w-0">
                     <div>
@@ -169,6 +262,8 @@ export default function JourneyPage() {
                         variant={isEmergencyActive ? "alert" : "active"}
                         address={activeJourney.endLocationDescription}
                         className="h-full w-full"
+                        lat={userLocation?.lat}
+                        lng={userLocation?.lng}
                       />
                     </div>
 
@@ -215,14 +310,6 @@ export default function JourneyPage() {
                             <p className="text-xs font-medium leading-relaxed">
                               {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
                             </p>
-                            <div className="flex gap-2">
-                              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <Users className="h-3.5 w-3.5 text-primary" />
-                              </div>
-                              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <MessageCircle className="h-3.5 w-3.5 text-primary" />
-                              </div>
-                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -273,7 +360,12 @@ export default function JourneyPage() {
                 </div>
               </div>
             </div>
-            <GoogleMap variant="hero" className="h-[250px] md:h-[400px] w-full" />
+            <GoogleMap 
+              variant="hero" 
+              className="h-[250px] md:h-[400px] w-full" 
+              lat={userLocation?.lat}
+              lng={userLocation?.lng}
+            />
           </section>
         )}
 
