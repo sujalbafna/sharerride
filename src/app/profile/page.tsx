@@ -1,7 +1,8 @@
+
 "use client"
 
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth } from "@/firebase"
-import { doc, collection, query, where } from "firebase/firestore"
+import { doc, collection, query, where, deleteDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,7 +20,8 @@ import {
   ChevronRight,
   Clock,
   Loader2,
-  Menu
+  Menu,
+  UserMinus
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -43,7 +45,7 @@ export default function ProfilePage() {
     if (!db || !user) return null
     return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
-  const { data: contacts } = useCollection(contactsQuery)
+  const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
 
   const pendingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -61,6 +63,16 @@ export default function ProfilePage() {
       router.push("/login")
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to sign out." })
+    }
+  }
+
+  const handleRemoveFriend = async (contactId: string) => {
+    if (!db || !user) return
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
+      toast({ title: "Friend Removed", description: "The contact has been removed from your circle." })
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to remove friend." })
     }
   }
 
@@ -152,6 +164,49 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Trusted Circle</h3>
+            <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">{contacts?.length || 0} FRIENDS</Badge>
+          </div>
+          
+          {isContactsLoading ? (
+            <div className="flex justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : !contacts || contacts.length === 0 ? (
+            <div className="p-10 text-center bg-card rounded-[2rem] border-2 border-dashed border-border text-muted-foreground text-sm font-medium">
+              No friends in your network yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {contacts.map((contact) => (
+                <Card key={contact.id} className="rounded-2xl border-none shadow-sm bg-card hover:shadow-md transition-all h-20">
+                  <CardContent className="p-3 flex items-center justify-between h-full">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
+                        {contact.contactName?.[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
+                        <p className="text-[9px] text-muted-foreground uppercase font-medium">Verified Connection</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
+                      onClick={() => handleRemoveFriend(contact.id)}
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="space-y-4">
