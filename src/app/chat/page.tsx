@@ -10,12 +10,22 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Send, Loader2, ShieldCheck, Phone, Info, MessageSquare } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function ChatPage() {
   const { user } = useUser()
   const db = useFirestore()
   const router = useRouter()
+  const { toast } = useToast()
   const searchParams = useSearchParams()
   const friendId = searchParams.get("with")
   
@@ -29,6 +39,13 @@ export default function ChatPage() {
     return doc(db, "publicProfiles", friendId)
   }, [db, friendId])
   const { data: friendProfile } = useDoc(friendProfileRef)
+  
+  // Fetch Friend Contact Info (for phone number)
+  const contactRef = useMemoFirebase(() => {
+    if (!db || !user || !friendId) return null
+    return doc(db, "users", user.uid, "trustedContacts", friendId)
+  }, [db, user, friendId])
+  const { data: contactData } = useDoc(contactRef)
   
   const friendName = friendProfile?.displayName || "Friend"
 
@@ -80,6 +97,18 @@ export default function ChatPage() {
     }
   }
 
+  const handleCall = () => {
+    if (contactData?.contactPhoneNumber && contactData.contactPhoneNumber !== "Private") {
+      window.location.href = `tel:${contactData.contactPhoneNumber}`
+    } else {
+      toast({
+        title: "Calling Unavailable",
+        description: "This contact's phone number is set to private or not available.",
+        variant: "destructive"
+      })
+    }
+  }
+
   if (!friendId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background p-8">
@@ -116,12 +145,44 @@ export default function ChatPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="rounded-xl text-primary">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-xl text-primary"
+            onClick={handleCall}
+          >
             <Phone className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-xl text-primary">
-            <Info className="h-5 w-5" />
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-xl text-primary">
+                <Info className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-[2rem] p-8 border-none shadow-2xl bg-card">
+              <DialogHeader className="text-center space-y-4">
+                <Avatar className="h-20 w-20 mx-auto border-4 border-primary/10">
+                  <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
+                    {friendName[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <DialogTitle className="text-2xl font-black">{friendName}</DialogTitle>
+                <DialogDescription className="text-sm font-medium">
+                  Verified safety connection since {contactData?.id ? "initial network setup" : "recently"}.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="p-4 bg-muted rounded-2xl space-y-1">
+                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Email Address</p>
+                  <p className="text-sm font-bold">{friendProfile?.email || "Not shared"}</p>
+                </div>
+                <div className="p-4 bg-muted rounded-2xl space-y-1">
+                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Phone Number</p>
+                  <p className="text-sm font-bold">{contactData?.contactPhoneNumber || "Private"}</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
 
@@ -148,7 +209,7 @@ export default function ChatPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {messages?.map((msg, i) => {
+            {messages?.map((msg) => {
               const isMe = msg.senderId === user?.uid
               return (
                 <div key={msg.id} className={cn("flex flex-col animate-in fade-in slide-in-from-bottom-2", isMe ? "items-end" : "items-start")}>

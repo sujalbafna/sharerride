@@ -17,7 +17,6 @@ import {
   LogOut, 
   Edit2, 
   ChevronRight,
-  ShieldCheck,
   Clock,
   Loader2,
   Menu
@@ -79,14 +78,19 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
+      <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden">
             <Menu className="h-6 w-6" />
           </SidebarTrigger>
           <h2 className="text-xl font-bold tracking-tight">Security Hub</h2>
         </div>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full"
+          onClick={() => router.push("/settings")}
+        >
           <Settings className="h-5 w-5" />
         </Button>
       </header>
