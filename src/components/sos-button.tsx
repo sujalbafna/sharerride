@@ -33,6 +33,7 @@ export function SOSButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [isHolding, setIsHolding] = useState(false)
+  const [isReadyToSend, setIsReadyToSend] = useState(false)
   const holdTimer = useRef<NodeJS.Timeout | null>(null)
   
   const { toast } = useToast()
@@ -71,7 +72,9 @@ export function SOSButton() {
       
       // Open SMS app with recipient numbers and body
       const smsUri = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
-      window.open(smsUri, '_blank')
+      
+      // We open this in a way that respects mobile browser interaction requirements
+      window.location.href = smsUri
 
       // Also record in Firestore
       await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
@@ -87,8 +90,8 @@ export function SOSButton() {
       })
 
       toast({
-        title: "SMS Protocol Triggered",
-        description: "Emergency message composed for your 3 trusted contacts.",
+        title: "SMS Protocol Prepared",
+        description: "Emergency message composed. Please tap 'Send' in your messaging app.",
       })
     } catch (error) {
       console.error(error)
@@ -96,12 +99,16 @@ export function SOSButton() {
     } finally {
       setIsSending(false)
       setIsHolding(false)
+      setIsReadyToSend(false)
     }
   }, [user, db, userData, toast])
 
   const startHold = () => {
     setIsHolding(true)
+    setIsReadyToSend(false)
     holdTimer.current = setTimeout(() => {
+      setIsReadyToSend(true)
+      // On some platforms we can trigger immediately, on others we wait for the release
       triggerSmsAlert()
     }, HOLD_DURATION)
   }
@@ -112,6 +119,7 @@ export function SOSButton() {
       holdTimer.current = null
     }
     setIsHolding(false)
+    setIsReadyToSend(false)
   }
 
   const handleSOS = async () => {

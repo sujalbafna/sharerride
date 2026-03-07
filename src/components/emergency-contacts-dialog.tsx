@@ -68,13 +68,13 @@ export function EmergencyContactsDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="absolute top-4 right-4 h-8 w-8 p-0 rounded-full hover:bg-primary-foreground/20 text-primary-foreground">
+        <Button variant="ghost" size="sm" className="absolute top-4 right-4 h-8 w-8 p-0 rounded-full hover:bg-primary-foreground/20 text-primary-foreground bg-primary/20">
           <Edit2 className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
         <DialogHeader className="space-y-4">
-          <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+          <div className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center">
             <Phone className="h-6 w-6" />
           </div>
           <DialogTitle className="text-2xl font-black tracking-tight">SMS Contacts</DialogTitle>
@@ -90,11 +90,11 @@ export function EmergencyContactsDialog() {
                 Emergency Contact #{i + 1}
               </Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id={`num-${i}`}
                   placeholder="+1 (555) 000-0000" 
-                  className="h-12 pl-10 rounded-xl bg-secondary border-none"
+                  className="h-12 pl-12 rounded-xl bg-secondary border-none"
                   value={num}
                   onChange={(e) => updateNumber(i, e.target.value)}
                 />
@@ -102,10 +102,10 @@ export function EmergencyContactsDialog() {
             </div>
           ))}
           
-          <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10 mt-2">
+          <div className="flex items-start gap-3 p-4 bg-muted rounded-2xl border-l-4 border-primary mt-2">
             <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-[10px] font-medium leading-relaxed italic text-primary">
-              SMS protocol requires manual confirmation on your device to send. Ensure these numbers are correct and including country codes.
+            <p className="text-[10px] font-medium leading-relaxed italic text-muted-foreground">
+              SMS protocol requires manual confirmation on your device to send. Ensure these numbers are correct and include country codes.
             </p>
           </div>
         </div>
