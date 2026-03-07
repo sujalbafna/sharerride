@@ -257,7 +257,7 @@ export default function JourneyPage() {
                       </p>
                     </div>
 
-                    <div className="h-[250px] md:h-[350px] w-full">
+                    <div className="h-[300px] md:h-[450px] w-full">
                       <GoogleMap 
                         variant={isEmergencyActive ? "alert" : "active"}
                         origin={activeJourney.startLocationDescription}
@@ -271,10 +271,10 @@ export default function JourneyPage() {
 
                     <div className="space-y-3">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
-                        <span>Route Progress</span>
-                        <span>{isEmergencyActive ? "SOS DISPATCHED" : "Tracking..."}</span>
+                        <span>Route Status</span>
+                        <span>{isEmergencyActive ? "SOS DISPATCHED" : "Real-time Tracking"}</span>
                       </div>
-                      <Progress value={20} className={cn("h-2.5", isEmergencyActive ? "bg-destructive-foreground/20" : "bg-primary-foreground/20")} />
+                      <Progress value={0} className={cn("h-2.5", isEmergencyActive ? "bg-destructive-foreground/20" : "bg-primary-foreground/20")} />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

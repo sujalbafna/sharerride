@@ -46,6 +46,7 @@ export function GoogleMap({
     googleMapsApiKey: apiKey || ""
   });
 
+  // Reset directions when origin or destination changes
   useEffect(() => {
     setDirections(null);
     directionsRequested.current = false;
@@ -120,6 +121,7 @@ export function GoogleMap({
           ]
         }}
       >
+        {/* Directions API Integration */}
         {origin && destination && !directions && (
           <DirectionsService
             options={{
@@ -131,6 +133,7 @@ export function GoogleMap({
           />
         )}
 
+        {/* Directions Rendering */}
         {directions && (
           <DirectionsRenderer
             options={{
@@ -144,6 +147,7 @@ export function GoogleMap({
           />
         )}
 
+        {/* Single Marker fallback if no directions */}
         {!directions && (
           <Marker 
             position={center} 
@@ -158,6 +162,7 @@ export function GoogleMap({
           />
         )}
         
+        {/* Additional markers (guards, friends, etc) */}
         {markers.map((marker, i) => (
           <Marker key={i} position={{ lat: marker.lat, lng: marker.lng }} />
         ))}
