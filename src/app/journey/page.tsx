@@ -20,8 +20,7 @@ import {
   ShieldCheck, 
   MessageCircle, 
   AlertTriangle, 
-  Menu,
-  LocateFixed
+  Menu
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -235,10 +234,6 @@ export default function JourneyPage() {
           </div>
         ) : activeJourney ? (
           <section className="space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
-              <LocateFixed className="h-4 w-4" />
-              Active Session
-            </div>
             <Card className={cn(
               "rounded-[2rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
               isEmergencyActive ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
