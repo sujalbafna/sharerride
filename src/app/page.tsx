@@ -16,16 +16,14 @@ import {
   Car,
   CheckCircle2,
   Check,
-  Menu,
   Filter,
-  UserPlus,
-  Settings
+  UserMinus
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore, useDoc } from "@/firebase"
-import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs } from "firebase/firestore"
+import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs, deleteDoc } from "firebase/firestore"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
@@ -183,6 +181,16 @@ export default function Home() {
     if (!db || !user) return
     const alertRef = doc(db, "users", user.uid, "supportRequests", alertId)
     updateDoc(alertRef, { status: "Read" })
+  }
+
+  const handleRemoveFriend = async (contactId: string) => {
+    if (!db || !user) return
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
+      toast({ title: "Friend Removed", description: "The contact has been removed from your circle." })
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to remove friend." })
+    }
   }
 
   const handleEndJourney = async () => {
@@ -433,14 +441,24 @@ export default function Home() {
                               <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
                             </div>
                           </div>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
-                            onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
+                              onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-8 w-8 rounded-full text-muted-foreground bg-secondary hover:bg-destructive/10 hover:text-destructive shrink-0"
+                              onClick={() => handleRemoveFriend(contact.id)}
+                            >
+                              <UserMinus className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
