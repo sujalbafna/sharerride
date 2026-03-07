@@ -183,16 +183,6 @@ export default function Home() {
     updateDoc(alertRef, { status: "Read" })
   }
 
-  const handleRemoveFriend = async (contactId: string) => {
-    if (!db || !user) return
-    try {
-      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
-      toast({ title: "Friend Removed", description: "The contact has been removed from your circle." })
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to remove friend." })
-    }
-  }
-
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyId = activeJourney.id
@@ -350,52 +340,54 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {journeys.map((j) => (
-                    <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-5 flex-1 min-w-0">
-                            <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0">
-                              <Car className="h-7 w-7" />
+                <ScrollArea className="h-[500px] pr-4">
+                  <div className="space-y-4">
+                    {journeys.map((j) => (
+                      <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-5 flex-1 min-w-0">
+                              <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0">
+                                <Car className="h-7 w-7" />
+                              </div>
+                              <div className="space-y-1 min-w-0">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
+                                  <Activity className="h-3 w-3" />
+                                  {userName}
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-bold text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
+                                  <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
+                                  <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                                    {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
+                                  </p>
+                                  <span className="h-1 w-1 rounded-full bg-border" />
+                                  <Badge 
+                                    variant={j.status === 'InProgress' || j.status === 'Started' ? 'default' : 'secondary'} 
+                                    className="text-[9px] uppercase font-black"
+                                  >
+                                    {j.status}
+                                  </Badge>
+                                </div>
+                              </div>
                             </div>
-                            <div className="space-y-1 min-w-0">
-                              <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
-                                <Activity className="h-3 w-3" />
-                                {userName}
-                              </div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-bold text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
-                                <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
-                                <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                  {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
-                                </p>
-                                <span className="h-1 w-1 rounded-full bg-border" />
-                                <Badge 
-                                  variant={j.status === 'InProgress' || j.status === 'Started' ? 'default' : 'secondary'} 
-                                  className="text-[9px] uppercase font-black"
-                                >
-                                  {j.status}
-                                </Badge>
-                              </div>
-                            </div>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4"
+                              onClick={() => router.push("/journey")}
+                            >
+                              <ArrowRight className="h-5 w-5" />
+                            </Button>
                           </div>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4"
-                            onClick={() => router.push("/journey")}
-                          >
-                            <ArrowRight className="h-5 w-5" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
               )}
             </div>
 
@@ -449,14 +441,6 @@ export default function Home() {
                               onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
                             >
                               <MessageSquare className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="h-8 w-8 rounded-full text-muted-foreground bg-secondary hover:bg-destructive/10 hover:text-destructive shrink-0"
-                              onClick={() => handleRemoveFriend(contact.id)}
-                            >
-                              <UserMinus className="h-4 w-4" />
                             </Button>
                           </div>
                         </CardContent>
