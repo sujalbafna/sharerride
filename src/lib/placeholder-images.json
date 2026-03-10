@@ -3,32 +3,32 @@
     {
       "id": "hero-map",
       "description": "Abstract map representation with safety markers",
-      "imageUrl": "https://picsum.photos/seed/setu1/800/400",
+      "imageUrl": "https://picsum.photos/seed/setu-map-1/800/400",
       "imageHint": "safety map"
     },
     {
       "id": "avatar-user",
       "description": "User profile avatar",
-      "imageUrl": "https://picsum.photos/seed/user1/100/100",
+      "imageUrl": "https://picsum.photos/seed/user-profile-1/100/100",
       "imageHint": "person avatar"
     },
     {
       "id": "map-active",
       "description": "Active tracking map view",
-      "imageUrl": "https://picsum.photos/seed/mapactive/800/600",
+      "imageUrl": "https://picsum.photos/seed/tracking-map-1/800/600",
       "imageHint": "city map"
     },
     {
       "id": "map-alert",
       "description": "Emergency incident map view",
-      "imageUrl": "https://picsum.photos/seed/mapalert/400/300",
+      "imageUrl": "https://picsum.photos/seed/incident-map-1/400/300",
       "imageHint": "street map"
     },
     {
       "id": "auth-bg",
       "description": "Abstract protective network motif for login background",
-      "imageUrl": "https://picsum.photos/seed/authsetu/1200/800",
-      "imageHint": "secure network"
+      "imageUrl": "https://picsum.photos/seed/setu-secure-transit/1920/1080",
+      "imageHint": "transit security"
     }
   ]
 }

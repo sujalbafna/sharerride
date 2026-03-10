@@ -120,10 +120,10 @@ export default function LoginPage() {
             src={authImage.imageUrl} 
             alt="Background" 
             fill 
-            className="object-cover opacity-10 blur-sm"
+            className="object-cover opacity-20"
             data-ai-hint={authImage.imageHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/40 to-background/90" />
         </div>
       )}
 
