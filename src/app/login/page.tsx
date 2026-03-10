@@ -128,11 +128,24 @@ export default function LoginPage() {
       )}
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="flex items-center gap-3 mb-8 transition-transform hover:scale-105 duration-300">
-          <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-            <Shield className="h-7 w-7" />
+        <div className="flex flex-col items-center mb-8 gap-2">
+          <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
+            <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
+              <Shield className="h-7 w-7" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tighter uppercase">SETU</h1>
           </div>
-          <h1 className="text-3xl font-black tracking-tighter uppercase">SETU</h1>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500">
+            Developed and Hosted by{" "}
+            <a 
+              href="https://www.linkedin.com/in/sujal-bafna/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline transition-all"
+            >
+              Sujal Bafna
+            </a>
+          </p>
         </div>
 
         <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card/95 backdrop-blur-md">

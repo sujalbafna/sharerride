@@ -247,7 +247,12 @@ export default function Home() {
       <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
-          <h2 className="text-xl font-black tracking-tighter">Setu</h2>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-black tracking-tighter leading-none">Setu</h2>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+              by <a href="https://www.linkedin.com/in/sujal-bafna/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline transition-all">Sujal Bafna</a>
+            </p>
+          </div>
         </div>
       </header>
 
