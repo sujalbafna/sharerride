@@ -191,7 +191,7 @@ export default function EditProfilePage() {
                   <Input 
                     id="email" 
                     type="email" 
-                    placeholder="name@example.com" 
+                    placeholder="abc@gmail.com" 
                     className="pl-10 h-12 rounded-xl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

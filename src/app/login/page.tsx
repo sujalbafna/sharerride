@@ -157,7 +157,7 @@ export default function LoginPage() {
                     <Label htmlFor="email-login">Email</Label>
                     <div className="relative group">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                      <Input id="email-login" type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl transition-all focus:shadow-md" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
+                      <Input id="email-login" type="email" placeholder="abc@gmail.com" className="pl-10 h-12 rounded-xl transition-all focus:shadow-md" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -195,7 +195,7 @@ export default function LoginPage() {
                     <Label>Email</Label>
                     <div className="relative group">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="email" placeholder="name@example.com" className="pl-10 h-12 rounded-xl" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
+                      <Input type="email" placeholder="abc@gmail.com" className="pl-10 h-12 rounded-xl" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
