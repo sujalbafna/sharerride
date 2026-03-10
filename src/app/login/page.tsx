@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -113,7 +114,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
-      {/* Background Image with Overlay */}
       {authImage && (
         <div className="absolute inset-0 z-0">
           <Image 
@@ -135,13 +135,13 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-black tracking-tighter uppercase">SETU</h1>
           </div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500 text-center">
             Developed and Hosted by{" "}
             <a 
               href="https://www.linkedin.com/in/sujal-bafna/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-primary hover:underline transition-all"
+              className="text-primary hover:underline transition-all font-black"
             >
               Sujal Bafna
             </a>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -16,7 +17,6 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 import { 
-  Shield, 
   Bell, 
   Globe, 
   Moon, 
@@ -46,7 +46,6 @@ export default function SettingsPage() {
   const { data: userData, isLoading: isUserDocLoading } = useDoc(userRef)
 
   const [dataSharing, setDataSharing] = useState(true)
-  const [locationPrivacy, setLocationPrivacy] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(true)
   const [emailEnabled, setEmailEnabled] = useState(true)
   const [language, setLanguage] = useState("english")
@@ -55,7 +54,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (userData) {
       setDataSharing(userData.dataSharingEnabled ?? true)
-      setLocationPrivacy(userData.locationPrivacyEnabled ?? false)
       setPushEnabled(userData.pushNotificationsEnabled ?? true)
       setEmailEnabled(userData.emailNotificationsEnabled ?? true)
       setLanguage(userData.language ?? "english")
@@ -72,7 +70,6 @@ export default function SettingsPage() {
     try {
       await updateDoc(doc(db, "users", user.uid), {
         dataSharingEnabled: dataSharing,
-        locationPrivacyEnabled: locationPrivacy,
         pushNotificationsEnabled: pushEnabled,
         emailNotificationsEnabled: emailEnabled,
         language: language,
@@ -82,7 +79,7 @@ export default function SettingsPage() {
 
       toast({
         title: "Preferences Saved",
-        description: "Your security and app settings have been updated.",
+        description: "Your settings have been updated.",
       })
     } catch (error) {
       toast({
@@ -142,21 +139,6 @@ export default function SettingsPage() {
                   onCheckedChange={setDataSharing} 
                 />
               </div>
-              <div className="p-6 flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-bold flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-primary" />
-                    Strict Location Privacy
-                  </Label>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    When enabled, live location is only shared during active SOS events.
-                  </p>
-                </div>
-                <Switch 
-                  checked={locationPrivacy} 
-                  onCheckedChange={setLocationPrivacy} 
-                />
-              </div>
             </CardContent>
           </Card>
         </section>
@@ -164,7 +146,7 @@ export default function SettingsPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
             <Bell className="h-4 w-4" />
-            Alert Preferences
+            Notification Preferences
           </div>
           <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden">
             <CardContent className="p-0 divide-y divide-border">
@@ -175,7 +157,7 @@ export default function SettingsPage() {
                     Push Notifications
                   </Label>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Receive real-time updates about nearby friends and journey progress.
+                    Receive real-time updates about journey progress and circle invitations.
                   </p>
                 </div>
                 <Switch 
@@ -190,7 +172,7 @@ export default function SettingsPage() {
                     Email Alerts
                   </Label>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Monthly safety reports and important security updates.
+                    Monthly reports and important security updates.
                   </p>
                 </div>
                 <Switch 
@@ -262,9 +244,6 @@ export default function SettingsPage() {
             {isSaving ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Save className="h-6 w-6 mr-2" />}
             APPLY ALL CHANGES
           </Button>
-          <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-4">
-            Changes take effect immediately across all linked devices
-          </p>
         </div>
       </main>
     </div>

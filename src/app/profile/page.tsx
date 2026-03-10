@@ -22,9 +22,7 @@ import {
   ChevronRight,
   Clock,
   Loader2,
-  Menu,
   UserMinus,
-  ShieldAlert,
   Search,
   X
 } from "lucide-react"
@@ -276,7 +274,6 @@ export default function ProfilePage() {
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences</h3>
           <div className="bg-card rounded-[2rem] border border-border overflow-hidden divide-y divide-border">
             {[
-              { label: "Alerts Details", icon: Bell, href: "/alerts" },
               { label: "Settings", icon: Settings, href: "/settings" },
               { label: "Help & Support", icon: HelpCircle, href: "/support" }
             ].map((item) => (
@@ -312,7 +309,7 @@ export default function ProfilePage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black">Remove Friend?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm font-medium">
-              Are you sure you want to remove <span className="text-primary font-bold">{contactToDelete?.name}</span> from your trusted circle? They will no longer receive your journey updates or SOS alerts.
+              Are you sure you want to remove <span className="text-primary font-bold">{contactToDelete?.name}</span> from your trusted circle? They will no longer receive your journey updates.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">

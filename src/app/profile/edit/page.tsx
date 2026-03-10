@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -27,14 +28,12 @@ export default function EditProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Fetch Current User Data
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
   }, [db, user])
   const { data: userData, isLoading: isUserDocLoading } = useDoc(userRef)
 
-  // Form State
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -67,7 +66,6 @@ export default function EditProfilePage() {
 
     setIsSaving(true)
     try {
-      // 1. Update Firestore Profile
       const updateData: any = {
         firstName,
         lastName,
@@ -78,13 +76,11 @@ export default function EditProfilePage() {
       
       await updateDoc(doc(db, "users", user.uid), updateData)
 
-      // 2. Optional: Update Auth Credentials (requires recent login)
       if (email !== user.email) {
         try {
           await updateEmail(user, email)
         } catch (authError: any) {
           console.error("Failed to update email in auth:", authError)
-          // Often fails without recent login, but we still updated the DB record
         }
       }
 
