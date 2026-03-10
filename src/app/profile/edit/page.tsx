@@ -203,7 +203,7 @@ export default function EditProfilePage() {
                   <Input 
                     id="phone" 
                     type="tel" 
-                    placeholder="+1 (555) 000-0000" 
+                    placeholder="XXXXXXXXXX" 
                     className="pl-10 h-12 rounded-xl"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}

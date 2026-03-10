@@ -215,7 +215,7 @@ export default function LoginPage() {
                     <Label>Mobile Number</Label>
                     <div className="relative group">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="tel" placeholder="+1 (555) 000-0000" className="pl-10 h-12 rounded-xl" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
+                      <Input type="tel" placeholder="XXXXXXXXXX" className="pl-10 h-12 rounded-xl" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
