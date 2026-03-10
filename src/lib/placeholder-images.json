@@ -23,6 +23,12 @@
       "description": "Emergency incident map view",
       "imageUrl": "https://picsum.photos/seed/mapalert/400/300",
       "imageHint": "street map"
+    },
+    {
+      "id": "auth-bg",
+      "description": "Abstract protective network motif for login background",
+      "imageUrl": "https://picsum.photos/seed/authsetu/1200/800",
+      "imageHint": "secure network"
     }
   ]
 }

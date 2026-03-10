@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -40,7 +39,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
   const senderName = profile?.displayName || alert.senderName || "Friend"
 
   return (
-    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden">
+    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center gap-2">
           {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
@@ -54,7 +53,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
             variant="outline"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary bg-secondary hover:bg-muted"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary bg-secondary hover:bg-muted transition-all active:scale-95"
             onClick={() => onJoin(alert)}
           >
             WANTS TO JOIN
@@ -62,7 +61,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         ) : (
           <Button 
             variant="ghost"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted hover:bg-muted/80"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted hover:bg-muted/80 transition-all active:scale-95"
             onClick={() => onDismiss(alert.id)}
           >
             <Check className="h-4 w-4 mr-2" />
@@ -244,7 +243,7 @@ export default function Home() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground animate-in fade-in duration-700">
       <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
@@ -257,9 +256,9 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-8">
             
             {journeyAlerts && journeyAlerts.length > 0 && (
-              <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
+              <div className="space-y-4">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary ml-2">
-                  <Activity className="h-3.5 w-3.5" />
+                  <Activity className="h-3.5 w-3.5 animate-pulse" />
                   Live Travel Updates
                 </div>
                 {journeyAlerts.map((alert) => (
@@ -275,7 +274,7 @@ export default function Home() {
 
             {activeJourney ? (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl transition-all active:scale-95"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl transition-all active:scale-95 animate-in zoom-in duration-300"
                 onClick={handleEndJourney}
               >
                 <CheckCircle2 className="mr-2 h-6 w-6" />
@@ -283,7 +282,7 @@ export default function Home() {
               </Button>
             ) : (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 border-none shadow-2xl transition-all active:scale-95 hover:scale-[1.02]"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 border-none shadow-2xl transition-all active:scale-95 hover:scale-[1.02] animate-in zoom-in duration-300"
                 onClick={() => router.push("/journey")}
               >
                 <MapPin className="mr-2 h-6 w-6" />
@@ -294,7 +293,7 @@ export default function Home() {
 
           <div className="lg:col-span-2 space-y-10">
             <div className="grid grid-cols-1 gap-6">
-              <Card className="rounded-3xl border-none shadow-sm bg-card">
+              <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
                 </CardHeader>
@@ -316,7 +315,7 @@ export default function Home() {
                   {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card animate-pulse rounded-3xl" />)}
                 </div>
               ) : !journeys || journeys.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-border">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-border animate-in fade-in duration-500">
                   <CardContent className="p-16 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">
                       No recent journeys recorded.
@@ -327,11 +326,11 @@ export default function Home() {
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="space-y-4">
                     {journeys.map((j) => (
-                      <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card">
+                      <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card animate-in slide-in-from-left-4 duration-500">
                         <CardContent className="p-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-5 flex-1 min-w-0">
-                              <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0">
+                              <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                                 <Car className="h-7 w-7" />
                               </div>
                               <div className="space-y-1 min-w-0">
@@ -361,7 +360,7 @@ export default function Home() {
                             <Button 
                               size="icon" 
                               variant="ghost" 
-                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4"
+                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4 active:scale-95"
                               onClick={() => router.push("/journey")}
                             >
                               <ArrowRight className="h-5 w-5" />
@@ -381,11 +380,11 @@ export default function Home() {
                   <Users className="h-5 w-5" />
                   My Friend Circle
                 </h3>
-                <div className="relative w-full sm:w-64">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <div className="relative w-full sm:w-64 group">
+                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     placeholder="Filter your circle..." 
-                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20"
+                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20 transition-all"
                     value={friendFilter}
                     onChange={(e) => setFriendFilter(e.target.value)}
                   />
@@ -397,7 +396,7 @@ export default function Home() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10 animate-in fade-in duration-500">
                   <CardContent className="p-12 text-center space-y-4">
                     <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
                   </CardContent>
@@ -406,10 +405,10 @@ export default function Home() {
                 <ScrollArea className="h-[300px] pr-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {filteredFriends.map((contact) => (
-                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20">
+                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20 animate-in zoom-in-95 duration-300">
                         <CardContent className="p-3 flex items-center justify-between h-full">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0">
+                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                               {contact.contactName?.[0]}
                             </div>
                             <div className="min-w-0">
@@ -421,7 +420,7 @@ export default function Home() {
                             <Button 
                               size="icon" 
                               variant="ghost" 
-                              className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0"
+                              className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0 transition-all active:scale-95"
                               onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
                             >
                               <MessageSquare className="h-4 w-4" />
@@ -431,7 +430,7 @@ export default function Home() {
                       </Card>
                     ))}
                     {filteredFriends.length === 0 && friendFilter && (
-                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none">
+                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none animate-in fade-in duration-300">
                         No matches found in your circle.
                       </div>
                     )}
