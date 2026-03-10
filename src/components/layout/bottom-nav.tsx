@@ -1,8 +1,9 @@
+
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Compass, Users, Bell, User } from "lucide-react"
+import { Home, Compass, Users, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/firebase"
 
@@ -10,7 +11,6 @@ const navItems = [
   { icon: Home, label: "Home", href: "/" },
   { icon: Compass, label: "Journeys", href: "/journey" },
   { icon: Users, label: "Circle", href: "/contacts" },
-  { icon: Bell, label: "Alerts", href: "/alerts" },
   { icon: User, label: "Profile", href: "/profile" },
 ]
 

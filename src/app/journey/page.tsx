@@ -11,21 +11,16 @@ import {
   MapPin, 
   Navigation, 
   CheckCircle2, 
-  ShieldAlert, 
   Compass, 
   Clock, 
   History, 
   Loader2, 
-  Users, 
   ShieldCheck, 
-  MessageCircle, 
-  AlertTriangle, 
   Menu
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { StartJourneyDialog } from "@/components/start-journey-dialog"
-import { EmergencyProtocolDisplay } from "@/components/emergency-protocol-display"
 import { GoogleMap } from "@/components/google-map"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -68,18 +63,6 @@ export default function JourneyPage() {
     return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
-
-  const alertsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "emergencyAlerts"),
-      orderBy("timestamp", "desc"),
-      limit(1)
-    )
-  }, [db, user])
-
-  const { data: latestAlerts } = useCollection(alertsQuery)
-  const isEmergencyActive = latestAlerts && latestAlerts.length > 0 && latestAlerts[0].status !== 'Resolved'
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -199,8 +182,8 @@ export default function JourneyPage() {
           <h2 className="text-xl font-bold tracking-tight text-foreground">Journeys</h2>
         </div>
         {activeJourney && (
-          <Badge variant={isEmergencyActive ? "destructive" : "secondary"} className={cn("uppercase", !isEmergencyActive && "bg-secondary text-primary border-primary")}>
-            {isEmergencyActive ? "EMERGENCY PROTOCOL" : "LIVE TRACKING"}
+          <Badge variant="secondary" className="bg-secondary text-primary border-primary uppercase">
+            LIVE TRACKING
           </Badge>
         )}
       </header>
@@ -210,7 +193,6 @@ export default function JourneyPage() {
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
                 <p className="text-[10px] font-black uppercase tracking-widest leading-tight">
                   Location services are disabled. Live tracking will not be accurate.
                 </p>
@@ -234,27 +216,22 @@ export default function JourneyPage() {
           </div>
         ) : activeJourney ? (
           <section className="space-y-4">
-            <Card className={cn(
-              "rounded-[2rem] border-none shadow-2xl overflow-hidden transition-colors duration-500",
-              isEmergencyActive ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
-            )}>
+            <Card className="rounded-[2rem] border-none shadow-2xl overflow-hidden bg-primary text-primary-foreground">
               <CardContent className="p-4 md:p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="space-y-6 min-w-0">
                     <div>
                       <h3 className="text-2xl md:text-3xl font-black mb-1 leading-tight">
-                        {isEmergencyActive ? "Emergency Response" : "Transit in Progress"}
+                        Transit in Progress
                       </h3>
                       <p className="opacity-80 text-sm">
-                        {isEmergencyActive 
-                          ? "SOS Protocol is active." 
-                          : "Safe sharing is enabled with your friends."}
+                        Safe sharing is enabled with your friends.
                       </p>
                     </div>
 
                     <div className="h-[300px] md:h-[450px] w-full">
                       <GoogleMap 
-                        variant={isEmergencyActive ? "alert" : "active"}
+                        variant="active"
                         origin={activeJourney.startLocationDescription}
                         destination={activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
@@ -267,12 +244,12 @@ export default function JourneyPage() {
                     <div className="space-y-3">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
                         <span>Route Status</span>
-                        <span>{isEmergencyActive ? "SOS DISPATCHED" : "Real-time Tracking"}</span>
+                        <span>Real-time Tracking</span>
                       </div>
-                      <Progress value={0} className={cn("h-2.5", isEmergencyActive ? "bg-destructive-foreground/20" : "bg-primary-foreground/20")} />
+                      <Progress value={0} className="h-2.5 bg-primary-foreground/20" />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3">
                       <Button 
                         variant="secondary" 
                         className="h-12 rounded-xl font-bold shadow-sm"
@@ -281,41 +258,29 @@ export default function JourneyPage() {
                         <CheckCircle2 className="mr-2 h-5 w-5" />
                         END JOURNEY
                       </Button>
-                      {!isEmergencyActive && (
-                        <Button className="h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-black shadow-lg">
-                          <ShieldAlert className="mr-2 h-5 w-5" />
-                          SOS ALERT
-                        </Button>
-                      )}
                     </div>
 
-                    {isEmergencyActive ? (
-                      <EmergencyProtocolDisplay />
-                    ) : (
-                      <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner h-fit self-start">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
-                              <ShieldCheck className="h-4 w-4 text-primary" />
-                              Travel Capacity
-                            </h4>
-                            <Badge variant="outline" className="text-[8px] border-primary/30 text-primary uppercase">
-                              {activeJourney.availableSeats || 0} SEATS LEFT
-                            </Badge>
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-xs font-medium leading-relaxed">
-                              {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                    <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner h-fit self-start">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-primary" />
+                            Travel Capacity
+                          </h4>
+                          <Badge variant="outline" className="text-[8px] border-primary/30 text-primary uppercase">
+                            {activeJourney.availableSeats || 0} SEATS LEFT
+                          </Badge>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium leading-relaxed">
+                            {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                   
-                  <div className={cn(
-                    "rounded-2xl p-6 md:p-8 space-y-6 min-w-0 bg-card text-card-foreground shadow-sm h-fit self-start"
-                  )}>
+                  <div className="rounded-2xl p-6 md:p-8 space-y-6 min-w-0 bg-card text-card-foreground shadow-sm h-fit self-start">
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-sm">

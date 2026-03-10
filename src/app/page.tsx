@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { SOSButton } from "@/components/sos-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   MapPin, 
@@ -16,21 +15,19 @@ import {
   Car,
   CheckCircle2,
   Check,
-  Filter,
-  UserMinus
+  Filter
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore, useDoc } from "@/firebase"
-import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs, deleteDoc } from "firebase/firestore"
+import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs } from "firebase/firestore"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
 
 function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
   const db = useFirestore()
@@ -276,19 +273,6 @@ export default function Home() {
               </div>
             )}
 
-            <Card className="rounded-[2.5rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden relative">
-              <EmergencyContactsDialog />
-              <CardContent className="p-10 text-center space-y-8">
-                <SOSButton />
-                <div className="space-y-3">
-                  <h3 className="text-2xl font-black tracking-tight">Emergency Response</h3>
-                  <p className="text-sm opacity-90 leading-relaxed font-medium">
-                    Tap for broadcast, or <span className="font-black text-accent">Hold for 3s</span> to SMS your 3 emergency contacts.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
             {activeJourney ? (
               <Button 
                 className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl"
@@ -316,7 +300,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified connections</p>
                 </CardContent>
               </Card>
             </div>
