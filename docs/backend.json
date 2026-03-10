@@ -116,7 +116,9 @@
         "endLocationDescription": { "type": "string" },
         "sharedWithContactIds": { "type": "array", "items": { "type": "string" } },
         "availableSeats": { "type": "number" },
-        "joinedUserIds": { "type": "array", "items": { "type": "string" } }
+        "joinedUserIds": { "type": "array", "items": { "type": "string" } },
+        "vehicleName": { "type": "string" },
+        "acStatus": { "type": "string", "enum": ["AC", "Non-AC"] }
       },
       "required": ["id", "userId", "journeyType", "status", "startTime", "startLocationDescription", "endLocationDescription", "sharedWithContactIds", "availableSeats"]
     },

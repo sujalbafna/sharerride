@@ -16,8 +16,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Navigation, Shield, Loader2, MapPin, Users } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin, Users, Car } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export function StartJourneyDialog() {
   const { user } = useUser()
@@ -29,6 +30,8 @@ export function StartJourneyDialog() {
   const [startLoc, setStartLoc] = useState("")
   const [endLoc, setEndLoc] = useState("")
   const [seats, setSeats] = useState("0")
+  const [vehicleName, setVehicleName] = useState("")
+  const [acStatus, setAcStatus] = useState("AC")
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -68,7 +71,9 @@ export function StartJourneyDialog() {
       sharedWithContactIds: contacts?.map(c => c.appUserId).filter(Boolean) || [],
       availableSeats: availableSeatsCount,
       joinedUserIds: [],
-      createdAt: currentTimestamp
+      createdAt: currentTimestamp,
+      vehicleName: vehicleName,
+      acStatus: acStatus
     }
 
     try {
@@ -83,7 +88,7 @@ export function StartJourneyDialog() {
               senderId: user.uid,
               senderName: userName,
               requestType: "JourneyNotification",
-              description: `has started a journey from ${startLoc} to ${endLoc}. You are a designated friend for this trip.`,
+              description: `has started a journey from ${startLoc} to ${endLoc} in a ${acStatus} ${vehicleName || 'vehicle'}. You are a designated friend for this trip.`,
               timestamp: currentTimestamp,
               status: "Pending",
               targetJourneyId: journeyId,
@@ -102,6 +107,8 @@ export function StartJourneyDialog() {
       setStartLoc("")
       setEndLoc("")
       setSeats("0")
+      setVehicleName("")
+      setAcStatus("AC")
     } catch (error) {
       console.error(error);
       toast({
@@ -161,6 +168,36 @@ export function StartJourneyDialog() {
                 />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="vehicle">Vehicle Name</Label>
+                <div className="relative">
+                  <Car className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="vehicle" 
+                    placeholder="e.g. White Swift" 
+                    className="pl-10 h-12 rounded-xl"
+                    value={vehicleName}
+                    onChange={(e) => setVehicleName(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Comfort Status</Label>
+                <RadioGroup value={acStatus} onValueChange={setAcStatus} className="flex h-12 items-center gap-4 bg-secondary/50 rounded-xl px-4 border border-input/20">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="AC" id="ac" />
+                    <Label htmlFor="ac" className="text-xs font-bold cursor-pointer">AC</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Non-AC" id="non-ac" />
+                    <Label htmlFor="non-ac" className="text-xs font-bold cursor-pointer">NON-AC</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="seats">Seats Available</Label>
               <div className="relative">
