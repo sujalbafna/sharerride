@@ -275,7 +275,7 @@ export default function Home() {
 
             {activeJourney ? (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl transition-all active:scale-95"
                 onClick={handleEndJourney}
               >
                 <CheckCircle2 className="mr-2 h-6 w-6" />
@@ -283,7 +283,7 @@ export default function Home() {
               </Button>
             ) : (
               <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-secondary hover:bg-muted text-primary border-none shadow-lg"
+                className="w-full h-16 rounded-2xl text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 border-none shadow-2xl transition-all active:scale-95 hover:scale-[1.02]"
                 onClick={() => router.push("/journey")}
               >
                 <MapPin className="mr-2 h-6 w-6" />
