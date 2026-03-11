@@ -63,14 +63,14 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
              <div className="flex items-start gap-2 text-xs">
               <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <p className="text-[8px] uppercase font-black text-muted-foreground tracking-tighter">Origin</p>
+                <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Origin</p>
                 <p className="font-bold truncate">{alert.startLocation}</p>
               </div>
             </div>
             <div className="flex items-start gap-2 text-xs">
               <Navigation className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <p className="text-[8px] uppercase font-black text-muted-foreground tracking-tighter">Destination</p>
+                <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Destination</p>
                 <p className="font-black text-primary truncate">{alert.endLocation}</p>
               </div>
             </div>
@@ -78,21 +78,21 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
 
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
             <div className="space-y-0.5">
-              <p className="text-[7px] uppercase font-black text-muted-foreground">Vehicle</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground">Vehicle</p>
               <div className="flex items-center gap-1">
                 <Car className="h-2.5 w-2.5 text-muted-foreground" />
                 <span className="text-[9px] font-bold truncate">{alert.vehicleName || 'Private'}</span>
               </div>
             </div>
             <div className="space-y-0.5">
-              <p className="text-[7px] uppercase font-black text-muted-foreground">Status</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground">Status</p>
               <div className="flex items-center gap-1">
                 <Wind className="h-2.5 w-2.5 text-muted-foreground" />
                 <span className="text-[9px] font-bold">{alert.acStatus}</span>
               </div>
             </div>
              <div className="space-y-0.5">
-              <p className="text-[7px] uppercase font-black text-muted-foreground">Departure</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground">Departure</p>
               <div className="flex items-center gap-1">
                 <Clock className="h-2.5 w-2.5 text-muted-foreground" />
                 <span className="text-[9px] font-bold">{alert.journeyStartTime ? format(new Date(alert.journeyStartTime), "h:mm a") : 'Now'}</span>
