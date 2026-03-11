@@ -16,9 +16,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Navigation, Shield, Loader2, MapPin, Users, Car } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { cn } from "@/lib/utils"
 
 export function StartJourneyDialog() {
   const { user } = useUser()
@@ -32,6 +33,8 @@ export function StartJourneyDialog() {
   const [seats, setSeats] = useState("0")
   const [vehicleName, setVehicleName] = useState("")
   const [acStatus, setAcStatus] = useState("AC")
+  const [journeyDate, setJourneyDate] = useState("")
+  const [journeyTime, setJourneyTime] = useState("")
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -56,12 +59,13 @@ export function StartJourneyDialog() {
     setIsSubmitting(true)
     const availableSeatsCount = parseInt(seats) || 0
     const currentTimestamp = new Date().toISOString()
+    const scheduledTime = journeyDate && journeyTime ? new Date(`${journeyDate}T${journeyTime}`).toISOString() : currentTimestamp
     
     const journeyData = {
       userId: user.uid,
       journeyType: "General",
       status: "InProgress",
-      startTime: currentTimestamp,
+      startTime: scheduledTime,
       startLocationDescription: startLoc,
       startLatitude: 0,
       startLongitude: 0,
@@ -88,7 +92,7 @@ export function StartJourneyDialog() {
               senderId: user.uid,
               senderName: userName,
               requestType: "JourneyNotification",
-              description: `has started a journey from ${startLoc} to ${endLoc} in a ${acStatus} ${vehicleName || 'vehicle'}. You are a designated friend for this trip.`,
+              description: `has started a journey from ${startLoc} to ${endLoc} in a ${acStatus} ${vehicleName || 'vehicle'}. All journey details are broadcasted to your network for monitoring.`,
               timestamp: currentTimestamp,
               status: "Pending",
               targetJourneyId: journeyId,
@@ -101,7 +105,7 @@ export function StartJourneyDialog() {
 
       toast({
         title: "Journey Started",
-        description: `All your friends have been notified and tracking is active.`,
+        description: `Your itinerary has been broadcasted to your verified friend circle.`,
       })
       setIsOpen(false)
       setStartLoc("")
@@ -109,6 +113,8 @@ export function StartJourneyDialog() {
       setSeats("0")
       setVehicleName("")
       setAcStatus("AC")
+      setJourneyDate("")
+      setJourneyTime("")
     } catch (error) {
       console.error(error);
       toast({
@@ -129,7 +135,7 @@ export function StartJourneyDialog() {
           START NEW JOURNEY
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
@@ -142,30 +148,61 @@ export function StartJourneyDialog() {
 
         <div className="space-y-6 py-4">
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="start">Origin</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="start" 
-                  placeholder="Starting point..." 
-                  className="pl-10 h-12 rounded-xl"
-                  value={startLoc}
-                  onChange={(e) => setStartLoc(e.target.value)}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start">Origin</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="start" 
+                    placeholder="Starting point..." 
+                    className="pl-10 h-12 rounded-xl"
+                    value={startLoc}
+                    onChange={(e) => setStartLoc(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end">Destination</Label>
+                <div className="relative">
+                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="end" 
+                    placeholder="Where are you going?" 
+                    className="pl-10 h-12 rounded-xl"
+                    value={endLoc}
+                    onChange={(e) => setEndLoc(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="end">Destination</Label>
-              <div className="relative">
-                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="end" 
-                  placeholder="Where are you going?" 
-                  className="pl-10 h-12 rounded-xl"
-                  value={endLoc}
-                  onChange={(e) => setEndLoc(e.target.value)}
-                />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">Departure Date</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="date" 
+                    type="date"
+                    className="pl-10 h-12 rounded-xl"
+                    value={journeyDate}
+                    onChange={(e) => setJourneyDate(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="time">Departure Time</Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="time" 
+                    type="time"
+                    className="pl-10 h-12 rounded-xl"
+                    value={journeyTime}
+                    onChange={(e) => setJourneyTime(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -213,6 +250,13 @@ export function StartJourneyDialog() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="p-4 bg-primary/5 rounded-2xl border-l-4 border-primary flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <p className="text-[10px] font-bold text-muted-foreground leading-relaxed uppercase tracking-tight">
+              Safety Note: Upon broadcast, your origin, destination, vehicle details, and live GPS location will be shared in real-time with your verified friend circle.
+            </p>
           </div>
         </div>
 
