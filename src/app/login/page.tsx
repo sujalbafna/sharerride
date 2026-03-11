@@ -152,6 +152,9 @@ export default function LoginPage() {
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center leading-tight">
             MIT Art, Design & Technology
           </h2>
+          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">
+            Supported By Crieya
+          </p>
         </div>
 
         {/* ShareRide Branding */}
@@ -201,7 +204,7 @@ export default function LoginPage() {
                     <Label htmlFor="password-login">Password</Label>
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                      <Input id="password-login" type="password" className="pl-10 h-12 rounded-xl transition-all focus:shadow-md" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+                      <Input id="password-login" type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl transition-all focus:shadow-md" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                     </div>
                   </div>
                 </CardContent>
@@ -258,14 +261,14 @@ export default function LoginPage() {
                     <Label>Password</Label>
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="password" className="pl-10 h-12 rounded-xl" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
+                      <Input type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Confirm Password</Label>
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="password" className="pl-10 h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                      <Input type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </div>
                   </div>
                 </CardContent>
