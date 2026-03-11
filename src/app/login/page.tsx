@@ -78,6 +78,7 @@ export default function LoginPage() {
             displayName: fullName,
             email: newUser.email || regEmail,
             photoURL: newUser.photoURL || "",
+            phoneNumber: mobileNumber,
             role: role
           }
 

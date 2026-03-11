@@ -70,6 +70,7 @@
         "displayName": { "type": "string" },
         "email": { "type": "string" },
         "photoURL": { "type": "string" },
+        "phoneNumber": { "type": "string" },
         "role": { "type": "string", "enum": ["student", "faculty"] }
       },
       "required": ["userId", "displayName", "email", "role"]

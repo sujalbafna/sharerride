@@ -20,7 +20,11 @@ import {
   MapPin,
   Navigation,
   Clock,
-  Wind
+  Wind,
+  ShieldCheck,
+  Mail,
+  Phone,
+  Info
 } from "lucide-react"
 
 import {
@@ -45,6 +49,15 @@ import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
 
 function RequestItem({ 
   req, 
@@ -449,12 +462,59 @@ export function AppSidebar() {
               {searchResults.length > 0 && (
                 <div className="space-y-2 pt-2">
                   {searchResults.map((u) => (
-                    <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg">
-                      <span className="text-[10px] font-bold truncate pr-2">{u.displayName}</span>
-                      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md hover:bg-primary hover:text-white" onClick={() => sendRequest(u)}>
-                        <UserPlus className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    <Dialog key={u.userId}>
+                      <DialogTrigger asChild>
+                        <div className="flex items-center justify-between bg-secondary p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors group">
+                          <span className="text-[10px] font-bold truncate pr-2 group-hover:text-primary">{u.displayName}</span>
+                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
+                        <DialogHeader className="text-center space-y-4">
+                          <Avatar className="h-20 w-20 mx-auto border-4 border-primary/10">
+                            <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
+                              {u.displayName[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1">
+                            <DialogTitle className="text-2xl font-black">{u.displayName}</DialogTitle>
+                            <Badge variant="outline" className="text-[10px] uppercase font-black tracking-widest border-primary/20 text-primary px-3">
+                              {u.role || "MEMBER"}
+                            </Badge>
+                          </div>
+                          <DialogDescription className="text-sm font-medium">
+                            Verify the identity details below before sending a connection request.
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-4 py-4">
+                          <div className="p-4 bg-muted rounded-2xl space-y-1">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                              <Mail className="h-3 w-3" />
+                              Email Address
+                            </div>
+                            <p className="text-sm font-bold">{u.email}</p>
+                          </div>
+                          <div className="p-4 bg-muted rounded-2xl space-y-1">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                              <Phone className="h-3 w-3" />
+                              Mobile Number
+                            </div>
+                            <p className="text-sm font-bold">{u.phoneNumber || "Private"}</p>
+                          </div>
+                        </div>
+
+                        <DialogFooter>
+                          <Button 
+                            className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20"
+                            onClick={() => sendRequest(u)}
+                          >
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            SEND CONNECTION REQUEST
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   ))}
                 </div>
               )}
