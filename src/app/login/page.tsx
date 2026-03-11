@@ -143,7 +143,7 @@ export default function LoginPage() {
             <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
               <Shield className="h-7 w-7" />
             </div>
-            <h1 className="text-3xl font-black tracking-tighter uppercase">SETU</h1>
+            <h1 className="text-3xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500 text-center">
             Developed and Hosted by{" "}

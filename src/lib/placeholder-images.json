@@ -3,7 +3,7 @@
     {
       "id": "hero-map",
       "description": "Abstract map representation with safety markers",
-      "imageUrl": "https://picsum.photos/seed/setu-map-1/800/400",
+      "imageUrl": "https://picsum.photos/seed/shareride-map-1/800/400",
       "imageHint": "safety map"
     },
     {
@@ -27,7 +27,7 @@
     {
       "id": "auth-bg",
       "description": "Abstract protective network motif for login background",
-      "imageUrl": "https://picsum.photos/seed/setu-secure-transit/1920/1080",
+      "imageUrl": "https://picsum.photos/seed/shareride-secure-transit/1920/1080",
       "imageHint": "transit security"
     }
   ]

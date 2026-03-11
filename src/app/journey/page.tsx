@@ -313,7 +313,7 @@ export default function JourneyPage() {
               Ready for your next safe travel?
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
-              Setu provides virtual companionship and real-time tracking for every step of your journey.
+              ShareRide provides virtual companionship and real-time tracking for every step of your journey.
             </p>
             <div className="pt-4">
               <StartJourneyDialog />

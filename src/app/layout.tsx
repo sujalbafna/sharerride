@@ -9,8 +9,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { BottomNav } from '@/components/layout/bottom-nav';
 
 export const metadata: Metadata = {
-  title: 'Setu - Your Safety Companion',
-  description: 'Setu ensures traveler safety by connecting them with a network of trusted friends.',
+  title: 'ShareRide - Your Safety Companion',
+  description: 'ShareRide ensures traveler safety by connecting them with a network of trusted friends.',
 };
 
 export default function RootLayout({
