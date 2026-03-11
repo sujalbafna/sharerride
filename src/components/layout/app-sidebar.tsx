@@ -4,11 +4,11 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
 import { 
   Home, 
   LogOut,
   User,
-  Shield,
   Search,
   UserPlus,
   X,
@@ -16,8 +16,7 @@ import {
   Bell,
   Car,
   CheckCircle2,
-  Check,
-  GraduationCap
+  Check
 } from "lucide-react"
 
 import {
@@ -374,8 +373,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-20 flex flex-col items-center justify-center border-b bg-sidebar overflow-hidden">
         <div className="flex items-center gap-2 px-4 w-full">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Shield className="h-5 w-5" />
+          <div className="relative h-8 w-8 shrink-0">
+            <Image 
+              src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
+              alt="ShareRide Logo" 
+              fill 
+              className="rounded-full object-cover"
+            />
           </div>
           <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase text-sidebar-foreground">SHARERIDE</span>
         </div>

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, GraduationCap } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { onAuthStateChanged, updateProfile } from "firebase/auth"
 import Image from "next/image"
@@ -140,8 +140,13 @@ export default function LoginPage() {
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="flex flex-col items-center mb-8 gap-2">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
-            <div className="h-12 w-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
-              <Shield className="h-7 w-7" />
+            <div className="h-14 w-14 relative shrink-0">
+              <Image 
+                src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
+                alt="ShareRide Logo" 
+                fill 
+                className="rounded-full object-cover shadow-lg shadow-primary/20"
+              />
             </div>
             <h1 className="text-3xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
