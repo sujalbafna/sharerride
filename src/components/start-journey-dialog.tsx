@@ -63,6 +63,7 @@ export function StartJourneyDialog() {
     
     const journeyData = {
       userId: user.uid,
+      userName: userName, // Store user name for display to friends
       journeyType: "General",
       status: "InProgress",
       startTime: scheduledTime,
@@ -85,6 +86,9 @@ export function StartJourneyDialog() {
       const journeyId = journeyDoc.id;
       
       if (contacts && contacts.length > 0) {
+        // Broadcast detail string: Origin, Destination, AC/Non-AC, Vehicle type, Full Name, Date, Time
+        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
+
         for (const friendContact of contacts) {
           if (friendContact.appUserId) {
             await addDoc(collection(db, "users", friendContact.appUserId, "supportRequests"), {
@@ -92,12 +96,15 @@ export function StartJourneyDialog() {
               senderId: user.uid,
               senderName: userName,
               requestType: "JourneyNotification",
-              description: `has started a journey from ${startLoc} to ${endLoc} in a ${acStatus} ${vehicleName || 'vehicle'}. All journey details are broadcasted to your network for monitoring.`,
+              description: detailString,
               timestamp: currentTimestamp,
               status: "Pending",
               targetJourneyId: journeyId,
               startLocation: startLoc,
-              endLocation: endLoc
+              endLocation: endLoc,
+              vehicleName: vehicleName,
+              acStatus: acStatus,
+              journeyStartTime: scheduledTime
             })
           }
         }

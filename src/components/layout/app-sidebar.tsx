@@ -16,7 +16,11 @@ import {
   Bell,
   Car,
   CheckCircle2,
-  Check
+  Check,
+  MapPin,
+  Navigation,
+  Clock,
+  Wind
 } from "lucide-react"
 
 import {
@@ -40,6 +44,7 @@ import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc 
 import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
+import { format } from "date-fns"
 
 function RequestItem({ 
   req, 
@@ -67,14 +72,45 @@ function RequestItem({
 
   if (req.requestType === "JourneyNotification") {
     return (
-      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <Car className="h-3 w-3 text-primary" />
-          <span className="text-[10px] font-bold uppercase text-primary">Travel Alert</span>
+      <div className="p-3 bg-secondary rounded-xl border border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Car className="h-3 w-3 text-primary" />
+            <span className="text-[10px] font-bold uppercase text-primary">Travel Alert</span>
+          </div>
+          <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">LIVE</Badge>
         </div>
-        <p className="text-[11px] leading-tight font-medium">
-          <span className="font-bold">{senderName}</span> {req.description}
-        </p>
+        
+        <div className="space-y-2">
+          <p className="text-[11px] leading-tight font-black">{senderName}</p>
+          
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+              <MapPin className="h-2.5 w-2.5" />
+              <span className="truncate">{req.startLocation}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+              <Navigation className="h-2.5 w-2.5" />
+              <span className="truncate font-bold text-primary">{req.endLocation}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-1 border-t border-border/50">
+            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
+              <Car className="h-2.5 w-2.5" />
+              {req.vehicleName || 'Vehicle'}
+            </div>
+            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
+              <Wind className="h-2.5 w-2.5" />
+              {req.acStatus}
+            </div>
+            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
+              <Clock className="h-2.5 w-2.5" />
+              {req.journeyStartTime ? format(new Date(req.journeyStartTime), "h:mm a") : 'Now'}
+            </div>
+          </div>
+        </div>
+
         <Button 
           size="sm" 
           variant="outline"

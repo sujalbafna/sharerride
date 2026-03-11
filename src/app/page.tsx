@@ -16,7 +16,10 @@ import {
   Car,
   CheckCircle2,
   Check,
-  Filter
+  Filter,
+  Navigation,
+  Wind,
+  Calendar
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,15 +46,61 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
   return (
     <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
       <CardContent className="p-6 space-y-4">
-        <div className="flex items-center gap-2">
-          {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
-          <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-            {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
+            <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+              {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
+            </span>
+          </div>
+          <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">NEW ALERT</Badge>
         </div>
-        <p className="text-sm font-bold leading-tight">
-          <span className="text-primary font-black">{senderName}</span> {alert.description}
-        </p>
+
+        <div className="space-y-3">
+          <p className="text-sm font-black leading-tight text-foreground">{senderName}</p>
+          
+          <div className="grid grid-cols-1 gap-2">
+             <div className="flex items-start gap-2 text-xs">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[8px] uppercase font-black text-muted-foreground tracking-tighter">Origin</p>
+                <p className="font-bold truncate">{alert.startLocation}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 text-xs">
+              <Navigation className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[8px] uppercase font-black text-muted-foreground tracking-tighter">Destination</p>
+                <p className="font-black text-primary truncate">{alert.endLocation}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
+            <div className="space-y-0.5">
+              <p className="text-[7px] uppercase font-black text-muted-foreground">Vehicle</p>
+              <div className="flex items-center gap-1">
+                <Car className="h-2.5 w-2.5 text-muted-foreground" />
+                <span className="text-[9px] font-bold truncate">{alert.vehicleName || 'Private'}</span>
+              </div>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[7px] uppercase font-black text-muted-foreground">Status</p>
+              <div className="flex items-center gap-1">
+                <Wind className="h-2.5 w-2.5 text-muted-foreground" />
+                <span className="text-[9px] font-bold">{alert.acStatus}</span>
+              </div>
+            </div>
+             <div className="space-y-0.5">
+              <p className="text-[7px] uppercase font-black text-muted-foreground">Departure</p>
+              <div className="flex items-center gap-1">
+                <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                <span className="text-[9px] font-bold">{alert.journeyStartTime ? format(new Date(alert.journeyStartTime), "h:mm a") : 'Now'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
             variant="outline"
@@ -345,7 +394,7 @@ export default function Home() {
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
                                   <Activity className="h-3 w-3" />
-                                  {userName}
+                                  {j.userName || userName}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <p className="font-bold text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>

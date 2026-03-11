@@ -26,7 +26,7 @@ const emergencyTypes = [
   { id: "medical", label: "Medical", icon: HeartPulse, color: "text-destructive", bg: "bg-secondary" },
 ]
 
-const HOLD_DURATION = 3000
+const HOLD_DURATION = 2500 // Reduced slightly for better responsiveness
 
 export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
@@ -73,11 +73,11 @@ export function SOSButton() {
       // Open SMS app with recipient numbers and body
       const smsUri = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
       
-      // We open this in a way that respects mobile browser interaction requirements
+      // Redirect to SMS URI
       window.location.href = smsUri
 
-      // Also record in Firestore
-      await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
+      // Record in Firestore
+      addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
         alertLocationDescription: "Current GPS Location",
@@ -103,12 +103,17 @@ export function SOSButton() {
     }
   }, [user, db, userData, toast])
 
-  const startHold = () => {
+  const startHold = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent default to avoid context menus or scrolling during hold
+    if (e.type === 'touchstart') e.preventDefault();
+    
     setIsHolding(true)
     setIsReadyToSend(false)
+    
+    if (holdTimer.current) clearTimeout(holdTimer.current)
+    
     holdTimer.current = setTimeout(() => {
       setIsReadyToSend(true)
-      // On some platforms we can trigger immediately, on others we wait for the release
       triggerSmsAlert()
     }, HOLD_DURATION)
   }
@@ -133,7 +138,7 @@ export function SOSButton() {
       const typeLabel = emergencyTypes.find(t => t.id === selectedType)?.label || "Emergency"
       const message = `SOS ALERT from ${senderName}: I am facing a ${typeLabel} emergency. My current coordinates are tracked. Please check my live location.`
       
-      await addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
+      addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
         alertLocationDescription: "Current GPS Location",
@@ -166,7 +171,7 @@ export function SOSButton() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <button 
-          className="relative group outline-none"
+          className="relative group outline-none select-none touch-none"
           onMouseDown={startHold}
           onMouseUp={cancelHold}
           onMouseLeave={cancelHold}
@@ -175,22 +180,27 @@ export function SOSButton() {
         >
           <div className={cn(
             "absolute inset-0 bg-white/20 rounded-full transition-all duration-300",
-            isHolding ? "animate-none scale-110" : "animate-ping"
+            isHolding ? "animate-none scale-125 bg-red-500/30" : "animate-ping"
           )} />
           <div className={cn(
-            "relative h-40 w-40 rounded-full bg-destructive flex flex-col items-center justify-center shadow-xl transition-all duration-300 border-8 border-white/10",
-            isHolding ? "scale-95 bg-red-800" : "active:scale-90"
+            "relative h-44 w-44 rounded-full bg-destructive flex flex-col items-center justify-center shadow-2xl transition-all duration-300 border-8 border-white/20",
+            isHolding ? "scale-90 bg-red-900 shadow-inner" : "active:scale-95"
           )}>
             {isSending ? (
-              <Loader2 className="h-10 w-10 text-white animate-spin" />
+              <Loader2 className="h-12 w-12 text-white animate-spin" />
             ) : (
               <>
-                <ShieldAlert className="h-10 w-10 text-white mb-2" />
-                <span className="text-white text-4xl font-black tracking-tighter">SOS</span>
+                <ShieldAlert className="h-12 w-12 text-white mb-2" />
+                <span className="text-white text-5xl font-black tracking-tighter">SOS</span>
                 {isHolding && (
-                  <span className="absolute bottom-4 text-[8px] font-black text-white uppercase tracking-widest animate-pulse">
-                    HOLDING...
-                  </span>
+                  <div className="absolute bottom-6 flex flex-col items-center gap-1">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest animate-pulse">
+                      HOLDING...
+                    </span>
+                    <div className="h-1 w-12 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-white animate-[progress_2.5s_linear]" />
+                    </div>
+                  </div>
                 )}
               </>
             )}
