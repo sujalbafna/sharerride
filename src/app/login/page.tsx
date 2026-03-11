@@ -123,7 +123,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden py-12">
       {authImage && (
         <div className="absolute inset-0 z-0">
           <Image 
@@ -138,9 +138,26 @@ export default function LoginPage() {
       )}
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="flex flex-col items-center mb-8 gap-2">
+        
+        {/* University Branding */}
+        <div className="flex flex-col items-center mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
+          <div className="h-24 w-24 relative mb-2">
+            <Image 
+              src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
+              alt="MIT University Logo" 
+              fill 
+              className="object-contain"
+            />
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center leading-tight">
+            MIT Art, Design & Technology
+          </h2>
+        </div>
+
+        {/* ShareRide Branding */}
+        <div className="flex flex-col items-center mb-10 gap-2">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
-            <div className="h-14 w-14 relative shrink-0">
+            <div className="h-12 w-12 relative shrink-0">
               <Image 
                 src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
                 alt="ShareRide Logo" 
@@ -148,7 +165,7 @@ export default function LoginPage() {
                 className="rounded-full object-cover shadow-lg shadow-primary/20"
               />
             </div>
-            <h1 className="text-3xl font-black tracking-tighter uppercase">SHARERIDE</h1>
+            <h1 className="text-2xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500 text-center">
             Developed and Hosted by{" "}
