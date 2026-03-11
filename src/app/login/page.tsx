@@ -157,14 +157,6 @@ export default function LoginPage() {
         {/* ShareRide Branding */}
         <div className="flex flex-col items-center mb-10 gap-2">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
-            <div className="h-12 w-12 relative shrink-0">
-              <Image 
-                src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-                alt="ShareRide Logo" 
-                fill 
-                className="rounded-full object-cover shadow-lg shadow-primary/20"
-              />
-            </div>
             <h1 className="text-2xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500 text-center">
