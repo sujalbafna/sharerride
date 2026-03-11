@@ -19,7 +19,8 @@ import {
   Filter,
   Navigation,
   Wind,
-  Calendar
+  Calendar,
+  Milestone
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -67,6 +68,15 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
                 <p className="font-bold truncate">{alert.startLocation}</p>
               </div>
             </div>
+            {alert.routeVia && (
+              <div className="flex items-start gap-2 text-xs">
+                <Milestone className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Route Via</p>
+                  <p className="font-bold truncate">{alert.routeVia}</p>
+                </div>
+              </div>
+            )}
             <div className="flex items-start gap-2 text-xs">
               <Navigation className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
               <div className="min-w-0">
@@ -401,6 +411,12 @@ export default function Home() {
                                   <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
                                   <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
                                 </div>
+                                {j.routeVia && (
+                                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground italic">
+                                    <Milestone className="h-3 w-3" />
+                                    via {j.routeVia}
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-3">
                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                     {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}

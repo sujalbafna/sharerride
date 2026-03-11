@@ -122,6 +122,7 @@
         "startTime": { "type": "string", "format": "date-time" },
         "startLocationDescription": { "type": "string" },
         "endLocationDescription": { "type": "string" },
+        "routeVia": { "type": "string", "description": "Intermediate points or path description." },
         "sharedWithContactIds": { "type": "array", "items": { "type": "string" } },
         "availableSeats": { "type": "number" },
         "joinedUserIds": { "type": "array", "items": { "type": "string" } },
@@ -147,6 +148,7 @@
         "targetJourneyId": { "type": "string" },
         "startLocation": { "type": "string" },
         "endLocation": { "type": "string" },
+        "routeVia": { "type": "string" },
         "vehicleName": { "type": "string" },
         "acStatus": { "type": "string" },
         "journeyStartTime": { "type": "string" }

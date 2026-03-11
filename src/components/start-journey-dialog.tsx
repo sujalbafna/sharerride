@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, AlertCircle } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, AlertCircle, Milestone } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
@@ -30,6 +30,7 @@ export function StartJourneyDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [startLoc, setStartLoc] = useState("")
   const [endLoc, setEndLoc] = useState("")
+  const [routeVia, setRouteVia] = useState("")
   const [seats, setSeats] = useState("0")
   const [vehicleName, setVehicleName] = useState("")
   const [acStatus, setAcStatus] = useState("AC")
@@ -73,6 +74,7 @@ export function StartJourneyDialog() {
       endLocationDescription: endLoc,
       endLatitude: 0,
       endLongitude: 0,
+      routeVia: routeVia,
       sharedWithContactIds: contacts?.map(c => c.appUserId).filter(Boolean) || [],
       availableSeats: availableSeatsCount,
       joinedUserIds: [],
@@ -86,8 +88,8 @@ export function StartJourneyDialog() {
       const journeyId = journeyDoc.id;
       
       if (contacts && contacts.length > 0) {
-        // Broadcast detail string: Origin, Destination, AC/Non-AC, Vehicle type, Full Name, Date, Time
-        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
+        // Broadcast detail string: Origin, Destination, Route Via, AC/Non-AC, Vehicle type, Full Name, Date, Time
+        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
 
         for (const friendContact of contacts) {
           if (friendContact.appUserId) {
@@ -102,6 +104,7 @@ export function StartJourneyDialog() {
               targetJourneyId: journeyId,
               startLocation: startLoc,
               endLocation: endLoc,
+              routeVia: routeVia,
               vehicleName: vehicleName,
               acStatus: acStatus,
               journeyStartTime: scheduledTime
@@ -117,6 +120,7 @@ export function StartJourneyDialog() {
       setIsOpen(false)
       setStartLoc("")
       setEndLoc("")
+      setRouteVia("")
       setSeats("0")
       setVehicleName("")
       setAcStatus("AC")
@@ -181,6 +185,20 @@ export function StartJourneyDialog() {
                     onChange={(e) => setEndLoc(e.target.value)}
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="routeVia">Route Via</Label>
+              <div className="relative">
+                <Milestone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="routeVia" 
+                  placeholder="Enter intermediate stops..." 
+                  className="pl-10 h-12 rounded-xl"
+                  value={routeVia}
+                  onChange={(e) => setRouteVia(e.target.value)}
+                />
               </div>
             </div>
 

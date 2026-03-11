@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Mail,
   Phone,
-  Info
+  Info,
+  Milestone
 } from "lucide-react"
 
 import {
@@ -102,6 +103,12 @@ function RequestItem({
               <MapPin className="h-2.5 w-2.5" />
               <span className="truncate">{req.startLocation}</span>
             </div>
+            {req.routeVia && (
+              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground italic">
+                <Milestone className="h-2.5 w-2.5" />
+                <span className="truncate">via {req.routeVia}</span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
               <Navigation className="h-2.5 w-2.5" />
               <span className="truncate font-bold text-primary">{req.endLocation}</span>
