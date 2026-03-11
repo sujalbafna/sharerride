@@ -16,7 +16,8 @@ import {
   History, 
   Loader2, 
   ShieldCheck, 
-  Menu
+  Menu,
+  Users
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -57,19 +58,17 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: journeys, isLoading } = useCollection(journeysQuery)
 
-  // Fetch joined journeys (where I am a participant)
-  const joinedRequestsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "supportRequests"),
-      where("requestType", "==", "JoinJourneyRequest"),
-      where("senderId", "==", user.uid),
-      where("status", "==", "Accepted")
-    )
-  }, [db, user])
-  const { data: joinedRequests } = useCollection(joinedRequestsQuery)
-
   const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
+
+  // Fetch joined friends data for the active journey
+  const joinedFriendsQuery = useMemoFirebase(() => {
+    if (!db || !activeJourney?.joinedUserIds || activeJourney.joinedUserIds.length === 0) return null
+    return query(
+      collection(db, "publicProfiles"),
+      where("userId", "in", activeJourney.joinedUserIds)
+    )
+  }, [db, activeJourney?.joinedUserIds])
+  const { data: joinedFriendsData } = useCollection(joinedFriendsQuery)
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -313,10 +312,24 @@ export default function JourneyPage() {
                             {activeJourney.availableSeats || 0} SLOTS FREE
                           </Badge>
                         </div>
-                        <div className="p-4 bg-white/10 rounded-2xl">
-                          <p className="text-sm font-medium leading-relaxed">
-                            {activeJourney.joinedUserIds?.length || 0} verified connections are currently monitoring this route for your safety.
-                          </p>
+                        <div className="p-4 bg-white/10 rounded-2xl space-y-3">
+                          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                            <Users className="h-3 w-3" />
+                            Participants
+                          </div>
+                          {joinedFriendsData && joinedFriendsData.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {joinedFriendsData.map(friend => (
+                                <Badge key={friend.userId} variant="secondary" className="bg-white/20 text-white border-none font-bold py-1 px-3">
+                                  {friend.displayName}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs font-medium opacity-60 italic">
+                              No friends have joined this journey yet.
+                            </p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
