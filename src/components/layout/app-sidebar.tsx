@@ -349,6 +349,7 @@ export function AppSidebar() {
           joinedUserIds: arrayUnion(req.senderId)
         });
         toast({ title: "Join Approved", description: `${resolvedSenderName} has joined your journey.` });
+        router.push("/journey");
       }
 
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
@@ -399,6 +400,7 @@ export function AppSidebar() {
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
 
       toast({ title: "Request Sent", description: "Your request to join has been sent to your friend." });
+      router.push("/journey");
     } catch (e) {
       console.error("Join request error:", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to send join request." });

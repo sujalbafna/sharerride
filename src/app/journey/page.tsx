@@ -46,6 +46,7 @@ export default function JourneyPage() {
     ? `${userData.firstName} ${userData.lastName}` 
     : (user?.displayName || user?.email?.split('@')[0] || "User")
 
+  // Fetch my own journeys
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -54,8 +55,20 @@ export default function JourneyPage() {
       limit(10)
     )
   }, [db, user])
-
   const { data: journeys, isLoading } = useCollection(journeysQuery)
+
+  // Fetch joined journeys (where I am a participant)
+  const joinedRequestsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "supportRequests"),
+      where("requestType", "==", "JoinJourneyRequest"),
+      where("senderId", "==", user.uid),
+      where("status", "==", "Accepted")
+    )
+  }, [db, user])
+  const { data: joinedRequests } = useCollection(joinedRequestsQuery)
+
   const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
 
   const contactsQuery = useMemoFirebase(() => {
@@ -182,7 +195,7 @@ export default function JourneyPage() {
           <h2 className="text-xl font-bold tracking-tight text-foreground">Journeys</h2>
         </div>
         {activeJourney && (
-          <Badge variant="secondary" className="bg-secondary text-primary border-primary uppercase">
+          <Badge variant="outline" className="text-primary border-primary bg-primary/5 uppercase animate-pulse">
             LIVE TRACKING
           </Badge>
         )}
@@ -217,102 +230,110 @@ export default function JourneyPage() {
         ) : activeJourney ? (
           <section className="space-y-4">
             <Card className="rounded-[2rem] border-none shadow-2xl overflow-hidden bg-primary text-primary-foreground">
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-4 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="space-y-6 min-w-0">
                     <div>
-                      <h3 className="text-2xl md:text-3xl font-black mb-1 leading-tight">
+                      <h3 className="text-3xl md:text-4xl font-black mb-1 leading-tight tracking-tighter">
                         Transit in Progress
                       </h3>
-                      <p className="opacity-80 text-sm">
+                      <p className="opacity-80 text-sm font-medium">
                         Safe sharing is enabled with your friends.
                       </p>
                     </div>
 
-                    <div className="h-[300px] md:h-[450px] w-full">
+                    <div className="h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
                       <GoogleMap 
                         variant="active"
                         origin={activeJourney.startLocationDescription}
                         destination={activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
-                        className="h-full w-full"
+                        className="h-full w-full rounded-none border-none"
                         lat={userLocation?.lat}
                         lng={userLocation?.lng}
                       />
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4 pt-4">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
-                        <span>Route Status</span>
-                        <span>Real-time Tracking</span>
+                        <span>Route Progress</span>
+                        <span>Tracking Secure</span>
                       </div>
-                      <Progress value={0} className="h-2.5 bg-primary-foreground/20" />
+                      <Progress value={30} className="h-3 bg-white/20" />
+                      
+                      <div className="flex gap-4">
+                        <Button 
+                          variant="secondary" 
+                          className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
+                          onClick={handleEndJourney}
+                        >
+                          <CheckCircle2 className="mr-2 h-5 w-5" />
+                          END JOURNEY
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-[2rem] p-8 space-y-8 shadow-sm text-foreground">
+                      <div className="relative space-y-12">
+                        {/* Vertical Path Line */}
+                        <div className="absolute left-6 top-8 bottom-8 w-px bg-muted-foreground/20 border-dashed border-l" />
+                        
+                        <div className="flex items-start gap-6 relative z-10">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
+                            <MapPin className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0 overflow-hidden pt-1">
+                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Starting Point</p>
+                            <p className="font-black text-xl tracking-tight truncate">{activeJourney.startLocationDescription}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-6 relative z-10">
+                          <div className="h-12 w-12 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
+                            <Navigation className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0 overflow-hidden pt-1">
+                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Destination</p>
+                            <p className="font-black text-xl tracking-tight truncate">{activeJourney.endLocationDescription}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3">
-                      <Button 
-                        variant="secondary" 
-                        className="h-12 rounded-xl font-bold shadow-sm"
-                        onClick={handleEndJourney}
-                      >
-                        <CheckCircle2 className="mr-2 h-5 w-5" />
-                        END JOURNEY
-                      </Button>
-                    </div>
-
-                    <Card className="rounded-xl border-none bg-secondary text-secondary-foreground shadow-inner h-fit self-start">
-                      <CardContent className="p-4 space-y-3">
+                    <Card className="rounded-[2rem] border-none bg-white/10 backdrop-blur-md text-white shadow-xl h-fit border border-white/20">
+                      <CardContent className="p-6 space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-[10px] font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-primary" />
-                            Travel Capacity
+                          <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4" />
+                            Companion Link
                           </h4>
-                          <Badge variant="outline" className="text-[8px] border-primary/30 text-primary uppercase">
-                            {activeJourney.availableSeats || 0} SEATS LEFT
+                          <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
+                            {activeJourney.availableSeats || 0} SLOTS FREE
                           </Badge>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium leading-relaxed">
-                            {activeJourney.joinedUserIds?.length || 0} friends have joined this journey so far.
+                        <div className="p-4 bg-white/10 rounded-2xl">
+                          <p className="text-sm font-medium leading-relaxed">
+                            {activeJourney.joinedUserIds?.length || 0} verified connections are currently monitoring this route for your safety.
                           </p>
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
-                  
-                  <div className="rounded-2xl p-6 md:p-8 space-y-6 min-w-0 bg-card text-card-foreground shadow-sm h-fit self-start">
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-4">
-                        <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-sm">
-                          <MapPin className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 overflow-hidden">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Starting Point</p>
-                          <p className="font-bold truncate text-sm">{activeJourney.startLocationDescription}</p>
-                        </div>
-                      </div>
-                      <div className="h-8 w-px bg-border ml-5" />
-                      <div className="flex items-start gap-4">
-                        <div className="h-10 w-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 shadow-sm">
-                          <Navigation className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 overflow-hidden">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Destination</p>
-                          <p className="font-bold truncate text-sm">{activeJourney.endLocationDescription}</p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </section>
         ) : (
-          <section className="flex flex-col items-center justify-center py-12 md:py-20 text-center space-y-8 max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-tight text-foreground">
+          <section className="flex flex-col items-center justify-center py-12 md:py-24 text-center space-y-8 max-w-3xl mx-auto animate-in fade-in duration-700">
+            <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Compass className="h-10 w-10 text-primary" />
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
               Ready for your next safe travel?
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed">
+            <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed">
               ShareRide provides virtual companionship and real-time tracking for every step of your journey.
             </p>
             <div className="pt-4">
@@ -321,36 +342,36 @@ export default function JourneyPage() {
           </section>
         )}
 
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+        <section className="space-y-6 pt-12">
+          <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">
             <History className="h-4 w-4" />
-            Recent History
+            Travel History
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {!isLoading && (!journeys || journeys.filter(j => j.status === 'Completed').length === 0) && (
-              <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border-2 border-dashed border-border font-bold text-sm uppercase tracking-widest">
-                No past journeys recorded.
+              <div className="col-span-full py-16 text-center text-muted-foreground bg-card rounded-[2.5rem] border-2 border-dashed border-border font-bold text-xs uppercase tracking-[0.2em]">
+                No past journeys found.
               </div>
             )}
             {journeys?.filter(j => j.status === 'Completed').map((j) => (
-              <Card key={j.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all bg-card">
-                <CardHeader className="pb-3 border-b border-border p-4">
+              <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all bg-card overflow-hidden group">
+                <CardHeader className="pb-3 border-b border-border p-5 bg-muted/30">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      <span className="text-xs font-bold">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
+                      <span className="text-xs font-black">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
                     </div>
-                    <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black">COMPLETED</Badge>
+                    <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black px-2 py-0.5">COMPLETED</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-4">
+                <CardContent className="p-6 space-y-4">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">From</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Origin</p>
                     <p className="font-bold text-sm truncate">{j.startLocationDescription}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">To</p>
-                    <p className="font-bold text-sm truncate">{j.endLocationDescription}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Destination</p>
+                    <p className="font-black text-primary text-sm truncate">{j.endLocationDescription}</p>
                   </div>
                 </CardContent>
               </Card>
