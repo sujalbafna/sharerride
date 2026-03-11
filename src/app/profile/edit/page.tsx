@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
-import { doc, updateDoc } from "firebase/firestore"
+import { doc, updateDoc, setDoc } from "firebase/firestore"
 import { updateEmail, updatePassword } from "firebase/auth"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,7 +17,8 @@ import {
   Save, 
   ArrowLeft, 
   Loader2, 
-  ShieldCheck 
+  ShieldCheck,
+  MapPin
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -38,6 +39,7 @@ export default function EditProfilePage() {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isSaving, setIsSaving] = useState(false)
@@ -48,6 +50,7 @@ export default function EditProfilePage() {
       setLastName(userData.lastName || "")
       setEmail(userData.email || "")
       setPhone(userData.phoneNumber || "")
+      setAddress(userData.address || "")
     }
   }, [userData])
 
@@ -71,10 +74,19 @@ export default function EditProfilePage() {
         lastName,
         email,
         phoneNumber: phone,
+        address: address,
         updatedAt: new Date().toISOString()
       }
       
       await updateDoc(doc(db, "users", user.uid), updateData)
+
+      // Also update public profile
+      await setDoc(doc(db, "publicProfiles", user.uid), {
+        displayName: `${firstName} ${lastName}`,
+        email: email,
+        phoneNumber: phone,
+        address: address,
+      }, { merge: true })
 
       if (email !== user.email) {
         try {
@@ -207,6 +219,21 @@ export default function EditProfilePage() {
                     className="pl-10 h-12 rounded-xl"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="address" 
+                    placeholder="123 College Ave, Campus" 
+                    className="pl-10 h-12 rounded-xl"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
                     required
                   />
                 </div>

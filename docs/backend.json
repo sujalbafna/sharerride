@@ -28,6 +28,10 @@
           "type": "string",
           "description": "The primary phone number of the user."
         },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the user."
+        },
         "profileImageUrl": {
           "type": "string",
           "description": "URL to the user's profile picture.",
@@ -71,6 +75,7 @@
         "email": { "type": "string" },
         "photoURL": { "type": "string" },
         "phoneNumber": { "type": "string" },
+        "address": { "type": "string" },
         "role": { "type": "string", "enum": ["student", "faculty"] }
       },
       "required": ["userId", "displayName", "email", "role"]
@@ -133,13 +138,18 @@
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
-        "requestType": { "type": "string", "enum": ["ConnectionRequest", "JourneyNotification", "JoinJourneyRequest", "NeedARide", "MeetingCompanion"] },
+        "requestType": { "type": "string", "enum": ["ConnectionRequest", "JourneyNotification", "JoinJourneyRequest", "NeedARide", "MeetingCompanion", "JourneyEndNotification"] },
         "description": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["Pending", "Accepted", "Declined", "Read"] },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Declined", "Read", "Completed"] },
         "senderName": { "type": "string" },
         "senderId": { "type": "string" },
-        "targetJourneyId": { "type": "string" }
+        "targetJourneyId": { "type": "string" },
+        "startLocation": { "type": "string" },
+        "endLocation": { "type": "string" },
+        "vehicleName": { "type": "string" },
+        "acStatus": { "type": "string" },
+        "journeyStartTime": { "type": "string" }
       },
       "required": ["id", "userId", "requestType", "description", "timestamp", "status"]
     }

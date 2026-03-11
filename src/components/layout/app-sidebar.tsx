@@ -488,19 +488,26 @@ export function AppSidebar() {
                         </DialogHeader>
                         
                         <div className="space-y-4 py-4">
-                          <div className="p-4 bg-muted rounded-2xl space-y-1">
+                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
                             <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                               <Mail className="h-3 w-3" />
                               Email Address
                             </div>
                             <p className="text-sm font-bold">{u.email}</p>
                           </div>
-                          <div className="p-4 bg-muted rounded-2xl space-y-1">
+                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
                             <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                               <Phone className="h-3 w-3" />
                               Mobile Number
                             </div>
                             <p className="text-sm font-bold">{u.phoneNumber || "Private"}</p>
+                          </div>
+                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                              <MapPin className="h-3 w-3" />
+                              Address
+                            </div>
+                            <p className="text-sm font-bold">{u.address || "Not provided"}</p>
                           </div>
                         </div>
 

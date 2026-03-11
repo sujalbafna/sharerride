@@ -25,7 +25,8 @@ import {
   UserMinus,
   Search,
   X,
-  GraduationCap
+  GraduationCap,
+  MapPin
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -152,9 +153,9 @@ export default function ProfilePage() {
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-4">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <h1 className="text-3xl font-black tracking-tight">{displayName}</h1>
-              <div className="flex flex-col md:flex-row gap-4 text-sm text-muted-foreground font-medium">
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground font-medium">
                 <span className="flex items-center justify-center md:justify-start gap-1.5 truncate">
                   <Mail className="h-3.5 w-3.5" />
                   {user?.email}
@@ -162,6 +163,10 @@ export default function ProfilePage() {
                 <span className="flex items-center justify-center md:justify-start gap-1.5 truncate">
                   <Phone className="h-3.5 w-3.5" />
                   {userData?.phoneNumber || "No phone linked"}
+                </span>
+                <span className="flex items-center justify-center md:justify-start gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-left leading-tight">{userData?.address || "No address provided"}</span>
                 </span>
               </div>
             </div>

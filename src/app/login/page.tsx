@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { onAuthStateChanged, updateProfile } from "firebase/auth"
 import Image from "next/image"
@@ -38,6 +38,7 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("")
   const [regEmail, setRegEmail] = useState("")
   const [mobileNumber, setMobileNumber] = useState("")
+  const [address, setAddress] = useState("")
   const [regPassword, setRegPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [role, setRole] = useState<"student" | "faculty">("student")
@@ -68,6 +69,7 @@ export default function LoginPage() {
             lastName: lName,
             email: newUser.email || regEmail,
             phoneNumber: mobileNumber,
+            address: address,
             role: role,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -79,6 +81,7 @@ export default function LoginPage() {
             email: newUser.email || regEmail,
             photoURL: newUser.photoURL || "",
             phoneNumber: mobileNumber,
+            address: address,
             role: role
           }
 
@@ -90,7 +93,7 @@ export default function LoginPage() {
       }
     })
     return () => unsub()
-  }, [auth, db, fullName, regEmail, mobileNumber, role])
+  }, [auth, db, fullName, regEmail, mobileNumber, role, address])
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,7 +104,7 @@ export default function LoginPage() {
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role) {
+    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role || !address) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill in all registration fields." })
       return
     }
@@ -256,6 +259,13 @@ export default function LoginPage() {
                     <div className="relative group">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                       <Input type="tel" placeholder="XXXXXXXXXX" className="pl-10 h-12 rounded-xl" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Address</Label>
+                    <div className="relative group">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
+                      <Input placeholder="123 College Ave, Campus" className="pl-10 h-12 rounded-xl" value={address} onChange={(e) => setAddress(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
