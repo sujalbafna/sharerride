@@ -33,10 +33,10 @@
           "description": "URL to the user's profile picture.",
           "format": "uri"
         },
-        "emergencySmsNumbers": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "List of 3 mobile numbers for SMS emergency alerts."
+        "role": {
+          "type": "string",
+          "enum": ["student", "faculty"],
+          "description": "The college role of the user."
         },
         "createdAt": {
           "type": "string",
@@ -55,6 +55,7 @@
         "lastName",
         "email",
         "phoneNumber",
+        "role",
         "createdAt",
         "updatedAt"
       ]
@@ -68,9 +69,10 @@
         "userId": { "type": "string" },
         "displayName": { "type": "string" },
         "email": { "type": "string" },
-        "photoURL": { "type": "string" }
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "faculty"] }
       },
-      "required": ["userId", "displayName", "email"]
+      "required": ["userId", "displayName", "email", "role"]
     },
     "Message": {
       "$schema": "http://json-schema.org/draft-07/schema#",

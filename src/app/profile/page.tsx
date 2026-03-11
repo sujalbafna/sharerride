@@ -24,7 +24,8 @@ import {
   Loader2,
   UserMinus,
   Search,
-  X
+  X,
+  GraduationCap
 } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -117,6 +118,8 @@ export default function ProfilePage() {
     ? `${userData.firstName} ${userData.lastName}`
     : user?.displayName || "User"
 
+  const userRole = userData?.role || "student"
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
@@ -136,12 +139,17 @@ export default function ProfilePage() {
 
       <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8">
         <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border">
-          <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl">
-            <AvatarImage src={userData?.profileImageUrl || ""} />
-            <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
-              {displayName[0]}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl">
+              <AvatarImage src={userData?.profileImageUrl || ""} />
+              <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
+                {displayName[0]}
+              </AvatarFallback>
+            </Avatar>
+            <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full uppercase text-[10px] font-black tracking-widest shadow-lg">
+              {userRole}
+            </Badge>
+          </div>
           
           <div className="flex-1 text-center md:text-left space-y-4">
             <div className="space-y-1">

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -15,7 +16,8 @@ import {
   Bell,
   Car,
   CheckCircle2,
-  Check
+  Check,
+  GraduationCap
 } from "lucide-react"
 
 import {
@@ -243,6 +245,8 @@ export function AppSidebar() {
     }
     return user?.displayName || user?.email?.split('@')[0] || "User"
   }, [currentUserDoc, user])
+
+  const currentUserRole = currentUserDoc?.role || "student"
 
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
@@ -493,7 +497,9 @@ export function AppSidebar() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
                 <span className="truncate font-semibold">{currentUserDisplayName}</span>
-                <span className="truncate text-xs opacity-70">Account Active</span>
+                <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary">
+                  {currentUserRole}
+                </Badge>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

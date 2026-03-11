@@ -11,11 +11,18 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Loader2, Mail, Lock, UserPlus, LogIn, User, Phone } from "lucide-react"
+import { Shield, Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, GraduationCap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { onAuthStateChanged, updateProfile } from "firebase/auth"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser()
@@ -33,6 +40,7 @@ export default function LoginPage() {
   const [mobileNumber, setMobileNumber] = useState("")
   const [regPassword, setRegPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [role, setRole] = useState<"student" | "faculty">("student")
 
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
@@ -60,6 +68,7 @@ export default function LoginPage() {
             lastName: lName,
             email: newUser.email || regEmail,
             phoneNumber: mobileNumber,
+            role: role,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }
@@ -68,7 +77,8 @@ export default function LoginPage() {
             userId: newUser.uid,
             displayName: fullName,
             email: newUser.email || regEmail,
-            photoURL: newUser.photoURL || ""
+            photoURL: newUser.photoURL || "",
+            role: role
           }
 
           await setDoc(userRef, userData, { merge: true })
@@ -79,7 +89,7 @@ export default function LoginPage() {
       }
     })
     return () => unsub()
-  }, [auth, db, fullName, regEmail, mobileNumber])
+  }, [auth, db, fullName, regEmail, mobileNumber, role])
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,7 +100,7 @@ export default function LoginPage() {
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword) {
+    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill in all registration fields." })
       return
     }
@@ -197,6 +207,18 @@ export default function LoginPage() {
                   <CardDescription>Start your first safe journey today.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 max-h-[400px] overflow-y-auto px-6 custom-scrollbar">
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select value={role} onValueChange={(val: any) => setRole(val)}>
+                      <SelectTrigger className="h-12 rounded-xl bg-card border">
+                        <SelectValue placeholder="Select your role" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="faculty">Faculty</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2">
                     <Label>Full Name</Label>
                     <div className="relative group">
