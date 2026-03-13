@@ -188,7 +188,15 @@ export function StartJourneyDialog() {
           START NEW JOURNEY
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement;
+          if (target?.closest('.pac-container')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
