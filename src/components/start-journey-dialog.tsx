@@ -109,7 +109,7 @@ export function StartJourneyDialog() {
       userId: user.uid,
       userName: userName,
       journeyType: "General",
-      status: "InProgress",
+      status: "Broadcasted",
       startTime: scheduledTime,
       startLocationDescription: startLoc,
       startLatitude: 0,
@@ -156,8 +156,8 @@ export function StartJourneyDialog() {
       }
 
       toast({
-        title: "Journey Started",
-        description: `Your itinerary has been broadcasted to your verified friend circle.`,
+        title: "Itinerary Broadcasted",
+        description: `Your transit details have been shared. Activate tracking when you're ready to start.`,
       })
       setIsOpen(false)
       setStartLoc("")
@@ -173,7 +173,7 @@ export function StartJourneyDialog() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not start journey.",
+        description: "Could not broadcast journey.",
       })
     } finally {
       setIsSubmitting(false)

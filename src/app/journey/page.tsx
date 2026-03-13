@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -17,7 +16,8 @@ import {
   Loader2, 
   ShieldCheck, 
   Menu,
-  Users
+  Users,
+  Play
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -36,6 +36,7 @@ export default function JourneyPage() {
 
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
+  const [journeyProgress, setJourneyProgress] = useState(0)
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -58,7 +59,7 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: journeys, isLoading } = useCollection(journeysQuery)
 
-  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
+  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
 
   // Fetch joined friends data for the active journey
   const joinedFriendsQuery = useMemoFirebase(() => {
@@ -75,6 +76,17 @@ export default function JourneyPage() {
     return collection(db, "users", user.uid, "trustedContacts")
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
+
+  useEffect(() => {
+    if (activeJourney?.status === 'InProgress') {
+      const interval = setInterval(() => {
+        setJourneyProgress(prev => (prev < 90 ? prev + 1 : prev))
+      }, 5000)
+      return () => clearInterval(interval)
+    } else {
+      setJourneyProgress(0)
+    }
+  }, [activeJourney?.status])
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -129,6 +141,17 @@ export default function JourneyPage() {
         })
       }
     )
+  }
+
+  const handleStartJourney = async () => {
+    if (!db || !user || !activeJourney) return
+    const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+    try {
+      await updateDoc(journeyRef, { status: "InProgress" })
+      toast({ title: "Live Tracking Activated", description: "Your safety network is now monitoring your transit." })
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const handleEndJourney = async () => {
@@ -194,8 +217,11 @@ export default function JourneyPage() {
           <h2 className="text-xl font-bold tracking-tight text-foreground">Journeys</h2>
         </div>
         {activeJourney && (
-          <Badge variant="outline" className="text-primary border-primary bg-primary/5 uppercase animate-pulse">
-            LIVE TRACKING
+          <Badge variant="outline" className={cn(
+            "uppercase",
+            activeJourney.status === 'InProgress' ? "text-primary border-primary bg-primary/5 animate-pulse" : "text-muted-foreground border-muted"
+          )}>
+            {activeJourney.status === 'InProgress' ? 'LIVE TRACKING' : 'BROADCASTED'}
           </Badge>
         )}
       </header>
@@ -258,17 +284,28 @@ export default function JourneyPage() {
                         <span>Route Progress</span>
                         <span>Tracking Secure</span>
                       </div>
-                      <Progress value={30} className="h-3 bg-white/20" />
+                      <Progress value={journeyProgress} className="h-3 bg-white/20" />
                       
                       <div className="flex gap-4">
-                        <Button 
-                          variant="secondary" 
-                          className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
-                          onClick={handleEndJourney}
-                        >
-                          <CheckCircle2 className="mr-2 h-5 w-5" />
-                          END JOURNEY
-                        </Button>
+                        {activeJourney.status === 'Broadcasted' ? (
+                          <Button 
+                            variant="secondary" 
+                            className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
+                            onClick={handleStartJourney}
+                          >
+                            <Play className="mr-2 h-5 w-5" />
+                            START LIVE TRACKING
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="secondary" 
+                            className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
+                            onClick={handleEndJourney}
+                          >
+                            <CheckCircle2 className="mr-2 h-5 w-5" />
+                            END JOURNEY
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
