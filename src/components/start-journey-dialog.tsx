@@ -68,22 +68,32 @@ export function StartJourneyDialog() {
 
   const { data: contacts } = useCollection(contactsQuery)
 
-  const onPlaceChanged = useCallback((type: 'start' | 'end' | 'route') => {
-    let autocomplete;
-    if (type === 'start') autocomplete = startAutocomplete.current;
-    else if (type === 'end') autocomplete = endAutocomplete.current;
-    else if (type === 'route') autocomplete = routeAutocomplete.current;
-
-    if (autocomplete) {
-      const place = autocomplete.getPlace();
-      const address = place.formatted_address || place.name || "";
-      if (address) {
-        if (type === 'start') setStartLoc(address);
-        else if (type === 'end') setEndLoc(address);
-        else if (type === 'route') setRouteVia(address);
-      }
+  const onStartPlaceChanged = () => {
+    const place = startAutocomplete.current?.getPlace();
+    if (place?.formatted_address) {
+      setStartLoc(place.formatted_address);
+    } else if (place?.name) {
+      setStartLoc(place.name);
     }
-  }, []);
+  };
+
+  const onEndPlaceChanged = () => {
+    const place = endAutocomplete.current?.getPlace();
+    if (place?.formatted_address) {
+      setEndLoc(place.formatted_address);
+    } else if (place?.name) {
+      setEndLoc(place.name);
+    }
+  };
+
+  const onRoutePlaceChanged = () => {
+    const place = routeAutocomplete.current?.getPlace();
+    if (place?.formatted_address) {
+      setRouteVia(place.formatted_address);
+    } else if (place?.name) {
+      setRouteVia(place.name);
+    }
+  };
 
   const handleStart = async () => {
     if (!user || !db || !startLoc || !endLoc) return
@@ -197,7 +207,7 @@ export function StartJourneyDialog() {
                   {isLoaded ? (
                     <Autocomplete
                       onLoad={(autocomplete) => (startAutocomplete.current = autocomplete)}
-                      onPlaceChanged={() => onPlaceChanged('start')}
+                      onPlaceChanged={onStartPlaceChanged}
                     >
                       <Input 
                         id="start" 
@@ -224,7 +234,7 @@ export function StartJourneyDialog() {
                   {isLoaded ? (
                     <Autocomplete
                       onLoad={(autocomplete) => (endAutocomplete.current = autocomplete)}
-                      onPlaceChanged={() => onPlaceChanged('end')}
+                      onPlaceChanged={onEndPlaceChanged}
                     >
                       <Input 
                         id="end" 
@@ -253,7 +263,7 @@ export function StartJourneyDialog() {
                 {isLoaded ? (
                   <Autocomplete
                     onLoad={(autocomplete) => (routeAutocomplete.current = autocomplete)}
-                    onPlaceChanged={() => onPlaceChanged('route')}
+                    onPlaceChanged={onRoutePlaceChanged}
                   >
                     <Input 
                       id="routeVia" 
