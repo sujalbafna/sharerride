@@ -25,7 +25,8 @@ import {
   Mail,
   Phone,
   Info,
-  Milestone
+  Milestone,
+  Eye
 } from "lucide-react"
 
 import {
@@ -47,7 +48,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion, orderBy } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import {
@@ -65,13 +66,15 @@ function RequestItem({
   onAccept, 
   onDecline,
   onJoinRequest,
-  onDismiss
+  onDismiss,
+  onTrack
 }: { 
   req: any, 
   onAccept: (req: any, name: string) => void, 
   onDecline: (req: any) => void,
   onJoinRequest: (req: any) => void,
-  onDismiss: (id: string) => void
+  onDismiss: (id: string) => void,
+  onTrack: (riderId: string, journeyId: string) => void
 }) {
   const db = useFirestore();
   
@@ -131,14 +134,23 @@ function RequestItem({
           </div>
         </div>
 
-        <Button 
-          size="sm" 
-          variant="outline"
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg border-primary/20 text-primary bg-background hover:bg-primary/5"
-          onClick={() => onJoinRequest(req)}
-        >
-          WANTS TO JOIN
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button 
+            size="sm" 
+            className="w-full h-8 text-[10px] font-black uppercase rounded-lg"
+            onClick={() => onJoinRequest(req)}
+          >
+            JOIN TRANSIT
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground hover:bg-muted"
+            onClick={() => onDismiss(req.id)}
+          >
+            DISMISS
+          </Button>
+        </div>
       </div>
     );
   }
@@ -266,6 +278,10 @@ export function AppSidebar() {
   const pendingRequests = React.useMemo(() => {
     return allRequests?.filter(r => r.status === "Pending")
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
+  }, [allRequests])
+
+  const acceptedJourneys = React.useMemo(() => {
+    return allRequests?.filter(r => r.status === "Accepted" && r.requestType === "JoinJourneyRequest") || []
   }, [allRequests])
 
   const friendsQuery = useMemoFirebase(() => {
@@ -414,6 +430,10 @@ export function AppSidebar() {
     }
   };
 
+  const handleTrackFriend = (riderId: string, journeyId: string) => {
+    router.push(`/journey?riderId=${riderId}&journeyId=${journeyId}`);
+  };
+
   const handleLogout = async () => {
     try {
       await signOut(auth)
@@ -454,14 +474,14 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Friend Network
+            Security Inbox
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div className="space-y-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
                 <Input 
-                  placeholder="Find name..." 
+                  placeholder="Find friend..." 
                   className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -492,7 +512,7 @@ export function AppSidebar() {
                             </Badge>
                           </div>
                           <DialogDescription className="text-sm font-medium">
-                            Verify the identity details below before sending a connection request.
+                            Verify identity details before connecting.
                           </DialogDescription>
                         </DialogHeader>
                         
@@ -500,23 +520,16 @@ export function AppSidebar() {
                           <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
                             <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                               <Mail className="h-3 w-3" />
-                              Email Address
+                              Email
                             </div>
                             <p className="text-sm font-bold">{u.email}</p>
                           </div>
                           <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
                             <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                               <Phone className="h-3 w-3" />
-                              Mobile Number
+                              Mobile
                             </div>
                             <p className="text-sm font-bold">{u.phoneNumber || "Private"}</p>
-                          </div>
-                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                              <MapPin className="h-3 w-3" />
-                              Address
-                            </div>
-                            <p className="text-sm font-bold">{u.address || "Not provided"}</p>
                           </div>
                         </div>
 
@@ -526,7 +539,7 @@ export function AppSidebar() {
                             onClick={() => sendRequest(u)}
                           >
                             <UserPlus className="h-4 w-4 mr-2" />
-                            SEND CONNECTION REQUEST
+                            CONNECT
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -539,17 +552,17 @@ export function AppSidebar() {
             <div className="pt-2 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black uppercase text-sidebar-foreground/70 flex items-center gap-1.5">
-                  <Bell className="h-3 w-3" /> Inbox
+                  <Bell className="h-3 w-3" /> Alerts
                 </span>
                 {pendingRequests.length > 0 && (
                   <Badge className="h-4 px-1.5 text-[8px] bg-primary text-primary-foreground border-none">
-                    {pendingRequests.length} NEW
+                    {pendingRequests.length}
                   </Badge>
                 )}
               </div>
               
               {pendingRequests.length === 0 ? (
-                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No pending requests</p>
+                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">Inbox is clear</p>
               ) : (
                 <div className="space-y-2">
                   {pendingRequests.map((req) => (
@@ -560,6 +573,7 @@ export function AppSidebar() {
                       onDecline={handleDecline}
                       onJoinRequest={handleJoinRequest}
                       onDismiss={handleDismiss}
+                      onTrack={handleTrackFriend}
                     />
                   ))}
                 </div>
@@ -570,22 +584,19 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Friend Circle
+            Active Shared Links
           </SidebarGroupLabel>
-          <SidebarGroupContent className="space-y-1">
-            {!friends || friends.length === 0 ? (
-              <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No friends yet</p>
+          <SidebarGroupContent className="space-y-2">
+            {acceptedJourneys.length === 0 ? (
+              <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No active shared transits</p>
             ) : (
-              friends.map((friend) => (
+              acceptedJourneys.map((req) => (
                 <SidebarMenuButton 
-                  key={friend.id} 
-                  onClick={() => router.push(`/chat?with=${friend.appUserId}&name=${encodeURIComponent(friend.contactName)}`)}
-                  isActive={activeChatId === friend.appUserId}
+                  key={req.id}
+                  onClick={() => handleTrackFriend(req.senderId, req.targetJourneyId)}
                 >
-                  <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-primary">
-                    {friend.contactName?.[0]}
-                  </div>
-                  <span className="text-sm font-medium">{friend.contactName}</span>
+                  <Eye className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Track {req.senderName}</span>
                 </SidebarMenuButton>
               ))
             )}
@@ -614,7 +625,7 @@ export function AppSidebar() {
           <SidebarMenuItem className="mt-2">
             <SidebarMenuButton className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
-              <span className="group-data-[collapsible=icon]:hidden">Logout Session</span>
+              <span className="group-data-[collapsible=icon]:hidden">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

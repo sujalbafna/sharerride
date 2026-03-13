@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -17,7 +18,9 @@ import {
   ShieldCheck, 
   Menu,
   Users,
-  Play
+  Play,
+  ArrowLeft,
+  User
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -28,16 +31,24 @@ import { useToast } from "@/hooks/use-toast"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useSearchParams, useRouter } from "next/navigation"
 
 export default function JourneyPage() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Query params for tracking a friend's journey
+  const riderIdParam = searchParams.get("riderId")
+  const journeyIdParam = searchParams.get("journeyId")
 
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
   const [journeyProgress, setJourneyProgress] = useState(0)
 
+  // Fetch my profile
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
@@ -48,18 +59,26 @@ export default function JourneyPage() {
     ? `${userData.firstName} ${userData.lastName}` 
     : (user?.displayName || user?.email?.split('@')[0] || "User")
 
-  // Fetch my own journeys
+  // Handle Shared Journey View (Companion Mode)
+  const sharedJourneyRef = useMemoFirebase(() => {
+    if (!db || !riderIdParam || !journeyIdParam) return null
+    return doc(db, "users", riderIdParam, "journeys", journeyIdParam)
+  }, [db, riderIdParam, journeyIdParam])
+  const { data: sharedJourney, isLoading: isLoadingShared } = useDoc(sharedJourneyRef)
+
+  // Handle My Journey View (Rider Mode)
   const journeysQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
+    if (!db || !user || riderIdParam) return null
     return query(
       collection(db, "users", user.uid, "journeys"),
       orderBy("startTime", "desc"),
       limit(10)
     )
-  }, [db, user])
-  const { data: journeys, isLoading } = useCollection(journeysQuery)
+  }, [db, user, riderIdParam])
+  const { data: myJourneys, isLoading: isLoadingMy } = useCollection(journeysQuery)
 
-  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
+  const activeJourney = riderIdParam && sharedJourney ? sharedJourney : myJourneys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
+  const isRider = activeJourney && (!riderIdParam || riderIdParam === user?.uid)
 
   // Fetch joined friends data for the active journey
   const joinedFriendsQuery = useMemoFirebase(() => {
@@ -77,6 +96,19 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
 
+  // Sync Rider location to Firestore
+  useEffect(() => {
+    if (isRider && activeJourney?.status === 'InProgress' && userLocation && db && user) {
+      const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+      updateDoc(journeyRef, {
+        currentLat: userLocation.lat,
+        currentLng: userLocation.lng,
+        lastLocationUpdate: new Date().toISOString()
+      }).catch(() => {})
+    }
+  }, [isRider, activeJourney?.status, userLocation, db, user, activeJourney?.id])
+
+  // Progress simulation for UI
   useEffect(() => {
     if (activeJourney?.status === 'InProgress') {
       const interval = setInterval(() => {
@@ -88,6 +120,7 @@ export default function JourneyPage() {
     }
   }, [activeJourney?.status])
 
+  // Location tracking setup
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocationStatus('unsupported')
@@ -144,7 +177,7 @@ export default function JourneyPage() {
   }
 
   const handleStartJourney = async () => {
-    if (!db || !user || !activeJourney) return
+    if (!db || !user || !activeJourney || !isRider) return
     const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
     try {
       await updateDoc(journeyRef, { status: "InProgress" })
@@ -155,7 +188,7 @@ export default function JourneyPage() {
   }
 
   const handleEndJourney = async () => {
-    if (!db || !user || !activeJourney) return
+    if (!db || !user || !activeJourney || !isRider) return
     const journeyId = activeJourney.id
     const journeyRef = doc(db, "users", user.uid, "journeys", journeyId)
     const currentTimestamp = new Date().toISOString()
@@ -207,14 +240,30 @@ export default function JourneyPage() {
     }
   }
 
+  // Determine which location to show on the map
+  // If companion mode: show rider's current position from doc
+  // If rider mode: show user's own GPS position
+  const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
+  const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
+
+  const isLoading = isLoadingMy || isLoadingShared
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="md:hidden">
-            <Menu className="h-6 w-6" />
-          </SidebarTrigger>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Journeys</h2>
+          {riderIdParam ? (
+            <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="rounded-full">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          ) : (
+            <SidebarTrigger className="md:hidden">
+              <Menu className="h-6 w-6" />
+            </SidebarTrigger>
+          )}
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            {riderIdParam ? "Friend Tracking" : "Journeys"}
+          </h2>
         </div>
         {activeJourney && (
           <Badge variant="outline" className={cn(
@@ -227,7 +276,7 @@ export default function JourneyPage() {
       </header>
 
       <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-        {locationStatus === 'denied' && (
+        {locationStatus === 'denied' && isRider && (
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -250,7 +299,7 @@ export default function JourneyPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading journey records...</p>
+            <p className="text-sm text-muted-foreground">Loading tracking data...</p>
           </div>
         ) : activeJourney ? (
           <section className="space-y-4">
@@ -258,13 +307,20 @@ export default function JourneyPage() {
               <CardContent className="p-4 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="space-y-6 min-w-0">
-                    <div>
-                      <h3 className="text-3xl md:text-4xl font-black mb-1 leading-tight tracking-tighter">
-                        Transit in Progress
-                      </h3>
-                      <p className="opacity-80 text-sm font-medium">
-                        Safe sharing is enabled with your friends.
-                      </p>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-3xl md:text-4xl font-black mb-1 leading-tight tracking-tighter">
+                          {isRider ? "Transit in Progress" : `${activeJourney.userName}'s Transit`}
+                        </h3>
+                        <p className="opacity-80 text-sm font-medium">
+                          {isRider ? "Safe sharing is enabled with your friends." : "You are virtually accompanying your friend."}
+                        </p>
+                      </div>
+                      {!isRider && (
+                        <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
+                          <User className="h-6 w-6" />
+                        </div>
+                      )}
                     </div>
 
                     <div className="h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
@@ -274,46 +330,47 @@ export default function JourneyPage() {
                         destination={activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
                         className="h-full w-full rounded-none border-none"
-                        lat={userLocation?.lat}
-                        lng={userLocation?.lng}
+                        lat={trackingLat}
+                        lng={trackingLng}
                       />
                     </div>
 
                     <div className="space-y-4 pt-4">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
                         <span>Route Progress</span>
-                        <span>Tracking Secure</span>
+                        <span>{activeJourney.status === 'InProgress' ? "LIVE TRACKING ACTIVE" : "AWAITING DEPARTURE"}</span>
                       </div>
                       <Progress value={journeyProgress} className="h-3 bg-white/20" />
                       
-                      <div className="flex gap-4">
-                        {activeJourney.status === 'Broadcasted' ? (
-                          <Button 
-                            variant="secondary" 
-                            className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
-                            onClick={handleStartJourney}
-                          >
-                            <Play className="mr-2 h-5 w-5" />
-                            START LIVE TRACKING
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="secondary" 
-                            className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
-                            onClick={handleEndJourney}
-                          >
-                            <CheckCircle2 className="mr-2 h-5 w-5" />
-                            END JOURNEY
-                          </Button>
-                        )}
-                      </div>
+                      {isRider && (
+                        <div className="flex gap-4">
+                          {activeJourney.status === 'Broadcasted' ? (
+                            <Button 
+                              variant="secondary" 
+                              className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
+                              onClick={handleStartJourney}
+                            >
+                              <Play className="mr-2 h-5 w-5" />
+                              START LIVE TRACKING
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="secondary" 
+                              className="flex-1 h-14 rounded-2xl font-black shadow-xl text-primary transition-all active:scale-95"
+                              onClick={handleEndJourney}
+                            >
+                              <CheckCircle2 className="mr-2 h-5 w-5" />
+                              END JOURNEY
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
                   <div className="space-y-6">
                     <div className="bg-white rounded-[2rem] p-8 space-y-8 shadow-sm text-foreground">
                       <div className="relative space-y-12">
-                        {/* Vertical Path Line */}
                         <div className="absolute left-6 top-8 bottom-8 w-px bg-muted-foreground/20 border-dashed border-l" />
                         
                         <div className="flex items-start gap-6 relative z-10">
@@ -345,9 +402,11 @@ export default function JourneyPage() {
                             <ShieldCheck className="h-4 w-4" />
                             Companion Link
                           </h4>
-                          <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
-                            {activeJourney.availableSeats || 0} SLOTS FREE
-                          </Badge>
+                          {isRider && (
+                            <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
+                              {activeJourney.availableSeats || 0} SLOTS FREE
+                            </Badge>
+                          )}
                         </div>
                         <div className="p-4 bg-white/10 rounded-2xl space-y-3">
                           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
@@ -364,7 +423,7 @@ export default function JourneyPage() {
                             </div>
                           ) : (
                             <p className="text-xs font-medium opacity-60 italic">
-                              No friends have joined this journey yet.
+                              No companions have joined yet.
                             </p>
                           )}
                         </div>
@@ -392,42 +451,44 @@ export default function JourneyPage() {
           </section>
         )}
 
-        <section className="space-y-6 pt-12">
-          <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">
-            <History className="h-4 w-4" />
-            Travel History
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {!isLoading && (!journeys || journeys.filter(j => j.status === 'Completed').length === 0) && (
-              <div className="col-span-full py-16 text-center text-muted-foreground bg-card rounded-[2.5rem] border-2 border-dashed border-border font-bold text-xs uppercase tracking-[0.2em]">
-                No past journeys found.
-              </div>
-            )}
-            {journeys?.filter(j => j.status === 'Completed').map((j) => (
-              <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all bg-card overflow-hidden group">
-                <CardHeader className="pb-3 border-b border-border p-5 bg-muted/30">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-xs font-black">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
+        {!riderIdParam && (
+          <section className="space-y-6 pt-12">
+            <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">
+              <History className="h-4 w-4" />
+              Travel History
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {!isLoading && (!myJourneys || myJourneys.filter(j => j.status === 'Completed').length === 0) && (
+                <div className="col-span-full py-16 text-center text-muted-foreground bg-card rounded-[2.5rem] border-2 border-dashed border-border font-bold text-xs uppercase tracking-[0.2em]">
+                  No past journeys found.
+                </div>
+              )}
+              {myJourneys?.filter(j => j.status === 'Completed').map((j) => (
+                <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all bg-card overflow-hidden group">
+                  <CardHeader className="pb-3 border-b border-border p-5 bg-muted/30">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-xs font-black">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black px-2 py-0.5">COMPLETED</Badge>
                     </div>
-                    <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black px-2 py-0.5">COMPLETED</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Origin</p>
-                    <p className="font-bold text-sm truncate">{j.startLocationDescription}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Destination</p>
-                    <p className="font-black text-primary text-sm truncate">{j.endLocationDescription}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Origin</p>
+                      <p className="font-bold text-sm truncate">{j.startLocationDescription}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Destination</p>
+                      <p className="font-black text-primary text-sm truncate">{j.endLocationDescription}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   )
