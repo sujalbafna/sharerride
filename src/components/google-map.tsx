@@ -39,13 +39,13 @@ export function GoogleMap({
   interactive = true,
   variant = 'active'
 }: GoogleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const directionsRequested = useRef(false);
   
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: apiKey || "",
+    googleMapsApiKey: apiKey,
     libraries: libraries
   });
 

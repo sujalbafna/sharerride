@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, addDoc, doc } from "firebase/firestore"
 import { 
@@ -211,6 +211,7 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (startAutocomplete.current = autocomplete)}
                       onPlaceChanged={onStartPlaceChanged}
+                      fields={['formatted_address', 'geometry', 'name']}
                     >
                       <Input 
                         id="start" 
@@ -238,6 +239,7 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (endAutocomplete.current = autocomplete)}
                       onPlaceChanged={onEndPlaceChanged}
+                      fields={['formatted_address', 'geometry', 'name']}
                     >
                       <Input 
                         id="end" 
@@ -267,6 +269,7 @@ export function StartJourneyDialog() {
                   <Autocomplete
                     onLoad={(autocomplete) => (routeAutocomplete.current = autocomplete)}
                     onPlaceChanged={onRoutePlaceChanged}
+                    fields={['formatted_address', 'geometry', 'name']}
                   >
                     <Input 
                       id="routeVia" 
