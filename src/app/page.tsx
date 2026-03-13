@@ -20,7 +20,9 @@ import {
   Navigation,
   Wind,
   Calendar,
-  Milestone
+  Milestone,
+  Eye,
+  ShieldAlert
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -47,25 +49,28 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
 
   if (alert.requestType === 'JoinApproved') {
     return (
-      <Card className="rounded-3xl border-none shadow-xl bg-accent/5 border-l-4 border-l-accent overflow-hidden animate-in slide-in-from-top-4 duration-500">
+      <Card className="rounded-3xl border-none shadow-xl bg-primary/5 border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
          <CardContent className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-accent" />
-              <span className="text-[10px] font-black uppercase text-accent tracking-widest">
-                Join Approved
+              <Eye className="h-4 w-4 text-primary" />
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+                Live Tracking Authorized
               </span>
             </div>
-            <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">TRACKING READY</Badge>
+            <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">SECURE LINK</Badge>
           </div>
-          <p className="text-sm font-medium">
-            <span className="font-black">{senderName}</span> approved your request to join their journey.
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">
+              <span className="font-black">{senderName}</span> has approved your companion request.
+            </p>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Tracking enabled for the duration of this transit</p>
+          </div>
           <Button 
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-accent text-primary hover:bg-accent/80 transition-all active:scale-95"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-primary text-white hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20"
             onClick={() => router.push(`/journey?riderId=${alert.riderId}&journeyId=${alert.targetJourneyId}`)}
           >
-            TRACK FRIEND LIVE
+            TRACK LIVE NOW
           </Button>
         </CardContent>
       </Card>
@@ -73,67 +78,81 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
   }
 
   return (
-    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
+    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-accent overflow-hidden animate-in slide-in-from-top-4 duration-500">
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-primary" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
-            <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-              {alert.requestType === 'JourneyNotification' ? 'Travel Alert' : 'Arrival Update'}
+            {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-accent" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
+            <span className="text-[10px] font-black uppercase text-accent tracking-widest">
+              {alert.requestType === 'JourneyNotification' ? 'Travel Broadcast' : 'Arrival Update'}
             </span>
           </div>
-          <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">NEW ALERT</Badge>
+          <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">NEW ALERT</Badge>
         </div>
 
-        <div className="space-y-3">
-          <p className="text-sm font-black leading-tight text-foreground">{senderName}</p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-black">
+              {senderName[0]}
+            </div>
+            <div>
+              <p className="text-sm font-black leading-tight text-foreground">{senderName}</p>
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Verified Contact</p>
+            </div>
+          </div>
           
-          <div className="grid grid-cols-1 gap-2">
-             <div className="flex items-start gap-2 text-xs">
-              <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+          <div className="grid grid-cols-1 gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
+             <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
+                <MapPin className="h-3 w-3 text-muted-foreground" />
+              </div>
               <div className="min-w-0">
-                <p className="text-[13px] uppercase font-black text-muted-foreground tracking-tighter">Origin</p>
-                <p className="font-bold truncate">{alert.startLocation}</p>
+                <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Origin</p>
+                <p className="text-xs font-bold truncate">{alert.startLocation}</p>
               </div>
             </div>
             {alert.routeVia && (
-              <div className="flex items-start gap-2 text-xs">
-                <Milestone className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
+                  <Milestone className="h-3 w-3 text-muted-foreground" />
+                </div>
                 <div className="min-w-0">
-                  <p className="text-[13px] uppercase font-black text-muted-foreground tracking-tighter">Route Via</p>
-                  <p className="font-bold truncate">{alert.routeVia}</p>
+                  <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Route Via</p>
+                  <p className="text-xs font-bold truncate italic">{alert.routeVia}</p>
                 </div>
               </div>
             )}
-            <div className="flex items-start gap-2 text-xs">
-              <Navigation className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
+                <Navigation className="h-3 w-3 text-accent" />
+              </div>
               <div className="min-w-0">
-                <p className="text-[13px] uppercase font-black text-muted-foreground tracking-tighter">Destination</p>
-                <p className="font-black text-primary truncate">{alert.endLocation}</p>
+                <p className="text-[10px] uppercase font-black text-accent tracking-widest">Destination</p>
+                <p className="text-xs font-black truncate">{alert.endLocation}</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
             <div className="space-y-0.5">
-              <p className="text-[13px] uppercase font-black text-muted-foreground">Vehicle</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Vehicle</p>
               <div className="flex items-center gap-1">
-                <Car className="h-3 w-3 text-muted-foreground" />
-                <span className="text-[10px] font-bold truncate">{alert.vehicleName || 'Private'}</span>
+                <Car className="h-3 w-3 text-muted-foreground/60" />
+                <span className="text-[9px] font-bold truncate">{alert.vehicleName || 'Private'}</span>
               </div>
             </div>
             <div className="space-y-0.5">
-              <p className="text-[13px] uppercase font-black text-muted-foreground">Status</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Status</p>
               <div className="flex items-center gap-1">
-                <Wind className="h-3 w-3 text-muted-foreground" />
-                <span className="text-[10px] font-bold">{alert.acStatus}</span>
+                <Wind className="h-3 w-3 text-muted-foreground/60" />
+                <span className="text-[9px] font-bold">{alert.acStatus}</span>
               </div>
             </div>
              <div className="space-y-0.5">
-              <p className="text-[13px] uppercase font-black text-muted-foreground">Departure</p>
+              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Time</p>
               <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-[10px] font-bold">{alert.journeyStartTime ? format(new Date(alert.journeyStartTime), "h:mm a") : 'Now'}</span>
+                <Clock className="h-3 w-3 text-muted-foreground/60" />
+                <span className="text-[9px] font-bold">{alert.journeyStartTime ? format(new Date(alert.journeyStartTime), "h:mm a") : 'Now'}</span>
               </div>
             </div>
           </div>
@@ -142,19 +161,19 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
         {alert.requestType === 'JourneyNotification' ? (
           <Button 
             variant="outline"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-primary/20 text-primary bg-secondary hover:bg-muted transition-all active:scale-95"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-accent/30 text-accent bg-background hover:bg-accent/5 transition-all active:scale-95 shadow-sm"
             onClick={() => onJoin(alert)}
           >
-            WANTS TO JOIN
+            REQUEST TO JOIN
           </Button>
         ) : (
           <Button 
             variant="ghost"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted hover:bg-muted/80 transition-all active:scale-95"
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/50 hover:bg-muted transition-all active:scale-95"
             onClick={() => onDismiss(alert.id)}
           >
             <Check className="h-4 w-4 mr-2" />
-            OKAY
+            ACKNOWLEDGE
           </Button>
         )}
       </CardContent>
@@ -196,7 +215,7 @@ export default function Home() {
   }, [db, user])
 
   const { data: journeys, isLoading: isJourneysLoading } = useCollection(journeysQuery)
-  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Started')
+  const activeJourney = journeys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
 
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -357,25 +376,53 @@ export default function Home() {
                   <Activity className="h-3.5 w-3.5 animate-pulse" />
                   Live Travel Updates
                 </div>
-                {journeyAlerts.map((alert) => (
-                  <JourneyAlertCard 
-                    key={alert.id} 
-                    alert={alert} 
-                    onJoin={handleJoinRequest} 
-                    onDismiss={handleDismiss} 
-                  />
-                ))}
+                <div className="space-y-4">
+                  {journeyAlerts.map((alert) => (
+                    <JourneyAlertCard 
+                      key={alert.id} 
+                      alert={alert} 
+                      onJoin={handleJoinRequest} 
+                      onDismiss={handleDismiss} 
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
             {activeJourney ? (
-              <Button 
-                className="w-full h-16 rounded-2xl text-lg font-black bg-destructive text-destructive-foreground hover:bg-destructive/90 border-none shadow-xl transition-all active:scale-95 animate-in zoom-in duration-300"
-                onClick={handleEndJourney}
-              >
-                <CheckCircle2 className="mr-2 h-6 w-6" />
-                END ACTIVE JOURNEY
-              </Button>
+              <div className="space-y-4 animate-in zoom-in duration-300">
+                <Card className="rounded-[2rem] border-none shadow-2xl bg-destructive text-destructive-foreground overflow-hidden">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 animate-pulse" />
+                        <span className="text-xs font-black uppercase tracking-widest">Active Transit</span>
+                      </div>
+                      <Badge variant="outline" className="border-white/30 text-white text-[8px] font-black">{activeJourney.status}</Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-black leading-tight truncate">{activeJourney.endLocationDescription}</p>
+                      <p className="text-xs opacity-80 font-medium">Tracking is active. Your network is notified.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="secondary"
+                        className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl transition-all active:scale-95"
+                        onClick={() => router.push("/journey")}
+                      >
+                        VIEW MAP
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all active:scale-95"
+                        onClick={handleEndJourney}
+                      >
+                        END TRIP
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             ) : (
               <Button 
                 className="w-full h-16 rounded-2xl text-lg font-black bg-primary text-primary-foreground hover:bg-primary/90 border-none shadow-2xl transition-all active:scale-95 hover:scale-[1.02] animate-in zoom-in duration-300"
@@ -385,17 +432,38 @@ export default function Home() {
                 START NEW JOURNEY
               </Button>
             )}
+
+            <Card className="rounded-[2rem] border-none shadow-sm bg-accent/5 overflow-hidden">
+               <CardContent className="p-6 space-y-4 text-center">
+                  <div className="h-12 w-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto text-accent">
+                    <ShieldAlert className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-black uppercase tracking-tight">Safety Network Active</h4>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Global Watch Protocols Enabled</p>
+                  </div>
+               </CardContent>
+            </Card>
           </div>
 
           <div className="lg:col-span-2 space-y-10">
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified connections</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Transit Trust</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-5xl font-black text-accent tracking-tighter">100%</p>
+                  <p className="text-xs font-bold text-muted-foreground mt-2">Route reliability score</p>
                 </CardContent>
               </Card>
             </div>
@@ -403,7 +471,7 @@ export default function Home() {
             <div className="space-y-6">
               <h3 className="font-black text-lg flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
-                Recent Activity
+                Recent Transit Activity
               </h3>
 
               {isJourneysLoading ? (
@@ -411,10 +479,10 @@ export default function Home() {
                   {[1, 2, 3].map(i => <div key={i} className="h-24 bg-card animate-pulse rounded-3xl" />)}
                 </div>
               ) : !journeys || journeys.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-border animate-in fade-in duration-500">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary/50 border-border animate-in fade-in duration-500">
                   <CardContent className="p-16 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">
-                      No recent journeys recorded.
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                      Your travel history will appear here.
                     </p>
                   </CardContent>
                 </Card>
@@ -431,7 +499,7 @@ export default function Home() {
                               </div>
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
-                                  <Activity className="h-3 w-3" />
+                                  <Navigation className="h-3 w-3" />
                                   {j.userName || userName}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -439,20 +507,14 @@ export default function Home() {
                                   <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
                                   <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
                                 </div>
-                                {j.routeVia && (
-                                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground italic">
-                                    <Milestone className="h-3 w-3" />
-                                    via {j.routeVia}
-                                  </div>
-                                )}
                                 <div className="flex items-center gap-3">
                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                     {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
                                   </p>
                                   <span className="h-1 w-1 rounded-full bg-border" />
                                   <Badge 
-                                    variant={j.status === 'InProgress' || j.status === 'Started' ? 'default' : 'secondary'} 
-                                    className="text-[9px] uppercase font-black"
+                                    variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 
+                                    className="text-[9px] uppercase font-black px-2 h-4"
                                   >
                                     {j.status}
                                   </Badge>
@@ -463,7 +525,7 @@ export default function Home() {
                               size="icon" 
                               variant="ghost" 
                               className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4 active:scale-95"
-                              onClick={() => router.push("/journey")}
+                              onClick={() => router.push(j.status === 'InProgress' ? "/journey" : "/journey")}
                             >
                               <ArrowRight className="h-5 w-5" />
                             </Button>
@@ -480,13 +542,13 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 className="font-black text-lg flex items-center gap-3 text-primary">
                   <Users className="h-5 w-5" />
-                  My Friend Circle
+                  My Trusted Circle
                 </h3>
                 <div className="relative w-full sm:w-64 group">
                   <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
-                    placeholder="Filter your circle..." 
-                    className="pl-9 h-9 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20 transition-all"
+                    placeholder="Search circle..." 
+                    className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20 transition-all shadow-inner"
                     value={friendFilter}
                     onChange={(e) => setFriendFilter(e.target.value)}
                   />
@@ -498,9 +560,9 @@ export default function Home() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary border-primary/10 animate-in fade-in duration-500">
+                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary/30 border-primary/10 animate-in fade-in duration-500">
                   <CardContent className="p-12 text-center space-y-4">
-                    <p className="text-sm font-bold text-muted-foreground">Search and connect with friends in the navigation hub.</p>
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Connect with friends to enable virtual companionship.</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -532,7 +594,7 @@ export default function Home() {
                       </Card>
                     ))}
                     {filteredFriends.length === 0 && friendFilter && (
-                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary rounded-2xl border-none animate-in fade-in duration-300">
+                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary/50 rounded-2xl border-none animate-in fade-in duration-300">
                         No matches found in your circle.
                       </div>
                     )}

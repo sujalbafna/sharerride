@@ -25,7 +25,8 @@ import {
   Phone,
   Info,
   Milestone,
-  Eye
+  Eye,
+  Activity
 } from "lucide-react"
 
 import {
@@ -92,7 +93,7 @@ function RequestItem({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Car className="h-3 w-3 text-primary" />
-            <span className="text-[10px] font-bold uppercase text-primary">Travel Alert</span>
+            <span className="text-[10px] font-bold uppercase text-primary">Travel Broadcast</span>
           </div>
           <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">LIVE</Badge>
         </div>
@@ -126,10 +127,6 @@ function RequestItem({
               <Wind className="h-2.5 w-2.5" />
               {req.acStatus}
             </div>
-            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
-              <Clock className="h-2.5 w-2.5" />
-              {req.journeyStartTime ? format(new Date(req.journeyStartTime), "h:mm a") : 'Now'}
-            </div>
           </div>
         </div>
 
@@ -139,7 +136,7 @@ function RequestItem({
             className="w-full h-8 text-[10px] font-black uppercase rounded-lg"
             onClick={() => onJoinRequest(req)}
           >
-            JOIN TRANSIT
+            REQUEST TO JOIN
           </Button>
           <Button 
             size="sm" 
@@ -182,7 +179,7 @@ function RequestItem({
       <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
         <div className="flex items-center gap-2">
           <User className="h-3 w-3 text-primary" />
-          <span className="text-[10px] font-bold uppercase text-primary">Join Request</span>
+          <span className="text-[10px] font-bold uppercase text-primary">Companion Request</span>
         </div>
         <p className="text-[11px] leading-tight font-medium">
           <span className="font-bold">{senderName}</span> wants to join your journey.
@@ -190,15 +187,15 @@ function RequestItem({
         <div className="flex gap-2">
           <Button 
             size="sm" 
-            className="flex-1 h-8 text-[10px] font-black uppercase rounded-lg" 
+            className="flex-1 h-8 text-[10px] font-black uppercase rounded-lg shadow-sm" 
             onClick={() => onAccept(req, senderName)}
           >
-            ACCEPT
+            APPROVE
           </Button>
           <Button 
             size="sm" 
             variant="ghost"
-            className="h-8 w-8 p-0 rounded-lg text-destructive bg-background" 
+            className="h-8 w-8 p-0 rounded-lg text-destructive bg-background hover:bg-destructive/5" 
             onClick={() => onDecline(req)}
           >
             <X className="h-4 w-4" />
@@ -210,20 +207,20 @@ function RequestItem({
 
   if (req.requestType === "JoinApproved") {
     return (
-      <div className="p-3 bg-accent/10 rounded-xl border border-accent/20 space-y-2">
+      <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 space-y-2">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-3 w-3 text-accent" />
-          <span className="text-[10px] font-bold uppercase text-accent">Join Approved</span>
+          <CheckCircle2 className="h-3 w-3 text-primary" />
+          <span className="text-[10px] font-bold uppercase text-primary">Companion Verified</span>
         </div>
         <p className="text-[11px] leading-tight font-medium">
-          <span className="font-bold">{senderName}</span> approved your request to join.
+          <span className="font-bold">{senderName}</span> approved your tracking request.
         </p>
         <Button 
           size="sm" 
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg bg-accent text-primary hover:bg-accent/80"
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"
           onClick={() => onTrack(req.riderId, req.targetJourneyId)}
         >
-          TRACK LIVE
+          TRACK LIVE NOW
         </Button>
       </div>
     );
@@ -232,8 +229,8 @@ function RequestItem({
   return (
     <div className="p-3 bg-secondary rounded-xl border border-border space-y-2 animate-in slide-in-from-left-2">
       <div className="flex items-center gap-2">
-        <Avatar className="h-6 w-6">
-          <AvatarFallback className="text-[9px] font-black bg-background text-primary">
+        <Avatar className="h-6 w-6 border border-primary/20">
+          <AvatarFallback className="text-[9px] font-black bg-background text-primary uppercase">
             {senderName[0] || "F"}
           </AvatarFallback>
         </Avatar>
@@ -250,14 +247,15 @@ function RequestItem({
         onClick={() => onAccept(req, senderName)}
         disabled={isLoading}
       >
-        APPROVE
+        APPROVE CONNECTION
       </Button>
     </div>
   );
 }
 
 const items = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Home Dashboard", url: "/", icon: Home },
+  { title: "Live Journeys", url: "/journey", icon: Car },
 ]
 
 export function AppSidebar() {
@@ -299,7 +297,7 @@ export function AppSidebar() {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
   }, [allRequests])
 
-  const trackingLinks = React.useMemo(() => {
+  const activeTrackingLinks = React.useMemo(() => {
     return allRequests?.filter(r => r.status === "Pending" && r.requestType === "JoinApproved") || []
   }, [allRequests])
 
@@ -404,13 +402,13 @@ export function AppSidebar() {
           riderId: user.uid
         });
 
-        toast({ title: "Join Approved", description: `${resolvedSenderName} has joined your journey.` });
+        toast({ title: "Companion Approved", description: `${resolvedSenderName} has joined your transit.` });
       }
 
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
       
       if (req.requestType === "ConnectionRequest") {
-        toast({ title: "Friendship Established", description: `You are now connected with ${resolvedSenderName}.` })
+        toast({ title: "Network Updated", description: `You are now connected with ${resolvedSenderName}.` })
       }
     } catch (e) {
       console.error("Approval error:", e)
@@ -454,10 +452,10 @@ export function AppSidebar() {
       
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
 
-      toast({ title: "Request Sent", description: "Your request to join has been sent to your friend." });
+      toast({ title: "Join Request Sent", description: "Request sent to the rider for verification." });
     } catch (e) {
       console.error("Join request error:", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to send join request." });
+      toast({ variant: "destructive", title: "Error", description: "Failed to send request." });
     }
   };
 
@@ -468,10 +466,10 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      toast({ title: "Logged Out", description: "Your session has been securely closed." })
+      toast({ title: "Logged Out", description: "Session closed securely." })
       router.push("/login")
     } catch (error) {
-      toast({ variant: "destructive", title: "Logout Failed", description: "Could not close session correctly." })
+      toast({ variant: "destructive", title: "Error", description: "Failed to sign out." })
     }
   }
 
@@ -505,7 +503,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Security Inbox
+            Security & Alerts
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div className="space-y-2">
@@ -513,7 +511,7 @@ export function AppSidebar() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
                 <Input 
                   placeholder="Find friend..." 
-                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs"
+                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs shadow-inner"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -522,59 +520,17 @@ export function AppSidebar() {
               {searchResults.length > 0 && (
                 <div className="space-y-2 pt-2">
                   {searchResults.map((u) => (
-                    <Dialog key={u.userId}>
-                      <DialogTrigger asChild>
-                        <div className="flex items-center justify-between bg-secondary p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors group">
-                          <span className="text-[10px] font-bold truncate pr-2 group-hover:text-primary">{u.displayName}</span>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent className="rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
-                        <DialogHeader className="text-center space-y-4">
-                          <Avatar className="h-20 w-20 mx-auto border-4 border-primary/10">
-                            <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
-                              {u.displayName[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="space-y-1">
-                            <DialogTitle className="text-2xl font-black">{u.displayName}</DialogTitle>
-                            <Badge variant="outline" className="text-[10px] uppercase font-black tracking-widest border-primary/20 text-primary px-3">
-                              {u.role || "MEMBER"}
-                            </Badge>
-                          </div>
-                          <DialogDescription className="text-sm font-medium">
-                            Verify identity details before connecting.
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-4 py-4">
-                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                              <Mail className="h-3 w-3" />
-                              Email
-                            </div>
-                            <p className="text-sm font-bold">{u.email}</p>
-                          </div>
-                          <div className="p-4 bg-muted rounded-2xl space-y-1 text-left">
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                              <Phone className="h-3 w-3" />
-                              Mobile
-                            </div>
-                            <p className="text-sm font-bold">{u.phoneNumber || "Private"}</p>
-                          </div>
-                        </div>
-
-                        <DialogFooter>
-                          <Button 
-                            className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20"
-                            onClick={() => sendRequest(u)}
-                          >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            CONNECT
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg group animate-in slide-in-from-top-2">
+                      <span className="text-[10px] font-bold truncate pr-2 group-hover:text-primary transition-colors">{u.displayName}</span>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-6 w-6 rounded-md hover:bg-primary/10 text-primary"
+                        onClick={() => sendRequest(u)}
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -583,17 +539,17 @@ export function AppSidebar() {
             <div className="pt-2 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black uppercase text-sidebar-foreground/70 flex items-center gap-1.5">
-                  <Bell className="h-3 w-3" /> Alerts
+                  <Bell className="h-3 w-3" /> Notifications
                 </span>
                 {pendingRequests.length > 0 && (
-                  <Badge className="h-4 px-1.5 text-[8px] bg-primary text-primary-foreground border-none">
+                  <Badge className="h-4 px-1.5 text-[8px] bg-primary text-primary-foreground border-none font-black animate-pulse">
                     {pendingRequests.length}
                   </Badge>
                 )}
               </div>
               
               {pendingRequests.length === 0 ? (
-                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">Inbox is clear</p>
+                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2 italic">No active notifications</p>
               ) : (
                 <div className="space-y-2">
                   {pendingRequests.map((req) => (
@@ -615,19 +571,20 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Active Tracking
+            Live Companion Tracking
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-2">
-            {trackingLinks.length === 0 ? (
-              <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No active shared transits</p>
+            {activeTrackingLinks.length === 0 ? (
+              <p className="text-[9px] text-center text-sidebar-foreground/50 py-2 italic">No active transits</p>
             ) : (
-              trackingLinks.map((req) => (
+              activeTrackingLinks.map((req) => (
                 <SidebarMenuButton 
                   key={req.id}
+                  className="bg-accent/5 text-accent hover:bg-accent/10 border border-accent/10 rounded-xl"
                   onClick={() => handleTrackFriend(req.riderId, req.targetJourneyId)}
                 >
-                  <Eye className="h-4 w-4 text-accent" />
-                  <span className="text-sm font-medium">Track {req.senderName}</span>
+                  <Activity className="h-4 w-4 animate-pulse" />
+                  <span className="text-xs font-black uppercase tracking-tight">Track {req.senderName}</span>
                 </SidebarMenuButton>
               ))
             )}
@@ -639,24 +596,24 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="h-auto py-2" onClick={() => router.push("/profile")}>
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="h-8 w-8 rounded-lg border border-primary/20">
                 <AvatarImage src={user?.photoURL || ""} alt={currentUserDisplayName} />
-                <AvatarFallback className="rounded-lg bg-secondary text-primary">
+                <AvatarFallback className="rounded-lg bg-secondary text-primary font-black">
                   {currentUserDisplayName[0]?.toUpperCase() || <User className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
-                <span className="truncate font-semibold">{currentUserDisplayName}</span>
-                <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary">
+                <span className="truncate font-black">{currentUserDisplayName}</span>
+                <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary font-bold">
                   {currentUserRole}
                 </Badge>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem className="mt-2">
-            <SidebarMenuButton className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+            <SidebarMenuButton className="text-destructive hover:text-destructive hover:bg-destructive/10 font-bold" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
-              <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+              <span className="group-data-[collapsible=icon]:hidden uppercase text-xs tracking-widest">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
