@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, addDoc, doc } from "firebase/firestore"
 import { 
@@ -20,6 +20,9 @@ import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, Alert
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
+
+const libraries: ("places")[] = ["places"];
 
 export function StartJourneyDialog() {
   const { user } = useUser()
@@ -36,6 +39,16 @@ export function StartJourneyDialog() {
   const [acStatus, setAcStatus] = useState("AC")
   const [journeyDate, setJourneyDate] = useState("")
   const [journeyTime, setJourneyTime] = useState("")
+
+  const startAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
+  const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
+  const routeAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries
+  })
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -54,6 +67,21 @@ export function StartJourneyDialog() {
 
   const { data: contacts } = useCollection(contactsQuery)
 
+  const onPlaceChanged = (type: 'start' | 'end' | 'route') => {
+    let autocomplete;
+    if (type === 'start') autocomplete = startAutocomplete.current;
+    else if (type === 'end') autocomplete = endAutocomplete.current;
+    else autocomplete = routeAutocomplete.current;
+
+    if (autocomplete) {
+      const place = autocomplete.getPlace();
+      const address = place.formatted_address || place.name || "";
+      if (type === 'start') setStartLoc(address);
+      else if (type === 'end') setEndLoc(address);
+      else setRouteVia(address);
+    }
+  }
+
   const handleStart = async () => {
     if (!user || !db || !startLoc || !endLoc) return
 
@@ -64,7 +92,7 @@ export function StartJourneyDialog() {
     
     const journeyData = {
       userId: user.uid,
-      userName: userName, // Store user name for display to friends
+      userName: userName,
       journeyType: "General",
       status: "InProgress",
       startTime: scheduledTime,
@@ -88,7 +116,6 @@ export function StartJourneyDialog() {
       const journeyId = journeyDoc.id;
       
       if (contacts && contacts.length > 0) {
-        // Broadcast detail string: Origin, Destination, Route Via, AC/Non-AC, Vehicle type, Full Name, Date, Time
         const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
 
         for (const friendContact of contacts) {
@@ -163,27 +190,55 @@ export function StartJourneyDialog() {
               <div className="space-y-2">
                 <Label htmlFor="start">Origin</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="start" 
-                    placeholder="Starting point..." 
-                    className="pl-10 h-12 rounded-xl"
-                    value={startLoc}
-                    onChange={(e) => setStartLoc(e.target.value)}
-                  />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                  {isLoaded ? (
+                    <Autocomplete
+                      onLoad={(autocomplete) => (startAutocomplete.current = autocomplete)}
+                      onPlaceChanged={() => onPlaceChanged('start')}
+                    >
+                      <Input 
+                        id="start" 
+                        placeholder="Starting point..." 
+                        className="pl-10 h-12 rounded-xl"
+                        value={startLoc}
+                        onChange={(e) => setStartLoc(e.target.value)}
+                      />
+                    </Autocomplete>
+                  ) : (
+                    <Input 
+                      id="start" 
+                      placeholder="Loading maps..." 
+                      className="pl-10 h-12 rounded-xl"
+                      disabled
+                    />
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end">Destination</Label>
                 <div className="relative">
-                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="end" 
-                    placeholder="Where are you going?" 
-                    className="pl-10 h-12 rounded-xl"
-                    value={endLoc}
-                    onChange={(e) => setEndLoc(e.target.value)}
-                  />
+                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                  {isLoaded ? (
+                    <Autocomplete
+                      onLoad={(autocomplete) => (endAutocomplete.current = autocomplete)}
+                      onPlaceChanged={() => onPlaceChanged('end')}
+                    >
+                      <Input 
+                        id="end" 
+                        placeholder="Where are you going?" 
+                        className="pl-10 h-12 rounded-xl"
+                        value={endLoc}
+                        onChange={(e) => setEndLoc(e.target.value)}
+                      />
+                    </Autocomplete>
+                  ) : (
+                    <Input 
+                      id="end" 
+                      placeholder="Loading maps..." 
+                      className="pl-10 h-12 rounded-xl"
+                      disabled
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -191,14 +246,28 @@ export function StartJourneyDialog() {
             <div className="space-y-2">
               <Label htmlFor="routeVia">Route Via</Label>
               <div className="relative">
-                <Milestone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="routeVia" 
-                  placeholder="Enter intermediate stops..." 
-                  className="pl-10 h-12 rounded-xl"
-                  value={routeVia}
-                  onChange={(e) => setRouteVia(e.target.value)}
-                />
+                <Milestone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                {isLoaded ? (
+                  <Autocomplete
+                    onLoad={(autocomplete) => (routeAutocomplete.current = autocomplete)}
+                    onPlaceChanged={() => onPlaceChanged('route')}
+                  >
+                    <Input 
+                      id="routeVia" 
+                      placeholder="Enter intermediate stops..." 
+                      className="pl-10 h-12 rounded-xl"
+                      value={routeVia}
+                      onChange={(e) => setRouteVia(e.target.value)}
+                    />
+                  </Autocomplete>
+                ) : (
+                  <Input 
+                    id="routeVia" 
+                    placeholder="Loading maps..." 
+                    className="pl-10 h-12 rounded-xl"
+                    disabled
+                  />
+                )}
               </div>
             </div>
 

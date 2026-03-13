@@ -25,6 +25,8 @@ const containerStyle = {
   height: '100%'
 };
 
+const libraries: ("places")[] = ["places"];
+
 export function GoogleMap({ 
   className, 
   address, 
@@ -43,7 +45,8 @@ export function GoogleMap({
   
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: apiKey || ""
+    googleMapsApiKey: apiKey || "",
+    libraries: libraries
   });
 
   // Reset directions when origin or destination changes
