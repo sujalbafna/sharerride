@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, addDoc, doc } from "firebase/firestore"
 import { 
@@ -68,11 +68,11 @@ export function StartJourneyDialog() {
 
   const { data: contacts } = useCollection(contactsQuery)
 
-  const onPlaceChanged = (type: 'start' | 'end' | 'route') => {
+  const onPlaceChanged = useCallback((type: 'start' | 'end' | 'route') => {
     let autocomplete;
     if (type === 'start') autocomplete = startAutocomplete.current;
     else if (type === 'end') autocomplete = endAutocomplete.current;
-    else autocomplete = routeAutocomplete.current;
+    else if (type === 'route') autocomplete = routeAutocomplete.current;
 
     if (autocomplete) {
       const place = autocomplete.getPlace();
@@ -80,10 +80,10 @@ export function StartJourneyDialog() {
       if (address) {
         if (type === 'start') setStartLoc(address);
         else if (type === 'end') setEndLoc(address);
-        else setRouteVia(address);
+        else if (type === 'route') setRouteVia(address);
       }
     }
-  }
+  }, []);
 
   const handleStart = async () => {
     if (!user || !db || !startLoc || !endLoc) return
