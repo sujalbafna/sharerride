@@ -447,7 +447,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-2 space-y-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
@@ -455,15 +455,6 @@ export default function Home() {
                 <CardContent>
                   <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
                   <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Transit Trust</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-5xl font-black text-accent tracking-tighter">100%</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-2">Route reliability score</p>
                 </CardContent>
               </Card>
             </div>
