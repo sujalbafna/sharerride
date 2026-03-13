@@ -4,7 +4,6 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import Image from "next/image"
 import { 
   Home, 
   LogOut,
@@ -209,6 +208,27 @@ function RequestItem({
     );
   }
 
+  if (req.requestType === "JoinApproved") {
+    return (
+      <div className="p-3 bg-accent/10 rounded-xl border border-accent/20 space-y-2">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-3 w-3 text-accent" />
+          <span className="text-[10px] font-bold uppercase text-accent">Join Approved</span>
+        </div>
+        <p className="text-[11px] leading-tight font-medium">
+          <span className="font-bold">{senderName}</span> approved your request to join.
+        </p>
+        <Button 
+          size="sm" 
+          className="w-full h-8 text-[10px] font-black uppercase rounded-lg bg-accent text-primary hover:bg-accent/80"
+          onClick={() => onTrack(req.riderId, req.targetJourneyId)}
+        >
+          TRACK LIVE
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-3 bg-secondary rounded-xl border border-border space-y-2 animate-in slide-in-from-left-2">
       <div className="flex items-center gap-2">
@@ -244,7 +264,6 @@ export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const activeChatId = searchParams.get("with")
   const { user, isUserLoading } = useUser()
   const auth = useAuth()
   const db = useFirestore()
@@ -280,8 +299,8 @@ export function AppSidebar() {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
   }, [allRequests])
 
-  const acceptedJourneys = React.useMemo(() => {
-    return allRequests?.filter(r => r.status === "Accepted" && r.requestType === "JoinJourneyRequest") || []
+  const trackingLinks = React.useMemo(() => {
+    return allRequests?.filter(r => r.status === "Pending" && r.requestType === "JoinApproved") || []
   }, [allRequests])
 
   const friendsQuery = useMemoFirebase(() => {
@@ -371,8 +390,21 @@ export function AppSidebar() {
           availableSeats: increment(-1),
           joinedUserIds: arrayUnion(req.senderId)
         });
+
+        // Notify the friend that they are accepted
+        await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
+          userId: req.senderId,
+          senderId: user.uid,
+          senderName: currentUserDisplayName,
+          requestType: "JoinApproved",
+          description: "approved your request to join the journey.",
+          timestamp: new Date().toISOString(),
+          status: "Pending",
+          targetJourneyId: req.targetJourneyId,
+          riderId: user.uid
+        });
+
         toast({ title: "Join Approved", description: `${resolvedSenderName} has joined your journey.` });
-        router.push("/journey");
       }
 
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
@@ -423,7 +455,6 @@ export function AppSidebar() {
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
 
       toast({ title: "Request Sent", description: "Your request to join has been sent to your friend." });
-      router.push("/journey");
     } catch (e) {
       console.error("Join request error:", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to send join request." });
@@ -584,18 +615,18 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Active Shared Links
+            Active Tracking
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-2">
-            {acceptedJourneys.length === 0 ? (
+            {trackingLinks.length === 0 ? (
               <p className="text-[9px] text-center text-sidebar-foreground/50 py-2">No active shared transits</p>
             ) : (
-              acceptedJourneys.map((req) => (
+              trackingLinks.map((req) => (
                 <SidebarMenuButton 
                   key={req.id}
-                  onClick={() => handleTrackFriend(req.senderId, req.targetJourneyId)}
+                  onClick={() => handleTrackFriend(req.riderId, req.targetJourneyId)}
                 >
-                  <Eye className="h-4 w-4 text-primary" />
+                  <Eye className="h-4 w-4 text-accent" />
                   <span className="text-sm font-medium">Track {req.senderName}</span>
                 </SidebarMenuButton>
               ))

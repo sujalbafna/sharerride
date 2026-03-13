@@ -20,7 +20,8 @@ import {
   Users,
   Play,
   ArrowLeft,
-  User
+  User,
+  Activity
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -112,7 +113,7 @@ export default function JourneyPage() {
   useEffect(() => {
     if (activeJourney?.status === 'InProgress') {
       const interval = setInterval(() => {
-        setJourneyProgress(prev => (prev < 90 ? prev + 1 : prev))
+        setJourneyProgress(prev => (prev < 95 ? prev + 1 : prev))
       }, 5000)
       return () => clearInterval(interval)
     } else {
@@ -241,8 +242,6 @@ export default function JourneyPage() {
   }
 
   // Determine which location to show on the map
-  // If companion mode: show rider's current position from doc
-  // If rider mode: show user's own GPS position
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
 
@@ -262,7 +261,7 @@ export default function JourneyPage() {
             </SidebarTrigger>
           )}
           <h2 className="text-xl font-bold tracking-tight text-foreground">
-            {riderIdParam ? "Friend Tracking" : "Journeys"}
+            {riderIdParam ? "Live Friend Tracking" : "Journeys"}
           </h2>
         </div>
         {activeJourney && (
@@ -309,11 +308,12 @@ export default function JourneyPage() {
                   <div className="space-y-6 min-w-0">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-3xl md:text-4xl font-black mb-1 leading-tight tracking-tighter">
-                          {isRider ? "Transit in Progress" : `${activeJourney.userName}'s Transit`}
+                        <h3 className="text-3xl md:text-4xl font-black mb-1 leading-tight tracking-tighter flex items-center gap-3">
+                          {!isRider && <Activity className="h-8 w-8 text-accent animate-pulse" />}
+                          {isRider ? "Transit in Progress" : `${activeJourney.userName}'s Journey`}
                         </h3>
                         <p className="opacity-80 text-sm font-medium">
-                          {isRider ? "Safe sharing is enabled with your friends." : "You are virtually accompanying your friend."}
+                          {isRider ? "Safe sharing is enabled with your friends." : "You are currently tracking your friend's live movement."}
                         </p>
                       </div>
                       {!isRider && (

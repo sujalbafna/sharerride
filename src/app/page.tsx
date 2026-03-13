@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -35,6 +36,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
   const db = useFirestore()
+  const router = useRouter()
   const profileRef = useMemoFirebase(() => {
     if (!db || !alert.senderId) return null
     return doc(db, "publicProfiles", alert.senderId)
@@ -42,6 +44,33 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
   const { data: profile } = useDoc(profileRef)
   
   const senderName = profile?.displayName || alert.senderName || "Friend"
+
+  if (alert.requestType === 'JoinApproved') {
+    return (
+      <Card className="rounded-3xl border-none shadow-xl bg-accent/5 border-l-4 border-l-accent overflow-hidden animate-in slide-in-from-top-4 duration-500">
+         <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-accent" />
+              <span className="text-[10px] font-black uppercase text-accent tracking-widest">
+                Join Approved
+              </span>
+            </div>
+            <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">TRACKING READY</Badge>
+          </div>
+          <p className="text-sm font-medium">
+            <span className="font-black">{senderName}</span> approved your request to join their journey.
+          </p>
+          <Button 
+            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-accent text-primary hover:bg-accent/80 transition-all active:scale-95"
+            onClick={() => router.push(`/journey?riderId=${alert.riderId}&journeyId=${alert.targetJourneyId}`)}
+          >
+            TRACK FRIEND LIVE
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
@@ -191,7 +220,7 @@ export default function Home() {
     return query(
       collection(db, "users", user.uid, "supportRequests"),
       where("status", "==", "Pending"),
-      where("requestType", "in", ["JourneyNotification", "JourneyEndNotification"])
+      where("requestType", "in", ["JourneyNotification", "JourneyEndNotification", "JoinApproved"])
     )
   }, [db, user])
 
