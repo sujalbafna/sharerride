@@ -47,7 +47,7 @@ export function StartJourneyDialog() {
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k",
     libraries: LIBRARIES
   })
 
@@ -69,29 +69,32 @@ export function StartJourneyDialog() {
   const { data: contacts } = useCollection(contactsQuery)
 
   const onStartPlaceChanged = () => {
-    const place = startAutocomplete.current?.getPlace();
-    if (place?.formatted_address) {
-      setStartLoc(place.formatted_address);
-    } else if (place?.name) {
-      setStartLoc(place.name);
+    if (startAutocomplete.current) {
+      const place = startAutocomplete.current.getPlace();
+      const address = place.formatted_address || place.name || "";
+      if (address) {
+        setStartLoc(address);
+      }
     }
   };
 
   const onEndPlaceChanged = () => {
-    const place = endAutocomplete.current?.getPlace();
-    if (place?.formatted_address) {
-      setEndLoc(place.formatted_address);
-    } else if (place?.name) {
-      setEndLoc(place.name);
+    if (endAutocomplete.current) {
+      const place = endAutocomplete.current.getPlace();
+      const address = place.formatted_address || place.name || "";
+      if (address) {
+        setEndLoc(address);
+      }
     }
   };
 
   const onRoutePlaceChanged = () => {
-    const place = routeAutocomplete.current?.getPlace();
-    if (place?.formatted_address) {
-      setRouteVia(place.formatted_address);
-    } else if (place?.name) {
-      setRouteVia(place.name);
+    if (routeAutocomplete.current) {
+      const place = routeAutocomplete.current.getPlace();
+      const address = place.formatted_address || place.name || "";
+      if (address) {
+        setRouteVia(address);
+      }
     }
   };
 
@@ -208,6 +211,7 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (startAutocomplete.current = autocomplete)}
                       onPlaceChanged={onStartPlaceChanged}
+                      fields={["formatted_address", "name", "geometry"]}
                     >
                       <Input 
                         id="start" 
@@ -235,6 +239,7 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (endAutocomplete.current = autocomplete)}
                       onPlaceChanged={onEndPlaceChanged}
+                      fields={["formatted_address", "name", "geometry"]}
                     >
                       <Input 
                         id="end" 
@@ -264,6 +269,7 @@ export function StartJourneyDialog() {
                   <Autocomplete
                     onLoad={(autocomplete) => (routeAutocomplete.current = autocomplete)}
                     onPlaceChanged={onRoutePlaceChanged}
+                    fields={["formatted_address", "name", "geometry"]}
                   >
                     <Input 
                       id="routeVia" 
