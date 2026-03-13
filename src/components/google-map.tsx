@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
@@ -185,11 +184,7 @@ export function GoogleMap({
       </GoogleMapBase>
 
       {interactive && (
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-          <div className="bg-card/90 backdrop-blur-md px-4 py-2 rounded-xl border shadow-lg flex items-center gap-2 max-w-[70%] pointer-events-auto">
-            <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-[10px] font-bold uppercase truncate">{address || (directions ? "Route Tracking" : "Live Location Active")}</span>
-          </div>
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-end pointer-events-none">
           <Button 
             size="icon" 
             className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto hover:scale-105 active:scale-95 transition-all"
