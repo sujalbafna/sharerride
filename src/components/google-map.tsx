@@ -62,6 +62,19 @@ export function GoogleMap({
     }
   }, []);
 
+  const handleExternalNavigation = () => {
+    if (origin && destination) {
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+      window.open(url, '_blank');
+    } else if (lat && lng) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      window.open(url, '_blank');
+    } else if (address) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+      window.open(url, '_blank');
+    }
+  };
+
   if (!apiKey) {
     return (
       <div className={cn("flex flex-col items-center justify-center bg-muted/50 rounded-[2rem] border-4 border-dashed p-8 text-center gap-4", className)}>
@@ -177,7 +190,12 @@ export function GoogleMap({
             <MapPin className="h-4 w-4 text-primary shrink-0" />
             <span className="text-[10px] font-bold uppercase truncate">{address || (directions ? "Route Tracking" : "Live Location Active")}</span>
           </div>
-          <Button size="icon" className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto">
+          <Button 
+            size="icon" 
+            className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto hover:scale-105 active:scale-95 transition-all"
+            onClick={handleExternalNavigation}
+            title="Open in Google Maps"
+          >
             <Navigation className="h-6 w-6" />
           </Button>
         </div>
