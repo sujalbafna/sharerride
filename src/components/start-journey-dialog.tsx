@@ -69,9 +69,9 @@ export function StartJourneyDialog() {
   const { data: contacts } = useCollection(contactsQuery)
 
   const onStartPlaceChanged = () => {
-    if (startAutocomplete.current) {
+    if (startAutocomplete.current !== null) {
       const place = startAutocomplete.current.getPlace();
-      const address = place.formatted_address || place.name || "";
+      const address = place.formatted_address || place.name;
       if (address) {
         setStartLoc(address);
       }
@@ -79,9 +79,9 @@ export function StartJourneyDialog() {
   };
 
   const onEndPlaceChanged = () => {
-    if (endAutocomplete.current) {
+    if (endAutocomplete.current !== null) {
       const place = endAutocomplete.current.getPlace();
-      const address = place.formatted_address || place.name || "";
+      const address = place.formatted_address || place.name;
       if (address) {
         setEndLoc(address);
       }
@@ -89,9 +89,9 @@ export function StartJourneyDialog() {
   };
 
   const onRoutePlaceChanged = () => {
-    if (routeAutocomplete.current) {
+    if (routeAutocomplete.current !== null) {
       const place = routeAutocomplete.current.getPlace();
-      const address = place.formatted_address || place.name || "";
+      const address = place.formatted_address || place.name;
       if (address) {
         setRouteVia(address);
       }
@@ -211,7 +211,6 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (startAutocomplete.current = autocomplete)}
                       onPlaceChanged={onStartPlaceChanged}
-                      fields={["formatted_address", "name", "geometry"]}
                     >
                       <Input 
                         id="start" 
@@ -239,7 +238,6 @@ export function StartJourneyDialog() {
                     <Autocomplete
                       onLoad={(autocomplete) => (endAutocomplete.current = autocomplete)}
                       onPlaceChanged={onEndPlaceChanged}
-                      fields={["formatted_address", "name", "geometry"]}
                     >
                       <Input 
                         id="end" 
@@ -269,7 +267,6 @@ export function StartJourneyDialog() {
                   <Autocomplete
                     onLoad={(autocomplete) => (routeAutocomplete.current = autocomplete)}
                     onPlaceChanged={onRoutePlaceChanged}
-                    fields={["formatted_address", "name", "geometry"]}
                   >
                     <Input 
                       id="routeVia" 
