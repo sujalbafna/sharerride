@@ -22,7 +22,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 
-const libraries: ("places")[] = ["places"];
+// Define libraries outside to prevent re-renders
+const LIBRARIES: ("places")[] = ["places"];
 
 export function StartJourneyDialog() {
   const { user } = useUser()
@@ -47,7 +48,7 @@ export function StartJourneyDialog() {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: libraries
+    libraries: LIBRARIES
   })
 
   const userRef = useMemoFirebase(() => {
@@ -76,9 +77,11 @@ export function StartJourneyDialog() {
     if (autocomplete) {
       const place = autocomplete.getPlace();
       const address = place.formatted_address || place.name || "";
-      if (type === 'start') setStartLoc(address);
-      else if (type === 'end') setEndLoc(address);
-      else setRouteVia(address);
+      if (address) {
+        if (type === 'start') setStartLoc(address);
+        else if (type === 'end') setEndLoc(address);
+        else setRouteVia(address);
+      }
     }
   }
 
@@ -180,7 +183,7 @@ export function StartJourneyDialog() {
             Initialize Journey
           </DialogTitle>
           <DialogDescription>
-            Enter your route details to notify your network.
+            Enter your route details to notify your network. Select addresses from the Google suggestions for accuracy.
           </DialogDescription>
         </DialogHeader>
 
