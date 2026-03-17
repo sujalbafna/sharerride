@@ -24,7 +24,8 @@ import {
   ShieldAlert,
   UserPlus,
   IndianRupee,
-  Gift
+  Gift,
+  Bell
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,158 +38,6 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
-function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a: any) => void, onDismiss: (id: string) => void }) {
-  const db = useFirestore()
-  const router = useRouter()
-  const profileRef = useMemoFirebase(() => {
-    if (!db || !alert.senderId) return null
-    return doc(db, "publicProfiles", alert.senderId)
-  }, [db, alert.senderId])
-  const { data: profile } = useDoc(profileRef)
-  
-  const senderName = profile?.displayName || alert.senderName || "Friend"
-
-  if (alert.requestType === 'JoinApproved') {
-    return (
-      <Card className="rounded-3xl border-none shadow-xl bg-primary/5 border-l-4 border-l-primary overflow-hidden animate-in slide-in-from-top-4 duration-500">
-         <CardContent className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-                Live Tracking Authorized
-              </span>
-            </div>
-            <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">SECURE LINK</Badge>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">
-              <span className="font-black">{senderName}</span> has approved your companion request.
-            </p>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Tracking enabled for the duration of this transit</p>
-          </div>
-          <Button 
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-primary text-white hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20"
-            onClick={() => router.push(`/journey?riderId=${alert.riderId}&journeyId=${alert.targetJourneyId}`)}
-          >
-            TRACK LIVE NOW
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="rounded-3xl border-none shadow-xl bg-card border-l-4 border-l-accent overflow-hidden animate-in slide-in-from-top-4 duration-500">
-      <CardContent className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {alert.requestType === 'JourneyNotification' ? <Car className="h-4 w-4 text-accent" /> : <CheckCircle2 className="h-4 w-4 text-accent" />}
-            <span className="text-[10px] font-black uppercase text-accent tracking-widest">
-              {alert.requestType === 'JourneyNotification' ? 'Travel Broadcast' : 'Arrival Update'}
-            </span>
-          </div>
-          <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">NEW ALERT</Badge>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-black">
-              {senderName[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-black leading-tight text-foreground truncate">{senderName}</p>
-                {alert.paymentType === "Paid" ? (
-                  <Badge className="bg-primary text-white text-[9px] font-black">₹{alert.feeAmount}</Badge>
-                ) : (
-                  <Badge variant="secondary" className="bg-accent/20 text-primary text-[9px] font-black">FREE</Badge>
-                )}
-              </div>
-              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Verified Contact</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
-             <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Origin</p>
-                <p className="text-xs font-bold truncate">{alert.startLocation}</p>
-              </div>
-            </div>
-            {alert.routeVia && (
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
-                  <Milestone className="h-3.5 w-3.5 text-muted-foreground" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Route Via</p>
-                  <p className="text-xs font-bold truncate italic">{alert.routeVia}</p>
-                </div>
-              </div>
-            )}
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
-                <Navigation className="h-3.5 w-3.5 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase font-black text-accent tracking-widest">Destination</p>
-                <p className="text-xs font-black truncate">{alert.endLocation}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
-            <div className="space-y-0.5">
-              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Vehicle</p>
-              <div className="flex items-center gap-1">
-                <Car className="h-3 w-3 text-muted-foreground/60" />
-                <span className="text-[9px] font-bold truncate">{alert.vehicleName || 'Private'}</span>
-              </div>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Status</p>
-              <div className="flex items-center gap-1">
-                <Wind className="h-3 w-3 text-muted-foreground/60" />
-                <span className="text-[9px] font-bold">{alert.acStatus}</span>
-              </div>
-            </div>
-             <div className="space-y-0.5">
-              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-tight">Time</p>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3 text-muted-foreground/60" />
-                <span className="text-[9px] font-bold">{alert.journeyStartTime ? format(new Date(alert.journeyStartTime), "h:mm a") : 'Now'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {alert.requestType === 'JourneyNotification' ? (
-          <Button 
-            variant="outline"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest border-accent/30 text-accent bg-background hover:bg-accent/5 transition-all active:scale-95 shadow-sm"
-            onClick={() => onJoin(alert)}
-          >
-            REQUEST TO JOIN
-          </Button>
-        ) : (
-          <Button 
-            variant="ghost"
-            className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/50 hover:bg-muted transition-all active:scale-95"
-            onClick={() => onDismiss(alert.id)}
-          >
-            <Check className="h-4 w-4 mr-2" />
-            ACKNOWLEDGE
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function Home() {
   const { user, isUserLoading } = useUser()
@@ -249,58 +98,15 @@ export default function Home() {
     )
   }, [contacts, friendFilter])
 
-  const alertsQuery = useMemoFirebase(() => {
+  const pendingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
       collection(db, "users", user.uid, "supportRequests"),
-      where("status", "==", "Pending"),
-      where("requestType", "in", ["JourneyNotification", "JourneyEndNotification", "JoinApproved"])
+      where("status", "==", "Pending")
     )
   }, [db, user])
 
-  const { data: journeyAlerts, isLoading: isAlertsLoading } = useCollection(alertsQuery)
-
-  const handleJoinRequest = async (alert: any) => {
-    if (!db || !user || !alert.targetJourneyId) return
-    try {
-      await addDoc(collection(db, "users", alert.senderId, "supportRequests"), {
-        userId: alert.senderId,
-        senderId: user.uid,
-        senderName: userName,
-        requestType: "JoinJourneyRequest",
-        description: "wants to join your journey.",
-        timestamp: new Date().toISOString(),
-        status: "Pending",
-        targetJourneyId: alert.targetJourneyId
-      })
-      
-      const alertRef = doc(db, "users", user.uid, "supportRequests", alert.id)
-      updateDoc(alertRef, {
-        status: "Read"
-      }).catch(async (error) => {
-        const permissionError = new FirestorePermissionError({
-          path: alertRef.path,
-          operation: 'update',
-          requestResourceData: { status: "Read" },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      })
-
-      toast({ 
-        title: "Request Sent", 
-        description: "Your request to join has been sent to your friend." 
-      })
-    } catch (e) {
-      console.error(e)
-      toast({ variant: "destructive", title: "Error", description: "Failed to send join request." })
-    }
-  }
-
-  const handleDismiss = async (alertId: string) => {
-    if (!db || !user) return
-    const alertRef = doc(db, "users", user.uid, "supportRequests", alertId)
-    updateDoc(alertRef, { status: "Read" })
-  }
+  const { data: pendingRequests } = useCollection(pendingRequestsQuery)
 
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
@@ -397,6 +203,21 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <div className="relative">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-12 w-12 rounded-2xl bg-secondary/50 border-none shadow-inner transition-all hover:bg-secondary active:scale-95"
+              onClick={() => router.push("/notifications")}
+            >
+              <Bell className="h-6 w-6 text-primary" />
+            </Button>
+            {pendingRequests && pendingRequests.length > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-[10px] bg-primary text-white border-2 border-card animate-bounce">
+                {pendingRequests.length}
+              </Badge>
+            )}
+          </div>
         </div>
       </header>
 
@@ -404,25 +225,6 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
-            {journeyAlerts && journeyAlerts.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary ml-2">
-                  <Activity className="h-3.5 w-3.5 animate-pulse" />
-                  Live Travel Updates
-                </div>
-                <div className="space-y-4">
-                  {journeyAlerts.map((alert) => (
-                    <JourneyAlertCard 
-                      key={alert.id} 
-                      alert={alert} 
-                      onJoin={handleJoinRequest} 
-                      onDismiss={handleDismiss} 
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
             {activeJourney ? (
               <div className="space-y-4 animate-in zoom-in duration-300">
                 <Card className="rounded-[2rem] border-none shadow-2xl bg-destructive text-destructive-foreground overflow-hidden">

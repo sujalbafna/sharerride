@@ -52,214 +52,6 @@ import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion, orderBy } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter
-} from "@/components/ui/dialog"
-
-function RequestItem({ 
-  req, 
-  onAccept, 
-  onDecline,
-  onJoinRequest,
-  onDismiss,
-  onTrack
-}: { 
-  req: any, 
-  onAccept: (req: any, name: string) => void, 
-  onDecline: (req: any) => void,
-  onJoinRequest: (req: any) => void,
-  onDismiss: (id: string) => void,
-  onTrack: (riderId: string, journeyId: string) => void
-}) {
-  const db = useFirestore();
-  
-  const profileRef = useMemoFirebase(() => {
-    if (!db || !req.senderId) return null;
-    return doc(db, "publicProfiles", req.senderId);
-  }, [db, req.senderId]);
-  
-  const { data: profile, isLoading } = useDoc(profileRef);
-  
-  const senderName = profile?.displayName || req.senderName || "Friend";
-
-  if (req.requestType === "JourneyNotification") {
-    return (
-      <div className="p-3 bg-secondary rounded-xl border border-border space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Car className="h-3 w-3 text-primary" />
-            <span className="text-[10px] font-bold uppercase text-primary">Travel Broadcast</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {req.paymentType === "Paid" ? (
-              <Badge className="bg-primary text-white text-[8px] h-4">₹{req.feeAmount}</Badge>
-            ) : (
-              <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">FREE</Badge>
-            )}
-            <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">LIVE</Badge>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <p className="text-[11px] leading-tight font-black">{senderName}</p>
-          
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-              <MapPin className="h-2.5 w-2.5" />
-              <span className="truncate">{req.startLocation}</span>
-            </div>
-            {req.routeVia && (
-              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground italic">
-                <Milestone className="h-2.5 w-2.5" />
-                <span className="truncate">via {req.routeVia}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
-              <Navigation className="h-2.5 w-2.5" />
-              <span className="truncate font-bold text-primary">{req.endLocation}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 pt-1 border-t border-border/50">
-            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
-              <Car className="h-2.5 w-2.5" />
-              {req.vehicleName || 'Vehicle'}
-            </div>
-            <div className="flex items-center gap-1 text-[8px] font-bold text-muted-foreground">
-              <Wind className="h-2.5 w-2.5" />
-              {req.acStatus}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Button 
-            size="sm" 
-            className="w-full h-8 text-[10px] font-black uppercase rounded-lg"
-            onClick={() => onJoinRequest(req)}
-          >
-            REQUEST TO JOIN
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground hover:bg-muted"
-            onClick={() => onDismiss(req.id)}
-          >
-            DISMISS
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (req.requestType === "JourneyEndNotification") {
-    return (
-      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-3 w-3 text-accent" />
-          <span className="text-[10px] font-bold uppercase text-accent">Arrival Update</span>
-        </div>
-        <p className="text-[11px] leading-tight font-medium">
-          <span className="font-bold">{senderName}</span> {req.description}
-        </p>
-        <Button 
-          size="sm" 
-          variant="ghost"
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg text-muted-foreground bg-background hover:bg-muted"
-          onClick={() => onDismiss(req.id)}
-        >
-          <Check className="h-3 w-3 mr-1" />
-          OKAY
-        </Button>
-      </div>
-    );
-  }
-
-  if (req.requestType === "JoinJourneyRequest") {
-    return (
-      <div className="p-3 bg-secondary rounded-xl border border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <User className="h-3 w-3 text-primary" />
-          <span className="text-[10px] font-bold uppercase text-primary">Companion Request</span>
-        </div>
-        <p className="text-[11px] leading-tight font-medium">
-          <span className="font-bold">{senderName}</span> wants to join your journey.
-        </p>
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            className="flex-1 h-8 text-[10px] font-black uppercase rounded-lg shadow-sm" 
-            onClick={() => onAccept(req, senderName)}
-          >
-            APPROVE
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className="h-8 w-8 p-0 rounded-lg text-destructive bg-background hover:bg-destructive/5" 
-            onClick={() => onDecline(req)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (req.requestType === "JoinApproved") {
-    return (
-      <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 space-y-2">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-3 w-3 text-primary" />
-          <span className="text-[10px] font-bold uppercase text-primary">Companion Verified</span>
-        </div>
-        <p className="text-[11px] leading-tight font-medium">
-          <span className="font-bold">{senderName}</span> approved your tracking request.
-        </p>
-        <Button 
-          size="sm" 
-          className="w-full h-8 text-[10px] font-black uppercase rounded-lg bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"
-          onClick={() => onTrack(req.riderId, req.targetJourneyId)}
-        >
-          TRACK LIVE NOW
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-3 bg-secondary rounded-xl border border-border space-y-2 animate-in slide-in-from-left-2">
-      <div className="flex items-center gap-2">
-        <Avatar className="h-6 w-6 border border-primary/20">
-          <AvatarFallback className="text-[9px] font-black bg-background text-primary uppercase">
-            {senderName[0] || "F"}
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-[11px] font-bold truncate flex-1">
-          {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : senderName}
-        </span>
-        <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground hover:text-destructive bg-background" onClick={() => onDecline(req)}>
-          <X className="h-3 w-3" />
-        </Button>
-      </div>
-      <Button 
-        size="sm" 
-        className="w-full h-8 text-[10px] font-black uppercase rounded-lg" 
-        onClick={() => onAccept(req, senderName)}
-        disabled={isLoading}
-      >
-        APPROVE CONNECTION
-      </Button>
-    </div>
-  );
-}
 
 const items = [
   { title: "Home Dashboard", url: "/", icon: Home },
@@ -269,7 +61,6 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { user, isUserLoading } = useUser()
   const auth = useAuth()
   const db = useFirestore()
@@ -300,21 +91,9 @@ export function AppSidebar() {
 
   const { data: allRequests } = useCollection(requestsQuery)
   
-  const pendingRequests = React.useMemo(() => {
-    return allRequests?.filter(r => r.status === "Pending")
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) || []
-  }, [allRequests])
-
   const activeTrackingLinks = React.useMemo(() => {
     return allRequests?.filter(r => r.status === "Pending" && r.requestType === "JoinApproved") || []
   }, [allRequests])
-
-  const friendsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return collection(db, "users", user.uid, "trustedContacts")
-  }, [db, user])
-
-  const { data: friends } = useCollection(friendsQuery)
 
   const handleSearch = async () => {
     if (!db || !searchQuery.trim()) return
@@ -368,108 +147,6 @@ export function AppSidebar() {
     }
   }
 
-  const handleAccept = async (req: any, resolvedSenderName: string) => {
-    if (!db || !user) return
-    try {
-      if (req.requestType === "ConnectionRequest") {
-        await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
-          id: req.senderId,
-          userId: user.uid,
-          contactName: resolvedSenderName,
-          contactPhoneNumber: "Private",
-          isAppUser: true,
-          appUserId: req.senderId,
-          relationshipToUser: "Friend"
-        })
-
-        await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
-          id: user.uid,
-          userId: req.senderId,
-          contactName: currentUserDisplayName,
-          contactPhoneNumber: "Private",
-          isAppUser: true,
-          appUserId: user.uid,
-          relationshipToUser: "Friend"
-        })
-      } else if (req.requestType === "JoinJourneyRequest") {
-        if (!req.targetJourneyId) throw new Error("Missing targetJourneyId");
-        
-        const journeyRef = doc(db, "users", user.uid, "journeys", req.targetJourneyId);
-        await updateDoc(journeyRef, {
-          availableSeats: increment(-1),
-          joinedUserIds: arrayUnion(req.senderId)
-        });
-
-        // Notify the friend that they are accepted
-        await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
-          userId: req.senderId,
-          senderId: user.uid,
-          senderName: currentUserDisplayName,
-          requestType: "JoinApproved",
-          description: "approved your request to join the journey.",
-          timestamp: new Date().toISOString(),
-          status: "Pending",
-          targetJourneyId: req.targetJourneyId,
-          riderId: user.uid
-        });
-
-        toast({ title: "Companion Approved", description: `${resolvedSenderName} has joined your transit.` });
-      }
-
-      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
-      
-      if (req.requestType === "ConnectionRequest") {
-        toast({ title: "Network Updated", description: `You are now connected with ${resolvedSenderName}.` })
-      }
-    } catch (e) {
-      console.error("Approval error:", e)
-      toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
-    }
-  }
-
-  const handleDecline = async (req: any) => {
-    if (!db || !user) return
-    try {
-      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Declined" })
-      toast({ title: "Request Removed", description: "The request has been declined." })
-    } catch (e) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to decline request." })
-    }
-  }
-
-  const handleDismiss = async (id: string) => {
-    if (!db || !user) return
-    try {
-      await updateDoc(doc(db, "users", user.uid, "supportRequests", id), { status: "Read" })
-    } catch (e) {
-      console.error("Dismiss error:", e)
-    }
-  }
-
-  const handleJoinRequest = async (req: any) => {
-    if (!db || !user || !req.targetJourneyId) return;
-    
-    try {
-      await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
-        userId: req.senderId,
-        senderId: user.uid,
-        senderName: currentUserDisplayName,
-        requestType: "JoinJourneyRequest",
-        description: "wants to join your journey.",
-        timestamp: new Date().toISOString(),
-        status: "Pending",
-        targetJourneyId: req.targetJourneyId
-      });
-      
-      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Read" });
-
-      toast({ title: "Join Request Sent", description: "Request sent to the rider for verification." });
-    } catch (e) {
-      console.error("Join request error:", e);
-      toast({ variant: "destructive", title: "Error", description: "Failed to send request." });
-    }
-  };
-
   const handleTrackFriend = (riderId: string, journeyId: string) => {
     router.push(`/journey?riderId=${riderId}&journeyId=${journeyId}`);
   };
@@ -514,7 +191,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="group-data-[collapsible=icon]:hidden px-4">
           <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/70 mb-4">
-            Security & Alerts
+            Security & Connections
           </SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div className="space-y-2">
@@ -542,37 +219,6 @@ export function AppSidebar() {
                         <UserPlus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black uppercase text-sidebar-foreground/70 flex items-center gap-1.5">
-                  <Bell className="h-3 w-3" /> Notifications
-                </span>
-                {pendingRequests.length > 0 && (
-                  <Badge className="h-4 px-1.5 text-[8px] bg-primary text-primary-foreground border-none font-black animate-pulse">
-                    {pendingRequests.length}
-                  </Badge>
-                )}
-              </div>
-              
-              {pendingRequests.length === 0 ? (
-                <p className="text-[9px] text-center text-sidebar-foreground/50 py-2 italic">No active notifications</p>
-              ) : (
-                <div className="space-y-2">
-                  {pendingRequests.map((req) => (
-                    <RequestItem 
-                      key={req.id} 
-                      req={req} 
-                      onAccept={handleAccept} 
-                      onDecline={handleDecline}
-                      onJoinRequest={handleJoinRequest}
-                      onDismiss={handleDismiss}
-                      onTrack={handleTrackFriend}
-                    />
                   ))}
                 </div>
               )}
