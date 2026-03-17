@@ -50,6 +50,7 @@ export default function JourneyPage() {
   const riderIdParam = searchParams.get("riderId")
   const journeyIdParam = searchParams.get("journeyId")
 
+  const [mounted, setMounted] = useState(false)
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
   const [meetingPointInput, setMeetingPointInput] = useState("")
@@ -57,6 +58,10 @@ export default function JourneyPage() {
   const [isUpdatingMeetingPoint, setIsUpdatingMeetingPoint] = useState(false)
   const [routeInfo, setRouteInfo] = useState<{ distance: string, duration: string } | null>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -120,7 +125,7 @@ export default function JourneyPage() {
   }, [isRider, activeJourney?.status, userLocation, db, user, activeJourney?.id])
 
   useEffect(() => {
-    if (!navigator.geolocation) {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationStatus('unsupported')
       return
     }
@@ -317,6 +322,14 @@ export default function JourneyPage() {
 
   const isLoading = isLoadingMy || isLoadingShared
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
@@ -396,8 +409,8 @@ export default function JourneyPage() {
                     <div className="relative h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
                       <GoogleMap 
                         variant="active"
-                        origin={activeJourney.startLocationDescription}
-                        destination={activeJourney.endLocationDescription}
+                        origin={activeJourney.startLatitude && activeJourney.startLongitude ? {lat: activeJourney.startLatitude, lng: activeJourney.startLongitude} : activeJourney.startLocationDescription}
+                        destination={activeJourney.endLatitude && activeJourney.endLongitude ? {lat: activeJourney.endLatitude, lng: activeJourney.endLongitude} : activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
                         className="h-full w-full rounded-none border-none"
                         lat={trackingLat}
