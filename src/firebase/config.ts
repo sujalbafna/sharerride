@@ -1,5 +1,5 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k",
+  apiKey: "AIzaSyBZL38PBrHo1fzUu4bTmr_YrYqTddUhWBI",
   authDomain: "trackmyride-287f8.firebaseapp.com",
   projectId: "trackmyride-287f8",
   storageBucket: "trackmyride-287f8.firebasestorage.app",

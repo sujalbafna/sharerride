@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef, Suspense } from "react"
@@ -43,6 +44,8 @@ import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from "@/components/ui/input"
 import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
 import { firebaseConfig } from "@/firebase/config"
+import Image from "next/image"
+import { PlaceHolderImages } from "@/lib/placeholder-images"
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -413,6 +416,8 @@ function JourneyContent() {
     )
   }
 
+  const journeyHeroBg = PlaceHolderImages.find(img => img.id === 'journey-hero-bg')
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
@@ -716,18 +721,34 @@ function JourneyContent() {
             </Card>
           </section>
         ) : (
-          <section className="flex flex-col items-center justify-center py-12 md:py-24 text-center space-y-8 max-w-3xl mx-auto animate-in fade-in duration-700">
-            <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Compass className="h-10 w-10 text-primary" />
+          <section className="relative overflow-hidden rounded-[3rem] border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm group">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+              {journeyHeroBg && (
+                <Image 
+                  src={journeyHeroBg.imageUrl}
+                  alt="Background"
+                  fill
+                  className="object-cover opacity-10 group-hover:opacity-15 transition-opacity duration-700"
+                  data-ai-hint="abstract colors"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
-              Ready for your next safe travel?
-            </h1>
-            <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed">
-              ShareRide provides virtual companionship and real-time tracking for every step of your journey.
-            </p>
-            <div className="pt-4">
-              <StartJourneyDialog />
+
+            <div className="relative z-10 flex flex-col items-center justify-center py-16 md:py-32 px-6 text-center space-y-8 max-w-3xl mx-auto animate-in fade-in duration-1000">
+              <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 shadow-xl backdrop-blur-md border border-white/20">
+                <Compass className="h-10 w-10 text-primary animate-spin-slow" />
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
+                Ready for your next safe travel?
+              </h1>
+              <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed max-w-xl">
+                ShareRide provides virtual companionship and real-time tracking for every step of your journey.
+              </p>
+              <div className="pt-4">
+                <StartJourneyDialog />
+              </div>
             </div>
           </section>
         )}
