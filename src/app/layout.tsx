@@ -1,6 +1,6 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
+import { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -35,10 +35,14 @@ export default function RootLayout({
           >
             <SidebarProvider>
               <div className="flex min-h-screen w-full relative">
-                <AppSidebar />
+                <Suspense fallback={null}>
+                  <AppSidebar />
+                </Suspense>
                 <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
                   <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-                    {children}
+                    <Suspense fallback={null}>
+                      {children}
+                    </Suspense>
                   </main>
                   <BottomNav />
                 </div>

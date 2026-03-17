@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, addDoc, doc, limit } from "firebase/firestore"
@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-export default function ChatPage() {
+function ChatContent() {
   const { user } = useUser()
   const db = useFirestore()
   const router = useRouter()
@@ -251,5 +251,13 @@ export default function ChatPage() {
         </form>
       </footer>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <ChatContent />
+    </Suspense>
   )
 }

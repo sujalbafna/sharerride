@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, Suspense } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -46,7 +45,7 @@ import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
 
 const LIBRARIES: ("places")[] = ["places"];
 
-export default function JourneyPage() {
+function JourneyContent() {
   const { user } = useUser()
   const db = useFirestore()
   const { toast } = useToast()
@@ -223,7 +222,6 @@ export default function JourneyPage() {
       const locStr = `${currentCoords.lat},${currentCoords.lng}`
       const googleMapsUrl = `https://www.google.com/maps?q=${locStr}`
       
-      // Simplified message per user request
       const finalMessage = `Emergency! I need immediate help. Please respond urgently.\n\nTrack Live: ${googleMapsUrl}`
       
       const numbers = userData.emergencySmsNumbers.filter(n => n.trim() !== "").join(",")
@@ -503,7 +501,6 @@ export default function JourneyPage() {
                       />
                     </div>
 
-                    {/* High-Fidelity Stats Section matching screenshot */}
                     {routeInfo && activeJourney.status === 'InProgress' && (
                       <div className="animate-in slide-in-from-bottom-2 duration-500">
                         <Card className="rounded-[2.5rem] border-none bg-white shadow-2xl overflow-hidden text-primary">
@@ -527,7 +524,6 @@ export default function JourneyPage() {
                       </div>
                     )}
 
-                    {/* Emergency Hub Hub with high-fidelity glassmorphism styling */}
                     <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
                       <div className="flex-1 min-w-[340px] h-24 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] flex items-center px-4 gap-4 shadow-2xl relative overflow-hidden group">
                         <div className="h-14 w-12 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
@@ -773,5 +769,13 @@ export default function JourneyPage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function JourneyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <JourneyContent />
+    </Suspense>
   )
 }
