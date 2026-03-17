@@ -477,7 +477,7 @@ export default function JourneyPage() {
                       )}
                     </div>
 
-                    <div className="relative h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
+                    <div className="relative h-[450px] md:h-[500px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
                       <GoogleMap 
                         variant="active"
                         origin={navigationOrigin || activeJourney.startLocationDescription}
@@ -514,28 +514,26 @@ export default function JourneyPage() {
                       )}
                     </div>
 
-                    {/* Quick SOS Hub - Positioned below the map as requested */}
-                    <div className="flex items-center justify-between gap-4 mt-4 bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20 shadow-xl animate-in slide-in-from-bottom-2 duration-700">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-destructive/20 rounded-xl flex items-center justify-center text-white">
-                          <ShieldAlert className="h-5 w-5" />
+                    {/* Emergency Hub - Matching High-Fidelity Design */}
+                    <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
+                      <div className="flex-1 min-w-[280px] h-20 bg-primary/90 backdrop-blur-xl border border-white/20 rounded-[1.5rem] flex items-center justify-between px-4 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center text-white shadow-inner">
+                            <ShieldAlert className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/60 leading-none mb-1.5">Emergency Hub</p>
+                            <p className="text-sm font-bold text-white tracking-tight">Immediate SMS Protocol</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-white/60 leading-none mb-1">Emergency Hub</p>
-                          <p className="text-xs font-black text-white truncate">Immediate SMS Protocol</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="h-10 px-6 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-destructive/40 active:scale-95 transition-all"
+                          className="h-12 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95"
                           onClick={handleQuickSOS}
                         >
                           SEND SOS
                         </Button>
-                        <EmergencyContactsDialog />
                       </div>
+                      <EmergencyContactsDialog />
                     </div>
 
                     <div className="space-y-4 pt-4">

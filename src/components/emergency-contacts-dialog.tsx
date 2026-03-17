@@ -68,8 +68,12 @@ export function EmergencyContactsDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-white/10 border-white/20 hover:bg-white/20 text-white transition-all shadow-sm">
-          <Settings2 className="h-4 w-4" />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20 text-white transition-all shadow-2xl flex-shrink-0"
+        >
+          <Settings2 className="h-6 w-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
