@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useUser, useFirestore } from "@/firebase"
 import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
@@ -11,11 +11,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { onAuthStateChanged, updateProfile } from "firebase/auth"
+import { onAuthStateChanged, updateProfile, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -32,9 +33,11 @@ export default function LoginPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   
+  // Login State
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
 
+  // Register State
   const [fullName, setFullName] = useState("")
   const [regEmail, setRegEmail] = useState("")
   const [mobileNumber, setMobileNumber] = useState("")
@@ -42,6 +45,14 @@ export default function LoginPage() {
   const [regPassword, setRegPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [role, setRole] = useState<"student" | "faculty">("student")
+
+  // OTP State
+  const [otp, setOtp] = useState("")
+  const [isOtpSent, setIsOtpSent] = useState(false)
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [verificationLoading, setVerificationLoading] = useState(false)
+  const confirmationResultRef = useRef<ConfirmationResult | null>(null)
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null)
 
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
@@ -72,7 +83,8 @@ export default function LoginPage() {
             address: address,
             role: role,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            emergencySmsNumbers: []
           }
 
           const publicData = {
@@ -95,6 +107,60 @@ export default function LoginPage() {
     return () => unsub()
   }, [auth, db, fullName, regEmail, mobileNumber, role, address])
 
+  const setupRecaptcha = () => {
+    if (!recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        }
+      });
+    }
+  }
+
+  const handleSendOtp = async () => {
+    if (!mobileNumber || mobileNumber.length < 10) {
+      toast({ variant: "destructive", title: "Invalid Number", description: "Please enter a valid mobile number." })
+      return
+    }
+
+    setVerificationLoading(true)
+    try {
+      setupRecaptcha()
+      const formattedNumber = mobileNumber.startsWith('+') ? mobileNumber : `+91${mobileNumber}`
+      const confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifierRef.current!)
+      confirmationResultRef.current = confirmationResult
+      setIsOtpSent(true)
+      toast({ title: "OTP Sent", description: "Verification code dispatched to your mobile." })
+    } catch (error: any) {
+      console.error(error)
+      toast({ variant: "destructive", title: "SMS Failed", description: error.message || "Could not send verification code." })
+    } finally {
+      setVerificationLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter the 6-digit code." })
+      return
+    }
+
+    setVerificationLoading(true)
+    try {
+      if (confirmationResultRef.current) {
+        await confirmationResultRef.current.confirm(otp)
+        setIsPhoneVerified(true)
+        setIsOtpSent(false)
+        toast({ title: "Phone Verified", description: "Mobile identity confirmed successfully." })
+      }
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Verification Failed", description: "Incorrect OTP. Please try again." })
+    } finally {
+      setVerificationLoading(false)
+    }
+  }
+
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
     if (!loginEmail || !loginPassword) return
@@ -106,6 +172,11 @@ export default function LoginPage() {
     e.preventDefault()
     if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role || !address) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill in all registration fields." })
+      return
+    }
+
+    if (!isPhoneVerified) {
+      toast({ variant: "destructive", title: "Phone Not Verified", description: "Please complete mobile OTP verification first." })
       return
     }
 
@@ -128,6 +199,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden py-12">
+      <div id="recaptcha-container"></div>
+      
       {authImage && (
         <div className="absolute inset-0 z-0">
           <Image 
@@ -227,7 +300,7 @@ export default function LoginPage() {
                   <CardTitle className="text-2xl font-black">Join Network</CardTitle>
                   <CardDescription>Start your first safe journey today.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4 max-h-[400px] overflow-y-auto px-6 custom-scrollbar">
+                <CardContent className="space-y-4 max-h-[450px] overflow-y-auto px-6 custom-scrollbar pb-6">
                   <div className="space-y-2">
                     <Label>Role</Label>
                     <Select value={role} onValueChange={(val: any) => setRole(val)}>
@@ -254,13 +327,77 @@ export default function LoginPage() {
                       <Input type="email" placeholder="abc@gmail.com" className="pl-10 h-12 rounded-xl" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
                     </div>
                   </div>
+                  
+                  {/* Mobile Number Section with OTP */}
                   <div className="space-y-2">
-                    <Label>Mobile Number</Label>
-                    <div className="relative group">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="tel" placeholder="XXXXXXXXXX" className="pl-10 h-12 rounded-xl" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} required />
+                    <div className="flex justify-between items-center">
+                      <Label>Mobile Number</Label>
+                      {isPhoneVerified && (
+                        <Badge variant="secondary" className="bg-accent/20 text-primary border-none text-[10px] font-black uppercase flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" /> Verified
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="relative group flex-1">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
+                        <Input 
+                          type="tel" 
+                          placeholder="XXXXXXXXXX" 
+                          className="pl-10 h-12 rounded-xl" 
+                          value={mobileNumber} 
+                          onChange={(e) => setMobileNumber(e.target.value)} 
+                          disabled={isPhoneVerified || isOtpSent}
+                          required 
+                        />
+                      </div>
+                      {!isPhoneVerified && !isOtpSent && (
+                        <Button 
+                          type="button" 
+                          onClick={handleSendOtp} 
+                          disabled={verificationLoading || !mobileNumber}
+                          className="h-12 rounded-xl px-4 font-black text-[10px] bg-secondary text-primary hover:bg-muted"
+                        >
+                          {verificationLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "SEND OTP"}
+                        </Button>
+                      )}
                     </div>
                   </div>
+
+                  {/* OTP Input Field */}
+                  {isOtpSent && !isPhoneVerified && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <Label>Enter Verification Code</Label>
+                      <div className="flex gap-2">
+                        <div className="relative group flex-1">
+                          <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
+                          <Input 
+                            placeholder="6-digit code" 
+                            className="pl-10 h-12 rounded-xl" 
+                            value={otp} 
+                            onChange={(e) => setOtp(e.target.value)} 
+                            maxLength={6}
+                          />
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={handleVerifyOtp} 
+                          disabled={verificationLoading || otp.length !== 6}
+                          className="h-12 rounded-xl px-4 font-black text-[10px] bg-primary text-white"
+                        >
+                          {verificationLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "VERIFY"}
+                        </Button>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsOtpSent(false)} 
+                        className="text-[10px] font-bold text-muted-foreground underline uppercase tracking-widest mt-1 hover:text-primary"
+                      >
+                        Change Number
+                      </button>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label>Address</Label>
                     <div className="relative group">
@@ -284,9 +421,12 @@ export default function LoginPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="pb-8 pt-4">
-                  <Button className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95" disabled={isLoading}>
+                  <Button 
+                    className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95" 
+                    disabled={isLoading || !isPhoneVerified}
+                  >
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <UserPlus className="h-5 w-5 mr-2" />}
-                    CREATE ACCOUNT
+                    {isPhoneVerified ? "CREATE ACCOUNT" : "VERIFY PHONE TO START"}
                   </Button>
                 </CardFooter>
               </form>
