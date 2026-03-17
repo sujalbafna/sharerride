@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/tabs"
 import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { onAuthStateChanged, updateProfile, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth"
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
   
   // Login State
   const [loginEmail, setLoginEmail] = useState("")
@@ -57,10 +58,10 @@ export default function LoginPage() {
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
   useEffect(() => {
-    if (user && !isUserLoading) {
+    if (user && !isUserLoading && !isRegistering) {
       router.push("/")
     }
-  }, [user, isUserLoading, router])
+  }, [user, isUserLoading, router, isRegistering])
 
   const setupRecaptcha = () => {
     try {
@@ -69,9 +70,7 @@ export default function LoginPage() {
       }
       recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: (response: any) => {
-          // reCAPTCHA solved
-        },
+        callback: (response: any) => {},
         'expired-callback': () => {
           toast({ variant: "destructive", title: "reCAPTCHA Expired", description: "Please try sending the OTP again." })
         }
@@ -102,11 +101,7 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error(error)
       let msg = error.message || "Could not send verification code."
-      if (error.code === 'auth/captcha-check-failed') {
-        msg = "Domain verification failed. Please ensure your domain is added to Firebase Authorized Domains."
-      }
       toast({ variant: "destructive", title: "SMS Failed", description: msg })
-      // Clear verifier on error to allow retry
       if (recaptchaVerifierRef.current) {
         recaptchaVerifierRef.current.clear();
         recaptchaVerifierRef.current = null;
@@ -128,7 +123,7 @@ export default function LoginPage() {
         await confirmationResultRef.current.confirm(otp)
         setIsPhoneVerified(true)
         setIsOtpSent(false)
-        toast({ title: "Phone Verified", description: "Mobile identity confirmed successfully." })
+        toast({ title: "Phone Verified", description: "Mobile identity confirmed successfully. Please complete the rest of the form." })
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "Verification Failed", description: "The OTP entered is incorrect or expired." })
@@ -162,17 +157,20 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
+    setIsRegistering(true)
     try {
       initiateEmailSignUp(auth, regEmail, regPassword)
     } catch (error: any) {
       toast({ variant: "destructive", title: "Sign Up Failed", description: error.message })
       setIsLoading(false)
+      setIsRegistering(false)
     }
   }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (newUser) => {
-      if (newUser && isPhoneVerified && !isLoading) {
+      // Only proceed with Firestore registration if we are in the "Registering" phase
+      if (newUser && isRegistering && isPhoneVerified) {
         const userRef = doc(db, "users", newUser.uid)
         const publicRef = doc(db, "publicProfiles", newUser.uid)
         
@@ -207,14 +205,17 @@ export default function LoginPage() {
           await updateProfile(newUser, { displayName: fullName })
           await setDoc(userRef, userData, { merge: true })
           await setDoc(publicRef, publicData, { merge: true })
+          setIsRegistering(false)
           router.push("/")
         } catch (e) {
           console.error("Error saving profile:", e)
+          setIsRegistering(false)
+          setIsLoading(false)
         }
       }
     })
     return () => unsubscribe()
-  }, [auth, isPhoneVerified, db, fullName, regEmail, mobileNumber, address, role, router])
+  }, [auth, isRegistering, isPhoneVerified, db, fullName, regEmail, mobileNumber, address, role, router])
 
   if (isUserLoading) {
     return (
@@ -342,7 +343,7 @@ export default function LoginPage() {
                     <Label>Full Name</Label>
                     <div className="relative group">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input placeholder="Enter Fulll Name" className="pl-10 h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                      <Input placeholder="Enter Full Name" className="pl-10 h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
