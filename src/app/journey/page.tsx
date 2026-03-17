@@ -1,12 +1,11 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { 
   MapPin, 
   Navigation, 
@@ -21,7 +20,10 @@ import {
   Play,
   ArrowLeft,
   User,
-  Activity
+  Activity,
+  Handshake,
+  Edit2,
+  Save
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -33,6 +35,10 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useSearchParams, useRouter } from "next/navigation"
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
+import { Input } from "@/components/ui/input"
+
+const LIBRARIES: ("places")[] = ["places"];
 
 export default function JourneyPage() {
   const { user } = useUser()
@@ -41,15 +47,21 @@ export default function JourneyPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Query params for tracking a friend's journey
   const riderIdParam = searchParams.get("riderId")
   const journeyIdParam = searchParams.get("journeyId")
 
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
-  const [journeyProgress, setJourneyProgress] = useState(0)
+  const [meetingPointInput, setMeetingPointInput] = useState("")
+  const [isUpdatingMeetingPoint, setIsUpdatingMeetingPoint] = useState(false)
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
 
-  // Fetch my profile
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: LIBRARIES
+  })
+
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
     return doc(db, "users", user.uid)
@@ -60,14 +72,12 @@ export default function JourneyPage() {
     ? `${userData.firstName} ${userData.lastName}` 
     : (user?.displayName || user?.email?.split('@')[0] || "User")
 
-  // Handle Shared Journey View (Companion Mode)
   const sharedJourneyRef = useMemoFirebase(() => {
     if (!db || !riderIdParam || !journeyIdParam) return null
     return doc(db, "users", riderIdParam, "journeys", journeyIdParam)
   }, [db, riderIdParam, journeyIdParam])
   const { data: sharedJourney, isLoading: isLoadingShared } = useDoc(sharedJourneyRef)
 
-  // Handle My Journey View (Rider Mode)
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user || riderIdParam) return null
     return query(
@@ -81,7 +91,6 @@ export default function JourneyPage() {
   const activeJourney = riderIdParam && sharedJourney ? sharedJourney : myJourneys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
   const isRider = activeJourney && (!riderIdParam || riderIdParam === user?.uid)
 
-  // Fetch joined friends data for the active journey
   const joinedFriendsQuery = useMemoFirebase(() => {
     if (!db || !activeJourney?.joinedUserIds || activeJourney.joinedUserIds.length === 0) return null
     return query(
@@ -97,7 +106,6 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
 
-  // Sync Rider location to Firestore
   useEffect(() => {
     if (isRider && activeJourney?.status === 'InProgress' && userLocation && db && user) {
       const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
@@ -109,19 +117,6 @@ export default function JourneyPage() {
     }
   }, [isRider, activeJourney?.status, userLocation, db, user, activeJourney?.id])
 
-  // Progress simulation for UI
-  useEffect(() => {
-    if (activeJourney?.status === 'InProgress') {
-      const interval = setInterval(() => {
-        setJourneyProgress(prev => (prev < 95 ? prev + 1 : prev))
-      }, 5000)
-      return () => clearInterval(interval)
-    } else {
-      setJourneyProgress(0)
-    }
-  }, [activeJourney?.status])
-
-  // Location tracking setup
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocationStatus('unsupported')
@@ -241,7 +236,35 @@ export default function JourneyPage() {
     }
   }
 
-  // Determine which location to show on the map
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current !== null) {
+      const place = autocompleteRef.current.getPlace()
+      const address = place.formatted_address || place.name
+      if (address) {
+        setMeetingPointInput(address)
+      }
+    }
+  }
+
+  const handleSaveMeetingPoint = async () => {
+    if (!db || !activeJourney || !meetingPointInput.trim()) return
+    setIsUpdatingMeetingPoint(true)
+    const riderId = riderIdParam || user?.uid
+    if (!riderId) return
+
+    const journeyRef = doc(db, "users", riderId, "journeys", activeJourney.id)
+    try {
+      await updateDoc(journeyRef, {
+        meetingPoint: meetingPointInput.trim()
+      })
+      toast({ title: "Meeting Point Set", description: "The rider has been notified of the rendezvous location." })
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to update meeting point." })
+    } finally {
+      setIsUpdatingMeetingPoint(false)
+    }
+  }
+
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
 
@@ -336,12 +359,6 @@ export default function JourneyPage() {
                     </div>
 
                     <div className="space-y-4 pt-4">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
-                        <span>Route Progress</span>
-                        <span>{activeJourney.status === 'InProgress' ? "LIVE TRACKING ACTIVE" : "AWAITING DEPARTURE"}</span>
-                      </div>
-                      <Progress value={journeyProgress} className="h-3 bg-white/20" />
-                      
                       {isRider && (
                         <div className="flex gap-4">
                           {activeJourney.status === 'Broadcasted' ? (
@@ -395,40 +412,101 @@ export default function JourneyPage() {
                       </div>
                     </div>
 
-                    <Card className="rounded-[2rem] border-none bg-white/10 backdrop-blur-md text-white shadow-xl h-fit border border-white/20">
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4" />
-                            Companion Link
-                          </h4>
-                          {isRider && (
-                            <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
-                              {activeJourney.availableSeats || 0} SLOTS FREE
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="p-4 bg-white/10 rounded-2xl space-y-3">
-                          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
-                            <Users className="h-3 w-3" />
-                            Participants
+                    <div className="space-y-4">
+                      <Card className="rounded-[2rem] border-none bg-white/10 backdrop-blur-md text-white shadow-xl h-fit border border-white/20">
+                        <CardContent className="p-6 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                              <ShieldCheck className="h-4 w-4" />
+                              Companion Link
+                            </h4>
+                            {isRider && (
+                              <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
+                                {activeJourney.availableSeats || 0} SLOTS FREE
+                              </Badge>
+                            )}
                           </div>
-                          {joinedFriendsData && joinedFriendsData.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                              {joinedFriendsData.map(friend => (
-                                <Badge key={friend.userId} variant="secondary" className="bg-white/20 text-white border-none font-bold py-1 px-3">
-                                  {friend.displayName}
-                                </Badge>
-                              ))}
+                          <div className="p-4 bg-white/10 rounded-2xl space-y-3">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                              <Users className="h-3 w-3" />
+                              Participants
                             </div>
-                          ) : (
-                            <p className="text-xs font-medium opacity-60 italic">
-                              No companions have joined yet.
-                            </p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                            {joinedFriendsData && joinedFriendsData.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {joinedFriendsData.map(friend => (
+                                  <Badge key={friend.userId} variant="secondary" className="bg-white/20 text-white border-none font-bold py-1 px-3">
+                                    {friend.displayName}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs font-medium opacity-60 italic">
+                                No companions have joined yet.
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="rounded-[2rem] border-none bg-white/10 backdrop-blur-md text-white shadow-xl h-fit border border-white/20">
+                        <CardContent className="p-6 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                              <Handshake className="h-4 w-4" />
+                              Meeting Point
+                            </h4>
+                          </div>
+
+                          <div className="space-y-4">
+                            {activeJourney.meetingPoint ? (
+                              <div className="p-4 bg-accent/20 rounded-2xl border border-accent/30 space-y-2">
+                                <p className="text-[10px] font-black uppercase text-accent tracking-widest">Confirmed Location</p>
+                                <p className="text-sm font-black text-white">{activeJourney.meetingPoint}</p>
+                              </div>
+                            ) : (
+                              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 italic text-xs opacity-60">
+                                No meeting point has been set for this journey.
+                              </div>
+                            )}
+
+                            {!isRider && (
+                              <div className="pt-2 space-y-3">
+                                <div className="space-y-1.5">
+                                  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest ml-1">Propose Rendezvous</p>
+                                  <div className="relative group">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 z-10" />
+                                    {isLoaded ? (
+                                      <Autocomplete
+                                        onLoad={(auto) => (autocompleteRef.current = auto)}
+                                        onPlaceChanged={onPlaceChanged}
+                                        fields={['formatted_address', 'geometry', 'name']}
+                                      >
+                                        <Input 
+                                          placeholder="Enter meeting location..." 
+                                          className="h-12 pl-10 bg-white/10 border-none rounded-xl text-white placeholder:text-white/30 focus-visible:ring-accent/50"
+                                          value={meetingPointInput}
+                                          onChange={(e) => setMeetingPointInput(e.target.value)}
+                                        />
+                                      </Autocomplete>
+                                    ) : (
+                                      <Input disabled className="h-12 pl-10 bg-white/10 border-none rounded-xl text-white/30" placeholder="Loading Maps API..." />
+                                    )}
+                                  </div>
+                                </div>
+                                <Button 
+                                  className="w-full h-12 rounded-xl bg-accent text-primary font-black uppercase text-xs tracking-widest shadow-lg shadow-accent/20 hover:bg-accent/90"
+                                  onClick={handleSaveMeetingPoint}
+                                  disabled={isUpdatingMeetingPoint || !meetingPointInput.trim()}
+                                >
+                                  {isUpdatingMeetingPoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                                  SET MEETING POINT
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </div>
               </CardContent>

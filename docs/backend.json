@@ -127,7 +127,8 @@
         "availableSeats": { "type": "number" },
         "joinedUserIds": { "type": "array", "items": { "type": "string" } },
         "vehicleName": { "type": "string" },
-        "acStatus": { "type": "string", "enum": ["AC", "Non-AC"] }
+        "acStatus": { "type": "string", "enum": ["AC", "Non-AC"] },
+        "meetingPoint": { "type": "string", "description": "Specific meeting point set by companions." }
       },
       "required": ["id", "userId", "journeyType", "status", "startTime", "startLocationDescription", "endLocationDescription", "sharedWithContactIds", "availableSeats"]
     },
