@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Edit2, Loader2, Phone, ShieldCheck, AlertCircle } from "lucide-react"
+import { Loader2, Phone, ShieldCheck, AlertCircle, Settings2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function EmergencyContactsDialog() {
@@ -68,8 +68,8 @@ export function EmergencyContactsDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="absolute top-4 right-4 h-8 w-8 p-0 rounded-full hover:bg-primary-foreground/20 text-primary-foreground bg-primary/20">
-          <Edit2 className="h-4 w-4" />
+        <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-white/10 border-white/20 hover:bg-white/20 text-white transition-all shadow-sm">
+          <Settings2 className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
@@ -79,7 +79,7 @@ export function EmergencyContactsDialog() {
           </div>
           <DialogTitle className="text-2xl font-black tracking-tight">SMS Contacts</DialogTitle>
           <DialogDescription className="text-sm font-medium">
-            Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is held for 3 seconds.
+            Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is triggered.
           </DialogDescription>
         </DialogHeader>
 

@@ -25,7 +25,8 @@ import {
   Edit2,
   Save,
   Route,
-  AlertTriangle
+  AlertTriangle,
+  ShieldAlert
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -39,6 +40,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from "@/components/ui/input"
+import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
+import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -181,6 +184,54 @@ export default function JourneyPage() {
         })
       }
     )
+  }
+
+  const handleQuickSOS = async () => {
+    if (!user || !db || !userData?.emergencySmsNumbers?.length) {
+      toast({ 
+        variant: "destructive", 
+        title: "Setup Required", 
+        description: "Please configure emergency mobile numbers using the edit button below the map." 
+      })
+      return
+    }
+
+    toast({ title: "Initializing SOS", description: "Composing emergency location message..." })
+
+    try {
+      const locStr = userLocation ? `${userLocation.lat},${userLocation.lng}` : "Current GPS Location"
+      
+      const { message: baseMessage } = await generateEmergencyMessage({
+        location: activeJourney?.startLocationDescription || "On transit route",
+        situation: "Immediate Assistance Requested"
+      })
+
+      const googleMapsUrl = `https://www.google.com/maps?q=${locStr}`
+      const finalMessage = `${baseMessage}\n\nTrack Live: ${googleMapsUrl}`
+      const numbers = userData.emergencySmsNumbers.join(",")
+      
+      window.location.href = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
+
+      addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
+        userId: user.uid,
+        timestamp: new Date().toISOString(),
+        alertLocationDescription: "Live Transit SOS",
+        alertLatitude: userLocation?.lat || 0,
+        alertLongitude: userLocation?.lng || 0,
+        alertMessage: finalMessage,
+        status: "Sent",
+        emergencyType: "QuickSOS",
+        recipientsContactIds: []
+      })
+
+      toast({
+        title: "SOS Link Dispatched",
+        description: "Your emergency contacts have been prepared for SMS send.",
+      })
+    } catch (error) {
+      console.error(error)
+      toast({ variant: "destructive", title: "SOS Failed", description: "Could not initialize emergency protocol." })
+    }
   }
 
   const handleStartJourney = async () => {
@@ -461,6 +512,30 @@ export default function JourneyPage() {
                           </Card>
                         </div>
                       )}
+                    </div>
+
+                    {/* Quick SOS Hub - Positioned below the map as requested */}
+                    <div className="flex items-center justify-between gap-4 mt-4 bg-white/10 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20 shadow-xl animate-in slide-in-from-bottom-2 duration-700">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-destructive/20 rounded-xl flex items-center justify-center text-white">
+                          <ShieldAlert className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-white/60 leading-none mb-1">Emergency Hub</p>
+                          <p className="text-xs font-black text-white truncate">Immediate SMS Protocol</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="h-10 px-6 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-destructive/40 active:scale-95 transition-all"
+                          onClick={handleQuickSOS}
+                        >
+                          SEND SOS
+                        </Button>
+                        <EmergencyContactsDialog />
+                      </div>
                     </div>
 
                     <div className="space-y-4 pt-4">
