@@ -80,7 +80,7 @@ export function GoogleMap({
   destination,
   lat,
   lng,
-  zoom = 15, // Slightly tighter zoom for navigation
+  zoom = 15,
   markers = [], 
   interactive = true,
   variant = 'active',
@@ -95,12 +95,12 @@ export function GoogleMap({
     libraries: LIBRARIES
   });
 
-  // Stabilize waypoints
+  // Stabilize waypoints using literals to avoid "google.maps is not a constructor" before loading
   const mapWaypoints = useMemo(() => {
     return markers
       .filter(m => m.type === 'meeting')
       .map(m => ({
-        location: new google.maps.LatLng(m.lat, m.lng),
+        location: { lat: m.lat, lng: m.lng },
         stopover: true
       }));
   }, [JSON.stringify(markers.filter(m => m.type === 'meeting'))]);
@@ -226,7 +226,7 @@ export function GoogleMap({
               suppressMarkers: true,
               polylineOptions: {
                 strokeColor: "#2280B3",
-                strokeWeight: 8, // Thicker for better navigation visibility
+                strokeWeight: 8,
                 strokeOpacity: 0.9
               }
             }}
@@ -237,9 +237,7 @@ export function GoogleMap({
           let label = undefined;
           let color = "#2280B3";
           
-          // Only show Start marker if journey hasn't moved yet (optional logic)
           if (marker.type === 'start') {
-            // Hide Start marker if we have active GPS coordinates nearby to avoid clutter
             if (lat && lng && Math.abs(lat - marker.lat) < 0.001) return null;
             label = { text: "A", color: "white", fontWeight: "bold" };
             color = "#ef4444";
@@ -273,7 +271,6 @@ export function GoogleMap({
             position={{ lat, lng }} 
             zIndex={1000}
             icon={{
-              // Navigation Arrow Path
               path: "M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z",
               fillColor: "#2280B3",
               fillOpacity: 1,
@@ -281,7 +278,6 @@ export function GoogleMap({
               strokeColor: "#ffffff",
               scale: 2,
               anchor: new google.maps.Point(12, 12),
-              // Note: Rotation could be handled here if heading data was available
             }}
           />
         )}
