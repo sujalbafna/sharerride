@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
@@ -14,7 +15,7 @@ interface GoogleMapProps {
   lat?: number
   lng?: number
   zoom?: number
-  markers?: Array<{ lat: number, lng: number, type?: 'start' | 'end' | 'incident' | 'guardian' }>
+  markers?: Array<{ lat: number, lng: number, type?: 'start' | 'end' | 'incident' | 'guardian' | 'meeting' }>
   interactive?: boolean
   variant?: 'active' | 'alert' | 'hero'
 }
@@ -177,9 +178,20 @@ export function GoogleMap({
           />
         )}
         
-        {/* Additional markers (guards, friends, etc) */}
+        {/* Additional markers (guards, friends, meeting point etc) */}
         {markers.map((marker, i) => (
-          <Marker key={i} position={{ lat: marker.lat, lng: marker.lng }} />
+          <Marker 
+            key={i} 
+            position={{ lat: marker.lat, lng: marker.lng }} 
+            icon={{
+              path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+              fillColor: marker.type === 'meeting' ? "#10b981" : "#2280B3", // Green for meeting point
+              fillOpacity: 1,
+              strokeWeight: 2,
+              strokeColor: "#ffffff",
+              scale: 1.5,
+            }}
+          />
         ))}
       </GoogleMapBase>
 

@@ -53,6 +53,7 @@ export default function JourneyPage() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'unsupported'>('loading')
   const [meetingPointInput, setMeetingPointInput] = useState("")
+  const [meetingPointCoords, setMeetingPointCoords] = useState<{lat: number, lng: number} | null>(null)
   const [isUpdatingMeetingPoint, setIsUpdatingMeetingPoint] = useState(false)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
 
@@ -240,8 +241,16 @@ export default function JourneyPage() {
     if (autocompleteRef.current !== null) {
       const place = autocompleteRef.current.getPlace()
       const address = place.formatted_address || place.name
+      const location = place.geometry?.location
+      
       if (address) {
         setMeetingPointInput(address)
+      }
+      if (location) {
+        setMeetingPointCoords({
+          lat: location.lat(),
+          lng: location.lng()
+        })
       }
     }
   }
@@ -255,7 +264,9 @@ export default function JourneyPage() {
     const journeyRef = doc(db, "users", riderId, "journeys", activeJourney.id)
     try {
       await updateDoc(journeyRef, {
-        meetingPoint: meetingPointInput.trim()
+        meetingPoint: meetingPointInput.trim(),
+        meetingPointLat: meetingPointCoords?.lat || null,
+        meetingPointLng: meetingPointCoords?.lng || null
       })
       toast({ title: "Meeting Point Set", description: "The rider has been notified of the rendezvous location." })
     } catch (e) {
@@ -267,6 +278,18 @@ export default function JourneyPage() {
 
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
+
+  const mapMarkers = useMemo(() => {
+    const markers = [];
+    if (activeJourney?.meetingPointLat && activeJourney?.meetingPointLng) {
+      markers.push({
+        lat: activeJourney.meetingPointLat,
+        lng: activeJourney.meetingPointLng,
+        type: 'meeting' as const
+      });
+    }
+    return markers;
+  }, [activeJourney?.meetingPointLat, activeJourney?.meetingPointLng]);
 
   const isLoading = isLoadingMy || isLoadingShared
 
@@ -355,6 +378,7 @@ export default function JourneyPage() {
                         className="h-full w-full rounded-none border-none"
                         lat={trackingLat}
                         lng={trackingLng}
+                        markers={mapMarkers}
                       />
                     </div>
 
@@ -460,7 +484,10 @@ export default function JourneyPage() {
                           <div className="space-y-4">
                             {activeJourney.meetingPoint ? (
                               <div className="p-4 bg-accent/20 rounded-2xl border border-accent/30 space-y-2">
-                                <p className="text-[10px] font-black uppercase text-accent tracking-widest">Confirmed Location</p>
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Confirmed Location</p>
+                                  <Badge className="bg-accent text-primary text-[8px] font-black">ON MAP</Badge>
+                                </div>
                                 <p className="text-sm font-black text-white">{activeJourney.meetingPoint}</p>
                               </div>
                             ) : (
