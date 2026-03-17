@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
   MapPin, 
@@ -26,7 +26,9 @@ import {
   Save,
   Route,
   AlertTriangle,
-  ShieldAlert
+  ShieldAlert,
+  Settings2,
+  GpsFixed
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -196,10 +198,33 @@ export default function JourneyPage() {
       return
     }
 
-    toast({ title: "Initializing SOS", description: "Composing emergency location message..." })
+    toast({ title: "Initializing SOS", description: "Acquiring precise GPS location..." })
 
     try {
-      const locStr = userLocation ? `${userLocation.lat},${userLocation.lng}` : "Current GPS Location"
+      // Actively try to get a fresh high-accuracy position if the background one is missing
+      const getPos = (): Promise<GeolocationPosition> => {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+        });
+      }
+
+      let currentCoords = userLocation;
+      try {
+        if (!currentCoords) {
+          const freshPos = await getPos();
+          currentCoords = { lat: freshPos.coords.latitude, lng: freshPos.coords.longitude };
+          setUserLocation(currentCoords);
+        }
+      } catch (gpsError) {
+        console.error("GPS Acquisition failed", gpsError);
+      }
+
+      if (!currentCoords) {
+        toast({ variant: "destructive", title: "GPS Error", description: "Could not acquire location coordinates. Please ensure GPS is active." });
+        return;
+      }
+
+      const locStr = `${currentCoords.lat},${currentCoords.lng}`
       
       const { message: baseMessage } = await generateEmergencyMessage({
         location: activeJourney?.startLocationDescription || "On transit route",
@@ -210,14 +235,16 @@ export default function JourneyPage() {
       const finalMessage = `${baseMessage}\n\nTrack Live: ${googleMapsUrl}`
       const numbers = userData.emergencySmsNumbers.join(",")
       
+      // Dispatch SMS
       window.location.href = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
 
+      // Log to security
       addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
-        alertLocationDescription: "Live Transit SOS",
-        alertLatitude: userLocation?.lat || 0,
-        alertLongitude: userLocation?.lng || 0,
+        alertLocationDescription: activeJourney?.startLocationDescription || "Live Transit SOS",
+        alertLatitude: currentCoords.lat,
+        alertLongitude: currentCoords.lng,
         alertMessage: finalMessage,
         status: "Sent",
         emergencyType: "QuickSOS",
@@ -225,8 +252,8 @@ export default function JourneyPage() {
       })
 
       toast({
-        title: "SOS Link Dispatched",
-        description: "Your emergency contacts have been prepared for SMS send.",
+        title: "SOS Protocol Ready",
+        description: "Emergency coordinates attached. Please tap send in your message app.",
       })
     } catch (error) {
       console.error(error)
@@ -391,7 +418,6 @@ export default function JourneyPage() {
 
   const isLoading = isLoadingMy || isLoadingShared
 
-  // Hydration safety: only render dynamic content after mount
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -428,7 +454,7 @@ export default function JourneyPage() {
       </header>
 
       <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-        {locationStatus === 'denied' && isRider && (
+        {locationStatus === 'denied' && (
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -492,20 +518,20 @@ export default function JourneyPage() {
                       
                       {routeInfo && activeJourney.status === 'InProgress' && (
                         <div className="absolute top-6 left-6 right-6 animate-in slide-in-from-top-4 duration-500">
-                          <Card className="rounded-2xl border-none bg-white text-primary shadow-2xl border-l-8 border-l-accent overflow-hidden">
+                          <Card className="rounded-2xl border-none bg-white/95 backdrop-blur-md text-primary shadow-2xl border-l-8 border-l-accent overflow-hidden">
                             <CardContent className="p-4 flex items-center justify-between gap-6">
                               <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
                                   <Route className="h-6 w-6" />
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Arriving In</p>
+                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Arriving In</p>
                                   <p className="text-xl font-black tracking-tight">{routeInfo.duration}</p>
                                 </div>
                               </div>
                               <div className="h-10 w-px bg-border hidden sm:block" />
                               <div className="hidden sm:block">
-                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Remaining</p>
+                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Remaining</p>
                                 <p className="text-xl font-black tracking-tight">{routeInfo.distance}</p>
                               </div>
                             </CardContent>
@@ -514,24 +540,28 @@ export default function JourneyPage() {
                       )}
                     </div>
 
-                    {/* Emergency Hub - Matching High-Fidelity Design */}
+                    {/* High-Fidelity Emergency Hub */}
                     <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
-                      <div className="flex-1 min-w-[280px] h-20 bg-primary/90 backdrop-blur-xl border border-white/20 rounded-[1.5rem] flex items-center justify-between px-4 shadow-2xl">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center text-white shadow-inner">
+                      <div className="flex-1 min-w-[280px] h-20 bg-primary/90 backdrop-blur-2xl border border-white/20 rounded-[1.5rem] flex items-center justify-between px-4 shadow-2xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4 relative z-10">
+                          <div className="h-12 w-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner border border-white/10 group-hover:bg-white/20 transition-all">
                             <ShieldAlert className="h-6 w-6" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/60 leading-none mb-1.5">Emergency Hub</p>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/60 leading-none">Emergency Hub</p>
+                              {userLocation && <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" /><span className="text-[8px] font-black text-accent tracking-tighter">GPS ACTIVE</span></div>}
+                            </div>
                             <p className="text-sm font-bold text-white tracking-tight">Immediate SMS Protocol</p>
                           </div>
                         </div>
                         <Button 
-                          className="h-12 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95"
+                          className="h-12 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95 z-10"
                           onClick={handleQuickSOS}
                         >
                           SEND SOS
                         </Button>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       </div>
                       <EmergencyContactsDialog />
                     </div>
