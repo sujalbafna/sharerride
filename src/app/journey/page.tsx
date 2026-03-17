@@ -774,6 +774,61 @@ function JourneyContent() {
                           </div>
                         </CardContent>
                       </Card>
+
+                      {isRider && (
+                        <Card className="rounded-[2rem] border-none bg-white/10 backdrop-blur-md text-white shadow-xl h-fit border border-white/20 animate-in slide-in-from-bottom-2">
+                          <CardContent className="p-6 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                                <UserPlus className="h-4 w-4" />
+                                Passenger
+                              </h4>
+                              {activeJourney && (
+                                <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black uppercase">
+                                  {activeJourney.availableSeats || 0} SLOTS FREE
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="space-y-3">
+                              {pendingJoinRequests && pendingJoinRequests.length > 0 ? (
+                                pendingJoinRequests.map((req) => (
+                                  <div key={req.id} className="p-4 bg-white/10 rounded-2xl border border-white/10 space-y-4 animate-in zoom-in-95">
+                                    <div className="flex items-center gap-3">
+                                      <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-black">
+                                        {req.senderName?.[0] || "?"}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-black truncate">{req.senderName}</p>
+                                        <p className="text-[10px] opacity-60 uppercase font-bold tracking-tight">Wants to join transit</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button 
+                                        className="flex-1 h-10 rounded-xl bg-accent text-primary font-black text-[10px] uppercase tracking-widest shadow-lg shadow-accent/20 transition-all active:scale-95"
+                                        onClick={() => handleApproveJoin(req)}
+                                      >
+                                        APPROVE
+                                      </Button>
+                                      <Button 
+                                        variant="outline"
+                                        className="flex-1 h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-white/20 bg-transparent text-white hover:bg-white/10 transition-all active:scale-95"
+                                        onClick={() => handleDeclineJoin(req)}
+                                      >
+                                        DECLINE
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 italic text-xs opacity-60 text-center">
+                                  No pending join requests.
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -811,43 +866,6 @@ function JourneyContent() {
               </div>
             </div>
           </section>
-        )}
-
-        {/* Floating Join Request Popup */}
-        {isRider && pendingJoinRequests && pendingJoinRequests.length > 0 && (
-          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 animate-in slide-in-from-bottom-4 duration-500">
-            <Card className="rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-card overflow-hidden">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black shadow-inner">
-                    {pendingJoinRequests[0].senderName?.[0] || "?"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-primary uppercase tracking-tight truncate">{pendingJoinRequests[0].senderName}</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Wants to join this journey</p>
-                  </div>
-                  <Badge className="bg-accent text-primary text-[8px] font-black uppercase">
-                    {activeJourney?.availableSeats} SLOTS LEFT
-                  </Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    className="flex-1 h-11 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95"
-                    onClick={() => handleApproveJoin(pendingJoinRequests[0])}
-                  >
-                    APPROVE
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="flex-1 h-11 rounded-xl font-black text-[10px] uppercase tracking-widest border-border transition-all active:scale-95"
-                    onClick={() => handleDeclineJoin(pendingJoinRequests[0])}
-                  >
-                    DECLINE
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         )}
 
         {!riderIdParam && (
