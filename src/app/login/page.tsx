@@ -342,7 +342,7 @@ export default function LoginPage() {
                     <Label>Full Name</Label>
                     <div className="relative group">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input placeholder="Sujal Bafna" className="pl-10 h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                      <Input placeholder="Enter Fulll Name" className="pl-10 h-12 rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -425,7 +425,7 @@ export default function LoginPage() {
                     <Label>Address</Label>
                     <div className="relative group">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input placeholder="123 College Ave, Campus" className="pl-10 h-12 rounded-xl" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                      <Input placeholder="Your Address" className="pl-10 h-12 rounded-xl" value={address} onChange={(e) => setAddress(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">

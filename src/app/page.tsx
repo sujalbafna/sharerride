@@ -352,15 +352,34 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-in fade-in duration-700">
-      <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-4">
+      <header className="h-24 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-4 w-full">
           <SidebarTrigger />
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <h2 className="text-xl font-black tracking-tighter leading-none">ShareRide</h2>
-              <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                by <a href="https://www.linkedin.com/in/sujal-bafna/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline transition-all">Sujal Bafna</a>
+          <div className="flex items-center gap-4 flex-1">
+            <div className="h-14 w-14 relative shrink-0">
+              <Image 
+                src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
+                alt="MIT Logo" 
+                fill 
+                className="object-contain"
+              />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground truncate">
+                MIT Art, Design & Technology
               </p>
+              <h2 className="text-xl font-black tracking-tighter leading-tight truncate">
+                Welcome, {userName}
+              </h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
+                  <span className="h-1 w-1 rounded-full bg-accent animate-pulse" />
+                  ShareRide Portal
+                </span>
+                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+                  by Sujal Bafna
+                </span>
+              </div>
             </div>
           </div>
         </div>
