@@ -185,7 +185,6 @@ export default function Home() {
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
-                  <span className="h-1 w-1 rounded-full bg-accent animate-pulse" />
                   ShareRide Portal
                 </span>
                 <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
