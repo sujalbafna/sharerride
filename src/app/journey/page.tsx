@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef, Suspense } from "react"
@@ -729,7 +728,7 @@ function JourneyContent() {
                   src={journeyHeroBg.imageUrl}
                   alt="Background"
                   fill
-                  className="object-cover opacity-10 group-hover:opacity-15 transition-opacity duration-700"
+                  className="object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-700"
                   data-ai-hint="abstract colors"
                 />
               )}
