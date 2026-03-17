@@ -204,6 +204,7 @@ export function StartJourneyDialog() {
         className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
+          // Crucial fix: Don't close dialog when clicking on Google Autocomplete suggestions
           if (target?.closest('.pac-container')) {
             e.preventDefault();
           }

@@ -70,11 +70,40 @@
 
 /* Fix for Google Maps Autocomplete dropdown in Modals */
 .pac-container {
-  z-index: 9999 !important;
+  z-index: 10000 !important;
   pointer-events: auto !important;
+  border-radius: 1rem;
+  border: none !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  margin-top: 4px;
+}
+
+.pac-item {
+  padding: 12px 16px !important;
+  cursor: pointer;
+  border-top: 1px solid #f3f4f6 !important;
+  font-family: inherit !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+}
+
+.pac-item:hover {
+  background-color: #f9fafb !important;
+}
+
+.pac-item-query {
+  font-size: 14px !important;
+  color: #111827 !important;
 }
 
 /* Ensure clicks are registered even when body has pointer-events: none from Radix */
 body[style*="pointer-events: none"] .pac-container {
   pointer-events: auto !important;
+}
+
+/* Hide the Google logo/legal stuff in the dropdown if it causes layout issues on mobile */
+.pac-logo:after {
+  display: none !important;
 }
