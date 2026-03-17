@@ -18,6 +18,7 @@ interface GoogleMapProps {
   markers?: Array<{ lat: number, lng: number, type?: 'start' | 'end' | 'incident' | 'guardian' | 'meeting' }>
   interactive?: boolean
   variant?: 'active' | 'alert' | 'hero'
+  onRouteInfo?: (info: { distance: string, duration: string } | null) => void
 }
 
 const containerStyle = {
@@ -37,9 +38,10 @@ export function GoogleMap({
   zoom = 14, 
   markers = [], 
   interactive = true,
-  variant = 'active'
+  variant = 'active',
+  onRouteInfo
 }: GoogleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const directionsRequested = useRef(false);
   
@@ -59,18 +61,33 @@ export function GoogleMap({
     if (result !== null && status === 'OK' && !directionsRequested.current) {
       setDirections(result);
       directionsRequested.current = true;
+      
+      if (onRouteInfo && result.routes[0]?.legs[0]) {
+        const leg = result.routes[0].legs[0];
+        onRouteInfo({
+          distance: leg.distance?.text || "...",
+          duration: leg.duration?.text || "..."
+        });
+      }
     }
-  }, []);
+  }, [onRouteInfo]);
 
   const handleExternalNavigation = () => {
+    const meetingPoint = markers.find(m => m.type === 'meeting');
+    let url = "";
+
     if (origin && destination) {
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
-      window.open(url, '_blank');
+      url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+      if (meetingPoint) {
+        url += `&waypoints=${meetingPoint.lat},${meetingPoint.lng}`;
+      }
     } else if (lat && lng) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      window.open(url, '_blank');
+      url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     } else if (address) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    }
+
+    if (url) {
       window.open(url, '_blank');
     }
   };
@@ -111,6 +128,13 @@ export function GoogleMap({
     lng: lng || 77.5946
   };
 
+  const mapWaypoints = markers
+    .filter(m => m.type === 'meeting')
+    .map(m => ({
+      location: new google.maps.LatLng(m.lat, m.lng),
+      stopover: true
+    }));
+
   return (
     <div className={cn("relative rounded-[2rem] overflow-hidden border-4 border-card shadow-2xl group", className)}>
       <GoogleMapBase
@@ -143,6 +167,7 @@ export function GoogleMap({
             options={{
               destination: destination,
               origin: origin,
+              waypoints: mapWaypoints,
               travelMode: google.maps.TravelMode.DRIVING
             }}
             callback={directionsCallback}

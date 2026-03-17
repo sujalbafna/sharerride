@@ -23,7 +23,8 @@ import {
   Activity,
   Handshake,
   Edit2,
-  Save
+  Save,
+  Route
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -55,6 +56,7 @@ export default function JourneyPage() {
   const [meetingPointInput, setMeetingPointInput] = useState("")
   const [meetingPointCoords, setMeetingPointCoords] = useState<{lat: number, lng: number} | null>(null)
   const [isUpdatingMeetingPoint, setIsUpdatingMeetingPoint] = useState(false)
+  const [routeInfo, setRouteInfo] = useState<{ distance: string, duration: string } | null>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
 
   const { isLoaded } = useJsApiLoader({
@@ -369,7 +371,7 @@ export default function JourneyPage() {
                       )}
                     </div>
 
-                    <div className="h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
+                    <div className="relative h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
                       <GoogleMap 
                         variant="active"
                         origin={activeJourney.startLocationDescription}
@@ -379,7 +381,31 @@ export default function JourneyPage() {
                         lat={trackingLat}
                         lng={trackingLng}
                         markers={mapMarkers}
+                        onRouteInfo={(info) => setRouteInfo(info)}
                       />
+                      
+                      {routeInfo && activeJourney.status === 'InProgress' && (
+                        <div className="absolute top-6 left-6 right-6 animate-in slide-in-from-top-4 duration-500">
+                          <Card className="rounded-2xl border-none bg-white text-primary shadow-2xl border-l-8 border-l-accent overflow-hidden">
+                            <CardContent className="p-4 flex items-center justify-between gap-6">
+                              <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                                  <Route className="h-6 w-6" />
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Arriving In</p>
+                                  <p className="text-xl font-black tracking-tight">{routeInfo.duration}</p>
+                                </div>
+                              </div>
+                              <div className="h-10 w-px bg-border hidden sm:block" />
+                              <div className="hidden sm:block">
+                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Remaining</p>
+                                <p className="text-xl font-black tracking-tight">{routeInfo.distance}</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-4 pt-4">
