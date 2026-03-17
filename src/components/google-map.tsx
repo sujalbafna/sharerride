@@ -15,7 +15,7 @@ interface GoogleMapProps {
   lat?: number
   lng?: number
   zoom?: number
-  markers?: Array<{ lat: number, lng: number, type?: 'start' | 'end' | 'incident' | 'guardian' | 'meeting' }>
+  markers?: Array<{ lat: number, lng: number, type?: 'start' | 'end' | 'incident' | 'guardian' | 'meeting' | 'current' }>
   interactive?: boolean
   variant?: 'active' | 'alert' | 'hero'
   onRouteInfo?: (info: { distance: string, duration: string } | null) => void
@@ -51,7 +51,7 @@ export function GoogleMap({
     libraries: libraries
   });
 
-  // Reset directions when origin or destination changes
+  // Reset directions when origin or destination changes to simulate Uber-style path shortening
   useEffect(() => {
     setDirections(null);
     directionsRequested.current = false;
@@ -191,6 +191,7 @@ export function GoogleMap({
           />
         )}
 
+        {/* Static Markers (A, B, Meeting) */}
         {markers.map((marker, i) => {
           let label = undefined;
           let color = "#2280B3";
@@ -223,7 +224,23 @@ export function GoogleMap({
           );
         })}
 
-        {!directions && markers.length === 0 && (
+        {/* Live Tracking Marker (Blue Dot like Uber) */}
+        {(lat && lng) && (
+          <Marker 
+            position={{ lat, lng }} 
+            zIndex={100}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: "#2280B3",
+              fillOpacity: 1,
+              strokeWeight: 3,
+              strokeColor: "#ffffff",
+              scale: 8,
+            }}
+          />
+        )}
+
+        {!directions && markers.length === 0 && !lat && (
           <Marker 
             position={center} 
             icon={{

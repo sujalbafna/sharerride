@@ -115,6 +115,7 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
 
+  // Update live location in Firestore for companions to see
   useEffect(() => {
     if (isRider && activeJourney?.status === 'InProgress' && userLocation && db && user) {
       const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
@@ -126,6 +127,7 @@ export default function JourneyPage() {
     }
   }, [isRider, activeJourney?.status, userLocation, db, user, activeJourney?.id])
 
+  // Monitor GPS status
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationStatus('unsupported')
@@ -284,11 +286,25 @@ export default function JourneyPage() {
     }
   }
 
+  // Calculate dynamic origin for navigation (The "Uber" effect)
+  const navigationOrigin = useMemo(() => {
+    if (activeJourney?.status === 'InProgress') {
+      if (isRider) return userLocation || activeJourney.startLocationDescription;
+      if (activeJourney.currentLat && activeJourney.currentLng) {
+        return { lat: activeJourney.currentLat, lng: activeJourney.currentLng };
+      }
+    }
+    if (activeJourney?.startLatitude && activeJourney?.startLongitude) {
+      return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
+    }
+    return activeJourney?.startLocationDescription;
+  }, [activeJourney, isRider, userLocation]);
+
   const mapMarkers = useMemo(() => {
     const markers = [];
     
     if (activeJourney) {
-      // Start Marker A
+      // Start Marker A (Static origin)
       if (activeJourney.startLatitude && activeJourney.startLongitude) {
         markers.push({
           lat: activeJourney.startLatitude,
@@ -306,7 +322,7 @@ export default function JourneyPage() {
         });
       }
 
-      // End Marker B
+      // End Marker B (Final destination)
       if (activeJourney.endLatitude && activeJourney.endLongitude) {
         markers.push({
           lat: activeJourney.endLatitude,
@@ -319,25 +335,12 @@ export default function JourneyPage() {
     return markers;
   }, [activeJourney]);
 
-  // Use current user location as origin if journey is in progress, otherwise use start coordinates
-  const navigationOrigin = useMemo(() => {
-    if (activeJourney?.status === 'InProgress') {
-      if (isRider) return userLocation || activeJourney.startLocationDescription;
-      if (activeJourney.currentLat && activeJourney.currentLng) {
-        return { lat: activeJourney.currentLat, lng: activeJourney.currentLng };
-      }
-    }
-    if (activeJourney?.startLatitude && activeJourney.startLongitude) {
-      return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
-    }
-    return activeJourney?.startLocationDescription;
-  }, [activeJourney, isRider, userLocation]);
-
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
 
   const isLoading = isLoadingMy || isLoadingShared
 
+  // Hydration safety: only render dynamic content after mount
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
