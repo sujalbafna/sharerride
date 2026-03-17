@@ -459,14 +459,14 @@ export default function Home() {
               </Button>
             )}
 
-            <Card className="rounded-[2rem] border-none shadow-sm bg-primary/5 overflow-hidden">
+            <Card className="rounded-[2rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden">
                <CardContent className="p-6 space-y-4 text-center">
-                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-                    <UserPlus className="h-6 w-6" />
+                  <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                    <UserPlus className="h-6 w-6 text-white" />
                   </div>
                   <div className="space-y-2">
                     <h4 className="text-sm font-black uppercase tracking-tight">Connect With Friends</h4>
-                    <p className="text-[10px] text-muted-foreground font-bold leading-relaxed uppercase tracking-widest">
+                    <p className="text-[10px] opacity-90 font-bold leading-relaxed uppercase tracking-widest">
                       Search for your friends by name in the sidebar and send a request to connect. Once they accept, they can join your safe transit circle.
                     </p>
                   </div>
