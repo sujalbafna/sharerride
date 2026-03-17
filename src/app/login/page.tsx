@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -250,8 +249,8 @@ export default function LoginPage() {
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
         
-        <div className="flex flex-col items-center mb-8 pt-6 animate-in fade-in slide-in-from-top-4 duration-1000 w-full">
-          <div className="h-24 w-24 relative mb-4">
+        <div className="flex flex-col items-center mb-2 pt-2 animate-in fade-in slide-in-from-top-4 duration-1000 w-full">
+          <div className="h-20 w-20 relative mb-2">
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
               alt="MIT University Logo" 
@@ -262,16 +261,16 @@ export default function LoginPage() {
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center leading-tight">
             MIT Art, Design & Technology
           </h2>
-          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
             Supported By Crieya
           </p>
         </div>
 
-        <div className="flex flex-col items-center mb-8 gap-2">
+        <div className="flex flex-col items-center mb-6">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
-            <h1 className="text-2xl font-black tracking-tighter uppercase">SHARERIDE</h1>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase text-primary">SHARERIDE</h1>
           </div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mt-2">
             Developed and Hosted by{" "}
             <a 
               href="https://www.linkedin.com/in/sujal-bafna/" 
