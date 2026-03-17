@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
@@ -9,8 +10,8 @@ import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsService, 
 interface GoogleMapProps {
   className?: string
   address?: string
-  origin?: string
-  destination?: string
+  origin?: string | { lat: number, lng: number }
+  destination?: string | { lat: number, lng: number }
   lat?: number
   lng?: number
   zoom?: number
@@ -61,7 +62,7 @@ export function GoogleMap({
       setDirections(result);
       directionsRequested.current = true;
       
-      if (onRouteInfo && result.routes[0]?.legs[0]) {
+      if (onRouteInfo && result.routes[0]?.legs) {
         const totalDistance = result.routes[0].legs.reduce((acc, leg) => acc + (leg.distance?.value || 0), 0);
         const totalDuration = result.routes[0].legs.reduce((acc, leg) => acc + (leg.duration?.value || 0), 0);
         
@@ -78,7 +79,9 @@ export function GoogleMap({
     let url = "";
 
     if (origin && destination) {
-      url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+      const originStr = typeof origin === 'string' ? encodeURIComponent(origin) : `${origin.lat},${origin.lng}`;
+      const destStr = typeof destination === 'string' ? encodeURIComponent(destination) : `${destination.lat},${destination.lng}`;
+      url = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destStr}&travelmode=driving`;
       if (meetingPoint) {
         url += `&waypoints=${meetingPoint.lat},${meetingPoint.lng}`;
       }
@@ -165,8 +168,8 @@ export function GoogleMap({
         {origin && destination && !directions && (
           <DirectionsService
             options={{
-              destination: destination,
-              origin: origin,
+              destination: typeof destination === 'string' ? destination : { lat: destination.lat, lng: destination.lng },
+              origin: typeof origin === 'string' ? origin : { lat: origin.lat, lng: origin.lng },
               waypoints: mapWaypoints,
               travelMode: google.maps.TravelMode.DRIVING
             }}
@@ -178,7 +181,7 @@ export function GoogleMap({
           <DirectionsRenderer
             options={{
               directions: directions,
-              suppressMarkers: true, // IMPORTANT: Remove Google's A, B, C markers
+              suppressMarkers: true,
               polylineOptions: {
                 strokeColor: "#2280B3",
                 strokeWeight: 6,
@@ -188,24 +191,23 @@ export function GoogleMap({
           />
         )}
 
-        {/* Custom Marker Logic: A, B, and Green Meeting Point */}
         {markers.map((marker, i) => {
           let label = undefined;
           let color = "#2280B3";
           
           if (marker.type === 'start') {
             label = { text: "A", color: "white", fontWeight: "bold" };
-            color = "#ef4444"; // Red for A
+            color = "#ef4444";
           } else if (marker.type === 'end') {
             label = { text: "B", color: "white", fontWeight: "bold" };
-            color = "#ef4444"; // Red for B
+            color = "#ef4444";
           } else if (marker.type === 'meeting') {
             color = "#10b981"; // Green for Meeting Point
           }
 
           return (
             <Marker 
-              key={i} 
+              key={`${marker.lat}-${marker.lng}-${i}`} 
               position={{ lat: marker.lat, lng: marker.lng }} 
               label={label}
               icon={{
@@ -221,7 +223,6 @@ export function GoogleMap({
           );
         })}
 
-        {/* Fallback Single Marker if no markers/directions */}
         {!directions && markers.length === 0 && (
           <Marker 
             position={center} 

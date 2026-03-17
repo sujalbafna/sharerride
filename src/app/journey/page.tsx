@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -23,7 +24,8 @@ import {
   Handshake,
   Edit2,
   Save,
-  Route
+  Route,
+  AlertTriangle
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -317,6 +319,20 @@ export default function JourneyPage() {
     return markers;
   }, [activeJourney]);
 
+  // Use current user location as origin if journey is in progress, otherwise use start coordinates
+  const navigationOrigin = useMemo(() => {
+    if (activeJourney?.status === 'InProgress') {
+      if (isRider) return userLocation || activeJourney.startLocationDescription;
+      if (activeJourney.currentLat && activeJourney.currentLng) {
+        return { lat: activeJourney.currentLat, lng: activeJourney.currentLng };
+      }
+    }
+    if (activeJourney?.startLatitude && activeJourney.startLongitude) {
+      return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
+    }
+    return activeJourney?.startLocationDescription;
+  }, [activeJourney, isRider, userLocation]);
+
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
 
@@ -362,8 +378,9 @@ export default function JourneyPage() {
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 shrink-0" />
                 <p className="text-[10px] font-black uppercase tracking-widest leading-tight">
-                  Location services are disabled. Live tracking will not be accurate.
+                  GPS is required for safety tracking. Please enable location services.
                 </p>
               </div>
               <Button 
@@ -372,7 +389,7 @@ export default function JourneyPage() {
                 className="h-8 rounded-lg text-[10px] font-black shrink-0 px-4"
                 onClick={handleRequestLocation}
               >
-                ENABLE LOCATION
+                ENABLE GPS
               </Button>
             </CardContent>
           </Card>
@@ -409,7 +426,7 @@ export default function JourneyPage() {
                     <div className="relative h-[300px] md:h-[450px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-inner bg-muted">
                       <GoogleMap 
                         variant="active"
-                        origin={activeJourney.startLatitude && activeJourney.startLongitude ? {lat: activeJourney.startLatitude, lng: activeJourney.startLongitude} : activeJourney.startLocationDescription}
+                        origin={navigationOrigin || activeJourney.startLocationDescription}
                         destination={activeJourney.endLatitude && activeJourney.endLongitude ? {lat: activeJourney.endLatitude, lng: activeJourney.endLongitude} : activeJourney.endLocationDescription}
                         address={activeJourney.endLocationDescription}
                         className="h-full w-full rounded-none border-none"
