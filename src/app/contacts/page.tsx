@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getDocs, limit } from "firebase/firestore"
+import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getDocs, limit, updateDoc } from "firebase/firestore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -25,8 +25,17 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ContactsPage() {
   const { user } = useUser()
@@ -37,6 +46,7 @@ export default function ContactsPage() {
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [circleFilter, setCircleFilter] = useState("")
+  const [contactToDelete, setContactToDelete] = useState<{id: string, name: string} | null>(null)
 
   // My Connections
   const contactsQuery = useMemoFirebase(() => {
@@ -141,11 +151,12 @@ export default function ContactsPage() {
     }
   }
 
-  const handleRemoveContact = async (contactId: string) => {
-    if (!db || !user) return
+  const handleConfirmRemove = async () => {
+    if (!db || !user || !contactToDelete) return
     try {
-      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactId))
-      toast({ title: "Contact Removed", description: "Friend removed from your circle." })
+      await deleteDoc(doc(db, "users", user.uid, "trustedContacts", contactToDelete.id))
+      toast({ title: "Contact Removed", description: `${contactToDelete.name} has been removed from your circle.` })
+      setContactToDelete(null)
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to remove contact." })
     }
@@ -309,7 +320,7 @@ export default function ContactsPage() {
                           size="icon" 
                           variant="ghost" 
                           className="h-12 w-12 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all active:scale-95"
-                          onClick={() => handleRemoveContact(contact.id)}
+                          onClick={() => setContactToDelete({id: contact.id, name: contact.contactName})}
                         >
                           <UserMinus className="h-5 w-5" />
                         </Button>
@@ -327,6 +338,26 @@ export default function ContactsPage() {
           )}
         </section>
       </main>
+
+      <AlertDialog open={!!contactToDelete} onOpenChange={(open) => !open && setContactToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black">Remove Friend?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium">
+              Are you sure you want to remove <span className="text-primary font-bold">{contactToDelete?.name}</span> from your trusted circle? They will no longer receive your journey updates.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">CANCEL</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmRemove}
+              className="rounded-xl font-black bg-destructive hover:bg-destructive/90"
+            >
+              REMOVE FRIEND
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
