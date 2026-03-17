@@ -105,7 +105,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
           <div className="grid grid-cols-1 gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
              <div className="flex items-start gap-3">
               <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
-                <MapPin className="h-3 w-3 text-muted-foreground" />
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Origin</p>
@@ -115,7 +115,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
             {alert.routeVia && (
               <div className="flex items-start gap-3">
                 <div className="h-6 w-6 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border">
-                  <Milestone className="h-3 w-3 text-muted-foreground" />
+                  <Milestone className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">Route Via</p>
@@ -125,7 +125,7 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
             )}
             <div className="flex items-start gap-3">
               <div className="h-6 w-6 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
-                <Navigation className="h-3 w-3 text-accent" />
+                <Navigation className="h-3.5 w-3.5 text-accent" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase font-black text-accent tracking-widest">Destination</p>
@@ -459,9 +459,9 @@ export default function Home() {
               </Button>
             )}
 
-            <Card className="rounded-[2rem] border-none shadow-sm bg-accent/5 overflow-hidden">
+            <Card className="rounded-[2rem] border-none shadow-sm bg-primary/5 overflow-hidden">
                <CardContent className="p-6 space-y-4 text-center">
-                  <div className="h-12 w-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto text-accent">
+                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
                     <UserPlus className="h-6 w-6" />
                   </div>
                   <div className="space-y-2">
