@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Phone, ShieldCheck, AlertCircle, Settings2 } from "lucide-react"
+import { Loader2, Phone, ShieldCheck, AlertCircle, Settings2, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function EmergencyContactsDialog() {
@@ -36,7 +36,10 @@ export function EmergencyContactsDialog() {
 
   useEffect(() => {
     if (userData?.emergencySmsNumbers) {
-      setNumbers(userData.emergencySmsNumbers)
+      // Pad array to ensure 3 slots
+      const existing = userData.emergencySmsNumbers
+      const padded = [...existing, "", "", ""].slice(0, 3)
+      setNumbers(padded)
     }
   }, [userData])
 
@@ -76,39 +79,45 @@ export function EmergencyContactsDialog() {
           <Settings2 className="h-6 w-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
-        <DialogHeader className="space-y-4">
-          <div className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center">
-            <Phone className="h-6 w-6" />
+      <DialogContent className="sm:max-w-md rounded-[2rem] p-8 border-none shadow-2xl bg-card">
+        <DialogHeader className="space-y-6">
+          <div className="h-14 w-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
+            <Phone className="h-7 w-7" />
           </div>
-          <DialogTitle className="text-2xl font-black tracking-tight">SMS Contacts</DialogTitle>
-          <DialogDescription className="text-sm font-medium">
-            Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is triggered.
-          </DialogDescription>
+          <div className="space-y-2">
+            <DialogTitle className="text-3xl font-black tracking-tighter text-foreground">SMS Contacts</DialogTitle>
+            <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground pr-4">
+              Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is triggered.
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4 py-6">
-          {numbers.map((num, i) => (
-            <div key={i} className="space-y-2">
-              <Label htmlFor={`num-${i}`} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
-                Emergency Contact #{i + 1}
-              </Label>
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id={`num-${i}`}
-                  placeholder="+1 (555) 000-0000" 
-                  className="h-12 pl-12 rounded-xl bg-secondary border-none"
-                  value={num}
-                  onChange={(e) => updateNumber(i, e.target.value)}
-                />
+        <div className="space-y-6 py-8">
+          <div className="space-y-5">
+            {numbers.map((num, i) => (
+              <div key={i} className="space-y-2">
+                <Label htmlFor={`num-${i}`} className="text-[10px] font-black uppercase tracking-[0.15em] text-primary/70 ml-1">
+                  EMERGENCY CONTACT #{i + 1}
+                </Label>
+                <div className="relative group">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input 
+                    id={`num-${i}`}
+                    placeholder="Enter phone number..." 
+                    className="h-14 pl-12 rounded-2xl bg-muted/50 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 text-sm font-bold shadow-inner"
+                    value={num}
+                    onChange={(e) => updateNumber(i, e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
           
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-2xl border-l-4 border-primary mt-2">
-            <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-[10px] font-medium leading-relaxed italic text-muted-foreground">
+          <div className="flex items-start gap-4 p-5 bg-muted/80 rounded-2xl border-l-[6px] border-primary animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Info className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <p className="text-[11px] font-bold leading-relaxed italic text-muted-foreground uppercase tracking-tight">
               SMS protocol requires manual confirmation on your device to send. Ensure these numbers are correct and include country codes.
             </p>
           </div>
@@ -116,7 +125,7 @@ export function EmergencyContactsDialog() {
 
         <DialogFooter>
           <Button 
-            className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-xl shadow-primary/20"
+            className="w-full h-16 rounded-[1.25rem] font-black text-lg bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
             onClick={handleSave}
             disabled={isSaving}
           >

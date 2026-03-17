@@ -233,9 +233,11 @@ export default function JourneyPage() {
 
       const googleMapsUrl = `https://www.google.com/maps?q=${locStr}`
       const finalMessage = `${baseMessage}\n\nTrack Live: ${googleMapsUrl}`
-      const numbers = userData.emergencySmsNumbers.join(",")
       
-      // Dispatch SMS
+      // Get all configured numbers
+      const numbers = userData.emergencySmsNumbers.filter(n => n.trim() !== "").join(",")
+      
+      // Dispatch group SMS (Supported by both iOS and most Android group message protocols)
       window.location.href = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
 
       // Log to security
@@ -253,7 +255,7 @@ export default function JourneyPage() {
 
       toast({
         title: "SOS Protocol Ready",
-        description: "Emergency coordinates attached. Please tap send in your message app.",
+        description: `Emergency coordinates attached for ${userData.emergencySmsNumbers.length} contacts. Please tap send in your message app.`,
       })
     } catch (error) {
       console.error(error)
