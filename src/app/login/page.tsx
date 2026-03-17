@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -59,8 +60,10 @@ export default function LoginPage() {
   const [isOtpSent, setIsOtpSent] = useState(false)
   const [isPhoneVerified, setIsPhoneVerified] = useState(false)
   const [verificationLoading, setVerificationLoading] = useState(false)
-  confirmationResultRef = useRef<ConfirmationResult | null>(null)
-  recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null)
+  
+  // Refs for Phone Verification - Declared with 'const' to fix ReferenceError
+  const confirmationResultRef = useRef<ConfirmationResult | null>(null)
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null)
 
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
@@ -72,6 +75,9 @@ export default function LoginPage() {
   }, [user, isUserLoading, router, isRegistering, isPhoneVerified])
 
   const setupRecaptcha = () => {
+    // Guard browser-only Recaptcha usage
+    if (typeof window === 'undefined') return;
+
     try {
       if (recaptchaVerifierRef.current) {
         recaptchaVerifierRef.current.clear();
@@ -239,10 +245,10 @@ export default function LoginPage() {
             src={authImage.imageUrl} 
             alt="Background" 
             fill 
-            className="object-cover opacity-40"
+            className="object-cover opacity-60"
             data-ai-hint={authImage.imageHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/30 to-background/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 to-background/70" />
         </div>
       )}
 
@@ -282,7 +288,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <Card className="w-full max-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card/95 backdrop-blur-md">
+        <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card/95 backdrop-blur-md">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-16 bg-muted p-0 rounded-t-[2.5rem] overflow-hidden">
               <TabsTrigger value="login" className="rounded-none data-[state=active]:bg-card data-[state=active]:text-primary font-black text-xs tracking-widest h-full transition-all">
