@@ -506,40 +506,46 @@ export default function JourneyPage() {
                         markers={mapMarkers}
                         onRouteInfo={(info) => setRouteInfo(info)}
                       />
-                      
-                      {routeInfo && activeJourney.status === 'InProgress' && (
-                        <div className="absolute top-6 left-6 right-6 animate-in slide-in-from-top-4 duration-500">
-                          <Card className="rounded-2xl border-none bg-white/95 backdrop-blur-md text-primary shadow-2xl border-l-8 border-l-accent overflow-hidden">
-                            <CardContent className="p-4 flex items-center justify-between gap-6">
-                              <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-                                  <Route className="h-6 w-6" />
-                                </div>
-                                <div>
-                                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Arriving In</p>
-                                  <p className="text-xl font-black tracking-tight">{routeInfo.duration}</p>
-                                </div>
-                              </div>
-                              <div className="h-10 w-px bg-border hidden sm:block" />
-                              <div className="hidden sm:block">
-                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Remaining</p>
-                                <p className="text-xl font-black tracking-tight">{routeInfo.distance}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      )}
                     </div>
 
-                    {/* High-Fidelity Emergency Hub matching Reference */}
+                    {/* High-Fidelity Stats Section matching screenshot */}
+                    {routeInfo && activeJourney.status === 'InProgress' && (
+                      <div className="animate-in slide-in-from-bottom-2 duration-500">
+                        <Card className="rounded-[2.5rem] border-none bg-white shadow-2xl overflow-hidden text-primary">
+                          <CardContent className="p-6 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-6">
+                              {/* Path icon box */}
+                              <div className="h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+                                <Route className="h-8 w-8" />
+                              </div>
+                              
+                              {/* Arriving Info */}
+                              <div>
+                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Arriving In</p>
+                                <p className="text-3xl font-black tracking-tighter leading-none">{routeInfo.duration}</p>
+                              </div>
+                            </div>
+
+                            {/* Separator line */}
+                            <div className="h-12 w-px bg-border mx-2" />
+
+                            {/* Remaining Info */}
+                            <div className="flex-1">
+                              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Remaining</p>
+                              <p className="text-3xl font-black tracking-tighter leading-none">{routeInfo.distance}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* Emergency Hub Hub */}
                     <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
                       <div className="flex-1 min-w-[340px] h-24 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] flex items-center px-4 gap-4 shadow-2xl relative overflow-hidden group">
-                        {/* Shield Icon in dedicated glass container */}
                         <div className="h-14 w-12 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
                           <ShieldAlert className="h-6 w-6 text-white" />
                         </div>
                         
-                        {/* Text Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white/70">EMERGENCY HUB</span>
@@ -553,7 +559,6 @@ export default function JourneyPage() {
                           <p className="text-base font-black text-white leading-tight">Immediate SMS Protocol</p>
                         </div>
 
-                        {/* Large Red Pill SOS Button */}
                         <Button 
                           className="h-14 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95 z-10"
                           onClick={handleQuickSOS}
@@ -563,7 +568,6 @@ export default function JourneyPage() {
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       </div>
                       
-                      {/* Square-Rounded Settings Dialog Trigger */}
                       <EmergencyContactsDialog />
                     </div>
 
