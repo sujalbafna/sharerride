@@ -19,7 +19,11 @@ import {
   Filter,
   ArrowLeft,
   Clock,
-  Send
+  Send,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  GraduationCap
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -34,6 +38,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export default function ContactsPage() {
   const { user } = useUser()
@@ -45,6 +56,7 @@ export default function ContactsPage() {
   const [isSearching, setIsSearching] = useState(false)
   const [circleFilter, setCircleFilter] = useState("")
   const [contactToDelete, setContactToDelete] = useState<{id: string, name: string} | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<any | null>(null)
 
   // My Verified Connections
   const contactsQuery = useMemoFirebase(() => {
@@ -57,7 +69,7 @@ export default function ContactsPage() {
 
   const { data: contacts, isLoading: loadingContacts } = useCollection(contactsQuery)
 
-  // Incoming Pending Requests (Requests sent to ME)
+  // Incoming Pending Requests
   const incomingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -67,9 +79,9 @@ export default function ContactsPage() {
     )
   }, [db, user])
 
-  const { data: incomingRequests, isLoading: loadingIncoming } = useCollection(incomingRequestsQuery)
+  const { data: incomingRequests } = useCollection(incomingRequestsQuery)
 
-  // Outgoing Pending Requests (Requests sent by ME)
+  // Outgoing Pending Requests
   const outgoingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -78,7 +90,7 @@ export default function ContactsPage() {
     )
   }, [db, user])
 
-  const { data: outgoingRequests, isLoading: loadingOutgoing } = useCollection(outgoingRequestsQuery)
+  const { data: outgoingRequests } = useCollection(outgoingRequestsQuery)
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return []
@@ -109,9 +121,7 @@ export default function ContactsPage() {
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
     try {
-      // Create a unique shared ID for tracking this request across both accounts
       const sharedRequestId = doc(collection(db, "temp")).id
-      
       const requestData = {
         id: sharedRequestId,
         userId: targetUser.userId,
@@ -124,10 +134,7 @@ export default function ContactsPage() {
         status: "Pending"
       }
 
-      // 1. Save to target user's incoming requests
       await setDoc(doc(db, "users", targetUser.userId, "supportRequests", sharedRequestId), requestData)
-      
-      // 2. Save to my outgoing requests log
       await setDoc(doc(db, "users", user.uid, "sentRequests", sharedRequestId), {
         ...requestData,
         isOutgoing: true
@@ -144,7 +151,6 @@ export default function ContactsPage() {
   const handleAccept = async (req: any) => {
     if (!db || !user) return
     try {
-      // 1. Add to My Contacts
       await setDoc(doc(db, "users", user.uid, "trustedContacts", req.senderId), {
         id: req.senderId,
         userId: user.uid,
@@ -155,7 +161,6 @@ export default function ContactsPage() {
         relationshipToUser: "Friend"
       })
 
-      // 2. Add Me to Their Contacts (Mutual)
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
@@ -166,15 +171,10 @@ export default function ContactsPage() {
         relationshipToUser: "Friend"
       })
 
-      // 3. Mark incoming request as accepted
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
-      
-      // 4. Update the sender's copy of the sent request
       try {
         await updateDoc(doc(db, "users", req.senderId, "sentRequests", req.id), { status: "Accepted" })
-      } catch (err) {
-        console.warn("Could not update sender's sentRequest log, but connection was made.")
-      }
+      } catch (err) {}
       
       toast({ title: "Connection Approved", description: `You are now connected with ${req.senderName}.` })
     } catch (e) {
@@ -190,6 +190,26 @@ export default function ContactsPage() {
       setContactToDelete(null)
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to remove contact." })
+    }
+  }
+
+  const handleViewProfile = async (contact: any) => {
+    if (!db) return
+    // Fetch latest public profile for more details
+    try {
+      const snap = await getDocs(query(collection(db, "publicProfiles"), where("userId", "==", contact.appUserId || contact.id)))
+      if (!snap.empty) {
+        setSelectedProfile(snap.docs[0].data())
+      } else {
+        // Fallback to basic contact data if profile not found
+        setSelectedProfile({
+          displayName: contact.contactName,
+          role: contact.relationshipToUser,
+          phoneNumber: contact.contactPhoneNumber
+        })
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -234,15 +254,18 @@ export default function ContactsPage() {
           {searchResults.length > 0 && (
             <div className="grid gap-3 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
               {searchResults.map((u) => (
-                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50">
+                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
                   <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                    <div 
+                      className="flex items-center gap-4 cursor-pointer flex-1 group"
+                      onClick={() => setSelectedProfile(u)}
+                    >
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg group-hover:bg-primary group-hover:text-white transition-colors">
                         {u.displayName[0]}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-black text-sm truncate uppercase tracking-tight">{u.displayName}</p>
-                        <p className="text-[10px] text-muted-foreground truncate font-bold">{u.email}</p>
+                        <p className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate font-bold uppercase">{u.role}</p>
                       </div>
                     </div>
                     <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 px-4 h-10 border-primary/20 text-primary hover:bg-primary/5">
@@ -256,7 +279,6 @@ export default function ContactsPage() {
           )}
         </section>
 
-        {/* Incoming Pending Requests (Inbox) */}
         {incomingRequests && incomingRequests.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between px-2">
@@ -294,7 +316,6 @@ export default function ContactsPage() {
           </section>
         )}
 
-        {/* Outgoing Pending Requests (Sent) */}
         {outgoingRequests && outgoingRequests.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
@@ -363,12 +384,15 @@ export default function ContactsPage() {
                 {filteredContacts.map((contact) => (
                   <Card key={contact.id} className="rounded-[1.5rem] border-none shadow-sm hover:shadow-xl transition-all group bg-card h-24 overflow-hidden animate-in zoom-in-95 duration-300">
                     <CardContent className="p-4 flex items-center justify-between h-full">
-                      <div className="flex items-center gap-4 min-w-0">
+                      <div 
+                        className="flex items-center gap-4 min-w-0 cursor-pointer flex-1"
+                        onClick={() => handleViewProfile(contact)}
+                      >
                         <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center font-black text-xl shadow-inner group-hover:bg-primary group-hover:text-white transition-colors duration-300">
                           {contact.contactName[0]}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-black text-sm truncate uppercase tracking-tight">{contact.contactName}</h3>
+                          <h3 className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{contact.contactName}</h3>
                           <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-black px-2 h-4 mt-1">VERIFIED</Badge>
                         </div>
                       </div>
@@ -393,16 +417,93 @@ export default function ContactsPage() {
                     </CardContent>
                   </Card>
                 ))}
-                {filteredContacts.length === 0 && circleFilter && (
-                  <div className="col-span-full py-16 text-center text-muted-foreground text-xs font-black uppercase tracking-[0.2em] bg-card rounded-2xl border-2 border-dashed border-primary/10">
-                    No matching friends in your circle.
-                  </div>
-                )}
               </div>
             </ScrollArea>
           )}
         </section>
       </main>
+
+      {/* Profile Detail Dialog */}
+      <Dialog open={!!selectedProfile} onOpenChange={(open) => !open && setSelectedProfile(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
+          <DialogHeader className="text-center space-y-4">
+            <div className="relative mx-auto">
+              <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-xl">
+                <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
+                  {selectedProfile?.displayName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full uppercase text-[9px] font-black tracking-widest shadow-lg">
+                {selectedProfile?.role || "Friend"}
+              </Badge>
+            </div>
+            <div className="space-y-1">
+              <DialogTitle className="text-2xl font-black tracking-tight">{selectedProfile?.displayName}</DialogTitle>
+              <div className="flex items-center justify-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-accent">Verified Safety Connection</span>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-6">
+            <div className="p-4 bg-muted rounded-2xl space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Email Address</p>
+                  <p className="text-sm font-bold truncate">{selectedProfile?.email || "Shared via Network"}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Institutional Identity</p>
+                  <p className="text-sm font-bold truncate capitalize">{selectedProfile?.role} at MIT Art, Design & Tech</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Address Information</p>
+                  <p className="text-sm font-bold truncate">{selectedProfile?.address || "Address Shared with Circle"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 flex gap-3">
+            {contacts?.find(c => (c.appUserId || c.id) === selectedProfile?.userId) ? (
+              <Button 
+                className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
+                onClick={() => {
+                  router.push(`/chat?with=${selectedProfile.userId}&name=${encodeURIComponent(selectedProfile.displayName)}`)
+                  setSelectedProfile(null)
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                SECURE CHAT
+              </Button>
+            ) : (
+              <Button 
+                className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
+                onClick={() => sendRequest(selectedProfile)}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                SEND REQUEST
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!contactToDelete} onOpenChange={(open) => !open && setContactToDelete(null)}>
         <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
