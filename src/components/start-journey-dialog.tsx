@@ -375,13 +375,6 @@ export function StartJourneyDialog() {
               </div>
             </div>
           </div>
-
-          <div className="p-4 bg-primary/5 rounded-2xl border-l-4 border-primary flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-[10px] font-bold text-muted-foreground leading-relaxed uppercase tracking-tight">
-              Safety Note: Upon broadcast, your origin, destination, vehicle details, and live GPS location will be shared in real-time with your verified friend circle.
-            </p>
-          </div>
         </div>
 
         <DialogFooter>
