@@ -514,22 +514,15 @@ export default function JourneyPage() {
                         <Card className="rounded-[2.5rem] border-none bg-white shadow-2xl overflow-hidden text-primary">
                           <CardContent className="p-6 flex items-center justify-between gap-4">
                             <div className="flex items-center gap-6">
-                              {/* Path icon box */}
                               <div className="h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
                                 <Route className="h-8 w-8" />
                               </div>
-                              
-                              {/* Arriving Info */}
                               <div>
                                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Arriving In</p>
                                 <p className="text-3xl font-black tracking-tighter leading-none">{routeInfo.duration}</p>
                               </div>
                             </div>
-
-                            {/* Separator line */}
                             <div className="h-12 w-px bg-border mx-2" />
-
-                            {/* Remaining Info */}
                             <div className="flex-1">
                               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Remaining</p>
                               <p className="text-3xl font-black tracking-tighter leading-none">{routeInfo.distance}</p>
@@ -539,7 +532,7 @@ export default function JourneyPage() {
                       </div>
                     )}
 
-                    {/* Emergency Hub Hub */}
+                    {/* Emergency Hub Hub with high-fidelity glassmorphism styling */}
                     <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
                       <div className="flex-1 min-w-[340px] h-24 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] flex items-center px-4 gap-4 shadow-2xl relative overflow-hidden group">
                         <div className="h-14 w-12 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">

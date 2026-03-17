@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, Phone, ShieldCheck, AlertCircle, Settings2, Info } from "lucide-react"
+import { Loader2, Phone, ShieldCheck, Settings2, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function EmergencyContactsDialog() {
@@ -70,7 +70,6 @@ export function EmergencyContactsDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {/* Square-rounded glass button matching reference */}
         <Button 
           variant="outline" 
           size="icon" 
@@ -81,7 +80,6 @@ export function EmergencyContactsDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
         <DialogHeader className="space-y-6">
-          {/* Header icon matching reference */}
           <div className="h-16 w-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
             <Phone className="h-8 w-8" />
           </div>
@@ -102,7 +100,6 @@ export function EmergencyContactsDialog() {
                 </Label>
                 <div className="relative group">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  {/* Inputs with light-grey background and primary focus borders */}
                   <Input 
                     id={`num-${i}`}
                     placeholder="Enter phone number..." 
@@ -115,7 +112,6 @@ export function EmergencyContactsDialog() {
             ))}
           </div>
           
-          {/* Blue-accented info box matching reference */}
           <div className="flex items-start gap-4 p-5 bg-muted/80 rounded-2xl border-l-[6px] border-primary animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
               <Info className="h-3.5 w-3.5 text-primary" />
