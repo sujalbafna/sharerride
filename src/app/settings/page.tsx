@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
 import { 
   Select, 
   SelectContent, 
@@ -19,8 +17,6 @@ import {
 import { 
   Bell, 
   Globe, 
-  Moon, 
-  Sun, 
   ArrowLeft, 
   Loader2, 
   Save,
@@ -37,7 +33,6 @@ export default function SettingsPage() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
-  const { theme: currentTheme, setTheme } = useTheme()
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -57,11 +52,8 @@ export default function SettingsPage() {
       setPushEnabled(userData.pushNotificationsEnabled ?? true)
       setEmailEnabled(userData.emailNotificationsEnabled ?? true)
       setLanguage(userData.language ?? "english")
-      if (userData.theme) {
-        setTheme(userData.theme)
-      }
     }
-  }, [userData, setTheme])
+  }, [userData])
 
   const handleSave = async () => {
     if (!db || !user) return
@@ -73,7 +65,6 @@ export default function SettingsPage() {
         pushNotificationsEnabled: pushEnabled,
         emailNotificationsEnabled: emailEnabled,
         language: language,
-        theme: currentTheme,
         updatedAt: new Date().toISOString()
       })
 
@@ -202,32 +193,6 @@ export default function SettingsPage() {
                     <SelectItem value="hindi">Hindi (India)</SelectItem>
                     <SelectItem value="spanish">Spanish (ES)</SelectItem>
                     <SelectItem value="french">French (FR)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="font-bold">App Appearance</Label>
-                <Select value={currentTheme} onValueChange={(val) => setTheme(val)}>
-                  <SelectTrigger className="h-12 rounded-xl">
-                    <SelectValue placeholder="Select Theme" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="light">
-                      <div className="flex items-center gap-2">
-                        <Sun className="h-4 w-4" /> Light Mode
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="dark">
-                      <div className="flex items-center gap-2">
-                        <Moon className="h-4 w-4" /> Dark Mode
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="system">
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="h-4 w-4" /> System Default
-                      </div>
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
