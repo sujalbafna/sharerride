@@ -201,9 +201,15 @@ export default function Home() {
   }, [db, user])
   const { data: userData } = useDoc(userRef)
 
-  const userName = userData?.firstName && userData?.lastName 
-    ? `${userData.firstName} ${userData.lastName}` 
-    : (user?.displayName || user?.email?.split('@')[0] || "User")
+  const userName = useMemo(() => {
+    if (userData) {
+      const first = userData.firstName || ""
+      const last = userData.lastName || ""
+      const full = `${first} ${last}`.trim()
+      if (full) return full
+    }
+    return user?.displayName || user?.email?.split('@')[0] || "User"
+  }, [userData, user])
 
   const journeysQuery = useMemoFirebase(() => {
     if (!db || !user) return null

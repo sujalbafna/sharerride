@@ -328,8 +328,11 @@ export function AppSidebar() {
   }
 
   const currentUserDisplayName = React.useMemo(() => {
-    if (currentUserDoc?.firstName && currentUserDoc?.lastName) {
-      return `${currentUserDoc.firstName} ${currentUserDoc.lastName}`
+    if (currentUserDoc) {
+      const first = currentUserDoc.firstName || ""
+      const last = currentUserDoc.lastName || ""
+      const full = `${first} ${last}`.trim()
+      if (full) return full
     }
     return user?.displayName || user?.email?.split('@')[0] || "User"
   }, [currentUserDoc, user])
@@ -603,7 +606,7 @@ export function AppSidebar() {
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
-                <span className="truncate font-black">{currentUserDisplayName}</span>
+                <span className="truncate font-black text-foreground">{currentUserDisplayName}</span>
                 <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary font-bold">
                   {currentUserRole}
                 </Badge>
