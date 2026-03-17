@@ -26,7 +26,7 @@ const containerStyle = {
   height: '100%'
 };
 
-const libraries: ("places" | "geometry")[] = ["places", "geometry"];
+const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
 export function GoogleMap({ 
   className, 
@@ -47,9 +47,10 @@ export function GoogleMap({
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
-    libraries: libraries
+    libraries: LIBRARIES
   });
 
+  // Stabilize waypoints to prevent unnecessary route recalculations
   const mapWaypoints = useMemo(() => {
     return markers
       .filter(m => m.type === 'meeting')
@@ -57,13 +58,20 @@ export function GoogleMap({
         location: new google.maps.LatLng(m.lat, m.lng),
         stopover: true
       }));
-  }, [markers]);
+  }, [JSON.stringify(markers.filter(m => m.type === 'meeting'))]);
+
+  // Use refs to keep track of previous origin/destination to avoid loops
+  const lastParams = useRef("");
 
   useEffect(() => {
     if (!isLoaded || !origin || !destination) {
-      setDirections(null);
+      if (directions) setDirections(null);
       return;
     }
+
+    const currentParams = JSON.stringify({ origin, destination, mapWaypoints });
+    if (currentParams === lastParams.current) return;
+    lastParams.current = currentParams;
 
     const directionsService = new google.maps.DirectionsService();
     
@@ -92,7 +100,7 @@ export function GoogleMap({
         setDirections(null);
       }
     });
-  }, [isLoaded, origin, destination, mapWaypoints, onRouteInfo]);
+  }, [isLoaded, origin, destination, mapWaypoints]); // Removed onRouteInfo from deps to stop infinite loop
 
   const handleExternalNavigation = () => {
     const meetingPoint = markers.find(m => m.type === 'meeting');
@@ -115,6 +123,11 @@ export function GoogleMap({
       window.open(url, '_blank');
     }
   };
+
+  const center = useMemo(() => ({
+    lat: lat || 18.5204,
+    lng: lng || 73.8567
+  }), [lat, lng]);
 
   if (!apiKey) {
     return (
@@ -146,11 +159,6 @@ export function GoogleMap({
       </div>
     );
   }
-
-  const center = {
-    lat: lat || 18.5204, // Default to Pune area if not provided
-    lng: lng || 73.8567
-  };
 
   return (
     <div className={cn("relative rounded-[2rem] overflow-hidden border-4 border-card shadow-2xl group", className)}>
@@ -192,19 +200,18 @@ export function GoogleMap({
           />
         )}
 
-        {/* Custom High-Visibility Markers */}
         {markers.map((marker, i) => {
           let label = undefined;
           let color = "#2280B3";
           
           if (marker.type === 'start') {
             label = { text: "A", color: "white", fontWeight: "bold" };
-            color = "#ef4444"; // Red for Start
+            color = "#ef4444";
           } else if (marker.type === 'end') {
             label = { text: "B", color: "white", fontWeight: "bold" };
-            color = "#ef4444"; // Red for End
+            color = "#ef4444";
           } else if (marker.type === 'meeting') {
-            color = "#10b981"; // Green for Meeting Point
+            color = "#10b981";
           }
 
           return (
@@ -225,7 +232,6 @@ export function GoogleMap({
           );
         })}
 
-        {/* Live Tracking Marker (Blue Dot) */}
         {(lat && lng) && (
           <Marker 
             position={{ lat, lng }} 

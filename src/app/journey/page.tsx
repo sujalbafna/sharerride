@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef, Suspense } from "react"
+import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -357,6 +357,14 @@ function JourneyContent() {
     }
   }
 
+  // Memoize handleRouteInfo to prevent infinite render loop in GoogleMap
+  const handleRouteInfo = useCallback((info: { distance: string, duration: string } | null) => {
+    setRouteInfo(prev => {
+      if (prev?.distance === info?.distance && prev?.duration === info?.duration) return prev;
+      return info;
+    });
+  }, []);
+
   const navigationOrigin = useMemo(() => {
     if (activeJourney?.status === 'InProgress') {
       if (isRider) return userLocation || activeJourney.startLocationDescription;
@@ -368,7 +376,7 @@ function JourneyContent() {
       return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
     }
     return activeJourney?.startLocationDescription;
-  }, [activeJourney, isRider, userLocation]);
+  }, [activeJourney?.status, isRider, userLocation, activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.startLocationDescription]);
 
   const mapMarkers = useMemo(() => {
     const markers = [];
@@ -400,7 +408,7 @@ function JourneyContent() {
     }
     
     return markers;
-  }, [activeJourney]);
+  }, [activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.meetingPointLat, activeJourney?.meetingPointLng, activeJourney?.endLatitude, activeJourney?.endLongitude]);
 
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
@@ -504,7 +512,7 @@ function JourneyContent() {
                         lat={trackingLat}
                         lng={trackingLng}
                         markers={mapMarkers}
-                        onRouteInfo={(info) => setRouteInfo(info)}
+                        onRouteInfo={handleRouteInfo}
                       />
                     </div>
 
