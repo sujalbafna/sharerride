@@ -64,77 +64,63 @@ export default function LoginPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (newUser) => {
-      if (newUser && db && fullName) {
-        try {
-          await updateProfile(newUser, { displayName: fullName })
-          const userRef = doc(db, "users", newUser.uid)
-          const publicRef = doc(db, "publicProfiles", newUser.uid)
-          
-          const names = fullName.trim().split(/\s+/)
-          const fName = names[0] || "User"
-          const lName = names.slice(1).join(' ') || ""
-
-          const userData = {
-            id: newUser.uid,
-            firstName: fName,
-            lastName: lName,
-            email: newUser.email || regEmail,
-            phoneNumber: mobileNumber,
-            address: address,
-            role: role,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            emergencySmsNumbers: []
-          }
-
-          const publicData = {
-            userId: newUser.uid,
-            displayName: fullName,
-            email: newUser.email || regEmail,
-            photoURL: newUser.photoURL || "",
-            phoneNumber: mobileNumber,
-            address: address,
-            role: role
-          }
-
-          await setDoc(userRef, userData, { merge: true })
-          await setDoc(publicRef, publicData, { merge: true })
-        } catch (e) {
-          console.error("Error creating profile:", e)
-        }
+      if (newUser && db && fullName && !isPhoneVerified) {
+        // This is triggered by signInWithPhoneNumber success
+        // We only want to auto-verify if they haven't finished registration
       }
     })
     return () => unsub()
-  }, [auth, db, fullName, regEmail, mobileNumber, role, address])
+  }, [auth, db, fullName, isPhoneVerified])
 
   const setupRecaptcha = () => {
-    if (!recaptchaVerifierRef.current) {
+    try {
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+      }
       recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
-        callback: () => {
+        callback: (response: any) => {
           // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          toast({ variant: "destructive", title: "reCAPTCHA Expired", description: "Please try sending the OTP again." })
         }
       });
+    } catch (e) {
+      console.error("Recaptcha setup error", e);
     }
   }
 
   const handleSendOtp = async () => {
     if (!mobileNumber || mobileNumber.length < 10) {
-      toast({ variant: "destructive", title: "Invalid Number", description: "Please enter a valid mobile number." })
+      toast({ variant: "destructive", title: "Invalid Number", description: "Please enter a valid 10-digit mobile number." })
       return
     }
 
     setVerificationLoading(true)
     try {
       setupRecaptcha()
-      const formattedNumber = mobileNumber.startsWith('+') ? mobileNumber : `+91${mobileNumber}`
-      const confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifierRef.current!)
+      const formattedNumber = mobileNumber.startsWith('+') ? mobileNumber : `+91${mobileNumber.replace(/\D/g, '')}`
+      
+      const verifier = recaptchaVerifierRef.current
+      if (!verifier) throw new Error("Verifier not initialized")
+
+      const confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, verifier)
       confirmationResultRef.current = confirmationResult
       setIsOtpSent(true)
-      toast({ title: "OTP Sent", description: "Verification code dispatched to your mobile." })
+      toast({ title: "OTP Sent", description: "A 6-digit verification code has been sent to your mobile." })
     } catch (error: any) {
       console.error(error)
-      toast({ variant: "destructive", title: "SMS Failed", description: error.message || "Could not send verification code." })
+      let msg = error.message || "Could not send verification code."
+      if (error.code === 'auth/captcha-check-failed') {
+        msg = "Domain verification failed. Please ensure your domain is added to Firebase Authorized Domains."
+      }
+      toast({ variant: "destructive", title: "SMS Failed", description: msg })
+      // Clear verifier on error to allow retry
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+        recaptchaVerifierRef.current = null;
+      }
     } finally {
       setVerificationLoading(false)
     }
@@ -142,7 +128,7 @@ export default function LoginPage() {
 
   const handleVerifyOtp = async () => {
     if (!otp || otp.length !== 6) {
-      toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter the 6-digit code." })
+      toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter the 6-digit code received via SMS." })
       return
     }
 
@@ -155,7 +141,7 @@ export default function LoginPage() {
         toast({ title: "Phone Verified", description: "Mobile identity confirmed successfully." })
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Verification Failed", description: "Incorrect OTP. Please try again." })
+      toast({ variant: "destructive", title: "Verification Failed", description: "The OTP entered is incorrect or expired." })
     } finally {
       setVerificationLoading(false)
     }
@@ -168,7 +154,7 @@ export default function LoginPage() {
     initiateEmailSignIn(auth, loginEmail, loginPassword)
   }
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role || !address) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill in all registration fields." })
@@ -186,8 +172,76 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
-    initiateEmailSignUp(auth, regEmail, regPassword)
+    
+    // We create the user with email/pass now that phone is verified
+    try {
+      // Note: initiateEmailSignUp doesn't return user, it uses onAuthStateChanged
+      // The onAuthStateChanged in root components or top level of this file will handle profile creation
+      // but let's add an explicit profile creation here for certainty if possible, 
+      // although standard Firebase Studio boilerplate prefers non-blocking.
+      
+      // To ensure profile data is saved, we rely on the useEffect listener or the function itself.
+      // Since initiateEmailSignUp is non-blocking, we'll keep the logic in the listener robust.
+      
+      // Explicitly saving data after successful signup will be handled by the listener
+      // that we've set up to watch 'auth' state.
+      
+      initiateEmailSignUp(auth, regEmail, regPassword)
+      
+      // Wait for the auth listener to pick it up. The logic in useEffect handles the setDoc.
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Sign Up Failed", description: error.message })
+      setIsLoading(false)
+    }
   }
+
+  // Effect to handle profile creation after successful email signup
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (newUser) => {
+      if (newUser && isPhoneVerified && !isLoading) {
+        // User successfully signed up or signed in
+        const userRef = doc(db, "users", newUser.uid)
+        const publicRef = doc(db, "publicProfiles", newUser.uid)
+        
+        const names = fullName.trim().split(/\s+/)
+        const fName = names[0] || "User"
+        const lName = names.slice(1).join(' ') || ""
+
+        const userData = {
+          id: newUser.uid,
+          firstName: fName,
+          lastName: lName,
+          email: newUser.email || regEmail,
+          phoneNumber: mobileNumber,
+          address: address,
+          role: role,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          emergencySmsNumbers: []
+        }
+
+        const publicData = {
+          userId: newUser.uid,
+          displayName: fullName,
+          email: newUser.email || regEmail,
+          photoURL: newUser.photoURL || "",
+          phoneNumber: mobileNumber,
+          address: address,
+          role: role
+        }
+
+        try {
+          await updateProfile(newUser, { displayName: fullName })
+          await setDoc(userRef, userData, { merge: true })
+          await setDoc(publicRef, publicData, { merge: true })
+          router.push("/")
+        } catch (e) {
+          console.error("Error saving profile:", e)
+        }
+      }
+    })
+    return () => unsubscribe()
+  }, [auth, isPhoneVerified, db, fullName, regEmail, mobileNumber, address, role, router])
 
   if (isUserLoading) {
     return (
@@ -216,7 +270,6 @@ export default function LoginPage() {
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
         
-        {/* University Branding */}
         <div className="flex flex-col items-center mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
           <div className="h-24 w-24 relative mb-2">
             <Image 
@@ -234,12 +287,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* ShareRide Branding */}
         <div className="flex flex-col items-center mb-10 gap-2">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
             <h1 className="text-2xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-in fade-in slide-in-from-top-2 duration-1000 delay-500 text-center">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
             Developed and Hosted by{" "}
             <a 
               href="https://www.linkedin.com/in/sujal-bafna/" 
@@ -328,7 +380,6 @@ export default function LoginPage() {
                     </div>
                   </div>
                   
-                  {/* Mobile Number Section with OTP */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label>Mobile Number</Label>
@@ -343,7 +394,7 @@ export default function LoginPage() {
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                         <Input 
                           type="tel" 
-                          placeholder="XXXXXXXXXX" 
+                          placeholder="7249260870" 
                           className="pl-10 h-12 rounded-xl" 
                           value={mobileNumber} 
                           onChange={(e) => setMobileNumber(e.target.value)} 
@@ -364,16 +415,15 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* OTP Input Field */}
                   {isOtpSent && !isPhoneVerified && (
                     <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <Label>Enter Verification Code</Label>
+                      <Label>Enter 6-Digit Code</Label>
                       <div className="flex gap-2">
                         <div className="relative group flex-1">
                           <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                           <Input 
-                            placeholder="6-digit code" 
-                            className="pl-10 h-12 rounded-xl" 
+                            placeholder="123456" 
+                            className="pl-10 h-12 rounded-xl text-center font-black tracking-widest" 
                             value={otp} 
                             onChange={(e) => setOtp(e.target.value)} 
                             maxLength={6}
