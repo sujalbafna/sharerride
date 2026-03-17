@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -278,20 +277,43 @@ export default function JourneyPage() {
     }
   }
 
-  const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
-  const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
-
   const mapMarkers = useMemo(() => {
     const markers = [];
-    if (activeJourney?.meetingPointLat && activeJourney?.meetingPointLng) {
-      markers.push({
-        lat: activeJourney.meetingPointLat,
-        lng: activeJourney.meetingPointLng,
-        type: 'meeting' as const
-      });
+    
+    if (activeJourney) {
+      // Start Marker A
+      if (activeJourney.startLatitude && activeJourney.startLongitude) {
+        markers.push({
+          lat: activeJourney.startLatitude,
+          lng: activeJourney.startLongitude,
+          type: 'start' as const
+        });
+      }
+      
+      // Meeting Point (Green)
+      if (activeJourney.meetingPointLat && activeJourney.meetingPointLng) {
+        markers.push({
+          lat: activeJourney.meetingPointLat,
+          lng: activeJourney.meetingPointLng,
+          type: 'meeting' as const
+        });
+      }
+
+      // End Marker B
+      if (activeJourney.endLatitude && activeJourney.endLongitude) {
+        markers.push({
+          lat: activeJourney.endLatitude,
+          lng: activeJourney.endLongitude,
+          type: 'end' as const
+        });
+      }
     }
+    
     return markers;
-  }, [activeJourney?.meetingPointLat, activeJourney?.meetingPointLng]);
+  }, [activeJourney]);
+
+  const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
+  const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
 
   const isLoading = isLoadingMy || isLoadingShared
 

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
@@ -63,10 +62,12 @@ export function GoogleMap({
       directionsRequested.current = true;
       
       if (onRouteInfo && result.routes[0]?.legs[0]) {
-        const leg = result.routes[0].legs[0];
+        const totalDistance = result.routes[0].legs.reduce((acc, leg) => acc + (leg.distance?.value || 0), 0);
+        const totalDuration = result.routes[0].legs.reduce((acc, leg) => acc + (leg.duration?.value || 0), 0);
+        
         onRouteInfo({
-          distance: leg.distance?.text || "...",
-          duration: leg.duration?.text || "..."
+          distance: (totalDistance / 1000).toFixed(1) + " km",
+          duration: Math.ceil(totalDuration / 60) + " mins"
         });
       }
     }
@@ -161,7 +162,6 @@ export function GoogleMap({
           ]
         }}
       >
-        {/* Directions API Integration */}
         {origin && destination && !directions && (
           <DirectionsService
             options={{
@@ -174,11 +174,11 @@ export function GoogleMap({
           />
         )}
 
-        {/* Directions Rendering */}
         {directions && (
           <DirectionsRenderer
             options={{
               directions: directions,
+              suppressMarkers: true, // IMPORTANT: Remove Google's A, B, C markers
               polylineOptions: {
                 strokeColor: "#2280B3",
                 strokeWeight: 6,
@@ -188,8 +188,41 @@ export function GoogleMap({
           />
         )}
 
-        {/* Single Marker fallback if no directions */}
-        {!directions && (
+        {/* Custom Marker Logic: A, B, and Green Meeting Point */}
+        {markers.map((marker, i) => {
+          let label = undefined;
+          let color = "#2280B3";
+          
+          if (marker.type === 'start') {
+            label = { text: "A", color: "white", fontWeight: "bold" };
+            color = "#ef4444"; // Red for A
+          } else if (marker.type === 'end') {
+            label = { text: "B", color: "white", fontWeight: "bold" };
+            color = "#ef4444"; // Red for B
+          } else if (marker.type === 'meeting') {
+            color = "#10b981"; // Green for Meeting Point
+          }
+
+          return (
+            <Marker 
+              key={i} 
+              position={{ lat: marker.lat, lng: marker.lng }} 
+              label={label}
+              icon={{
+                path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                fillColor: color,
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#ffffff",
+                scale: 1.5,
+                labelOrigin: new google.maps.Point(12, 9)
+              }}
+            />
+          );
+        })}
+
+        {/* Fallback Single Marker if no markers/directions */}
+        {!directions && markers.length === 0 && (
           <Marker 
             position={center} 
             icon={{
@@ -202,22 +235,6 @@ export function GoogleMap({
             }}
           />
         )}
-        
-        {/* Additional markers (guards, friends, meeting point etc) */}
-        {markers.map((marker, i) => (
-          <Marker 
-            key={i} 
-            position={{ lat: marker.lat, lng: marker.lng }} 
-            icon={{
-              path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-              fillColor: marker.type === 'meeting' ? "#10b981" : "#2280B3", // Green for meeting point
-              fillOpacity: 1,
-              strokeWeight: 2,
-              strokeColor: "#ffffff",
-              scale: 1.5,
-            }}
-          />
-        ))}
       </GoogleMapBase>
 
       {interactive && (

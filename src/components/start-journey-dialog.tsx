@@ -21,7 +21,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 
-// Define libraries outside to prevent re-renders
 const LIBRARIES: ("places")[] = ["places"];
 
 export function StartJourneyDialog() {
@@ -32,7 +31,9 @@ export function StartJourneyDialog() {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [startLoc, setStartLoc] = useState("")
+  const [startCoords, setStartCoords] = useState<{lat: number, lng: number} | null>(null)
   const [endLoc, setEndLoc] = useState("")
+  const [endCoords, setEndCoords] = useState<{lat: number, lng: number} | null>(null)
   const [routeVia, setRouteVia] = useState("")
   const [seats, setSeats] = useState("0")
   const [vehicleName, setVehicleName] = useState("")
@@ -46,7 +47,7 @@ export function StartJourneyDialog() {
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: LIBRARIES
   })
 
@@ -71,9 +72,9 @@ export function StartJourneyDialog() {
     if (startAutocomplete.current !== null) {
       const place = startAutocomplete.current.getPlace();
       const address = place.formatted_address || place.name;
-      if (address) {
-        setStartLoc(address);
-      }
+      const location = place.geometry?.location;
+      if (address) setStartLoc(address);
+      if (location) setStartCoords({ lat: location.lat(), lng: location.lng() });
     }
   };
 
@@ -81,9 +82,9 @@ export function StartJourneyDialog() {
     if (endAutocomplete.current !== null) {
       const place = endAutocomplete.current.getPlace();
       const address = place.formatted_address || place.name;
-      if (address) {
-        setEndLoc(address);
-      }
+      const location = place.geometry?.location;
+      if (address) setEndLoc(address);
+      if (location) setEndCoords({ lat: location.lat(), lng: location.lng() });
     }
   };
 
@@ -112,11 +113,11 @@ export function StartJourneyDialog() {
       status: "Broadcasted",
       startTime: scheduledTime,
       startLocationDescription: startLoc,
-      startLatitude: 0,
-      startLongitude: 0,
+      startLatitude: startCoords?.lat || 0,
+      startLongitude: startCoords?.lng || 0,
       endLocationDescription: endLoc,
-      endLatitude: 0,
-      endLongitude: 0,
+      endLatitude: endCoords?.lat || 0,
+      endLongitude: endCoords?.lng || 0,
       routeVia: routeVia,
       sharedWithContactIds: contacts?.map(c => c.appUserId).filter(Boolean) || [],
       availableSeats: availableSeatsCount,
@@ -168,6 +169,8 @@ export function StartJourneyDialog() {
       setAcStatus("AC")
       setJourneyDate("")
       setJourneyTime("")
+      setStartCoords(null)
+      setEndCoords(null)
     } catch (error) {
       console.error(error);
       toast({
