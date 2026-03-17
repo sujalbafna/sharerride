@@ -61,21 +61,19 @@ export default function LoginPage() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false)
   const [verificationLoading, setVerificationLoading] = useState(false)
   
-  // Refs for Phone Verification - Declared with 'const' to fix ReferenceError
+  // Refs for Phone Verification
   const confirmationResultRef = useRef<ConfirmationResult | null>(null)
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null)
 
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
   useEffect(() => {
-    // Only redirect if user is fully logged in and not in the middle of registration flow
     if (user && !isUserLoading && !isRegistering && !isPhoneVerified) {
       router.push("/")
     }
   }, [user, isUserLoading, router, isRegistering, isPhoneVerified])
 
   const setupRecaptcha = () => {
-    // Guard browser-only Recaptcha usage
     if (typeof window === 'undefined') return;
 
     try {
@@ -176,11 +174,9 @@ export default function LoginPage() {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Session lost. Please verify phone again.");
 
-      // 1. Link Email/Password to the Phone Authenticated User
       const credential = EmailAuthProvider.credential(regEmail, regPassword);
       await linkWithCredential(currentUser, credential);
 
-      // 2. Update Profile & Firestore
       await updateProfile(currentUser, { displayName: fullName });
       
       const userRef = doc(db, "users", currentUser.uid);
@@ -236,7 +232,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden py-12">
+    <div className="min-h-screen flex flex-col items-center bg-background relative overflow-hidden pt-0 pb-12">
       <div id="recaptcha-container"></div>
       
       {authImage && (
@@ -252,10 +248,10 @@ export default function LoginPage() {
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
         
-        <div className="flex flex-col items-center mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
-          <div className="h-24 w-24 relative mb-2">
+        <div className="flex flex-col items-center mb-8 pt-6 animate-in fade-in slide-in-from-top-4 duration-1000 w-full">
+          <div className="h-24 w-24 relative mb-4">
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
               alt="MIT University Logo" 
@@ -271,7 +267,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center mb-10 gap-2">
+        <div className="flex flex-col items-center mb-8 gap-2">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
             <h1 className="text-2xl font-black tracking-tighter uppercase">SHARERIDE</h1>
           </div>
