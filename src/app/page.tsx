@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -38,6 +39,7 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { SearchFriendsDialog } from "@/components/search-friends-dialog"
 
 export default function Home() {
   const { user, isUserLoading } = useUser()
@@ -259,19 +261,21 @@ export default function Home() {
               </Button>
             )}
 
-            <Card className="rounded-[2rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden cursor-pointer active:scale-95 transition-all" onClick={() => router.push("/contacts")}>
-               <CardContent className="p-6 space-y-4 text-center">
-                  <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center mx-auto">
-                    <UserPlus className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-black uppercase tracking-tight">Manage Trusted Circle</h4>
-                    <p className="text-[10px] opacity-90 font-bold leading-relaxed uppercase tracking-widest">
-                      View your network, search for friends, and start secure conversations.
-                    </p>
-                  </div>
-               </CardContent>
-            </Card>
+            <SearchFriendsDialog userName={userName}>
+              <Card className="rounded-[2rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden cursor-pointer active:scale-95 transition-all">
+                 <CardContent className="p-6 space-y-4 text-center">
+                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+                      <UserPlus className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-black uppercase tracking-tight">Connect with Friends</h4>
+                      <p className="text-[10px] opacity-90 font-bold leading-relaxed uppercase tracking-widest">
+                        Search by name to send connection requests and build your trusted safety network.
+                      </p>
+                    </div>
+                 </CardContent>
+              </Card>
+            </SearchFriendsDialog>
           </div>
 
           <div className="lg:col-span-2 space-y-10">
