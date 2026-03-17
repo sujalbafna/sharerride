@@ -17,7 +17,6 @@ import { useToast } from "@/hooks/use-toast"
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
 import { collection, addDoc, doc } from "firebase/firestore"
 import { cn } from "@/lib/utils"
-import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 
 const emergencyTypes = [
   { id: "accident", label: "Accident", icon: Car, color: "text-destructive", bg: "bg-secondary" },
@@ -26,7 +25,7 @@ const emergencyTypes = [
   { id: "medical", label: "Medical", icon: HeartPulse, color: "text-destructive", bg: "bg-secondary" },
 ]
 
-const HOLD_DURATION = 2500 // Reduced slightly for better responsiveness
+const HOLD_DURATION = 2500 
 
 export function SOSButton() {
   const [isSending, setIsSending] = useState(false)
@@ -60,23 +59,14 @@ export function SOSButton() {
 
     setIsSending(true)
     try {
-      // Composition with AI
-      const { message: baseMessage } = await generateEmergencyMessage({
-        location: "My Current Live GPS Location",
-        situation: "Immediate Emergency Assistance Required"
-      })
-
       const googleMapsUrl = `https://www.google.com/maps?q=12.9716,77.5946`
-      const finalMessage = `${baseMessage}\n\nTrack me: ${googleMapsUrl}`
+      // Simplified message per user request
+      const finalMessage = `Emergency! I need immediate help. Please respond urgently.\n\nTrack Live: ${googleMapsUrl}`
       const numbers = userData.emergencySmsNumbers.join(",")
       
-      // Open SMS app with recipient numbers and body
       const smsUri = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
-      
-      // Redirect to SMS URI
       window.location.href = smsUri
 
-      // Record in Firestore
       addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
@@ -104,7 +94,6 @@ export function SOSButton() {
   }, [user, db, userData, toast])
 
   const startHold = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent default to avoid context menus or scrolling during hold
     if (e.type === 'touchstart') e.preventDefault();
     
     setIsHolding(true)

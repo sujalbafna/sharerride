@@ -43,7 +43,6 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from "@/components/ui/input"
 import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
-import { generateEmergencyMessage } from "@/ai/flows/emergency-message-composer-flow"
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -222,14 +221,10 @@ export default function JourneyPage() {
       }
 
       const locStr = `${currentCoords.lat},${currentCoords.lng}`
-      
-      const { message: baseMessage } = await generateEmergencyMessage({
-        location: activeJourney?.startLocationDescription || "On transit route",
-        situation: "Immediate Assistance Requested"
-      })
-
       const googleMapsUrl = `https://www.google.com/maps?q=${locStr}`
-      const finalMessage = `${baseMessage}\n\nTrack Live: ${googleMapsUrl}`
+      
+      // Simplified message per user request
+      const finalMessage = `Emergency! I need immediate help. Please respond urgently.\n\nTrack Live: ${googleMapsUrl}`
       
       const numbers = userData.emergencySmsNumbers.filter(n => n.trim() !== "").join(",")
       window.location.href = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
@@ -237,7 +232,7 @@ export default function JourneyPage() {
       addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
-        alertLocationDescription: activeJourney?.startLocationDescription || "Live Transit SOS",
+        alertLocationDescription: "Live Transit SOS",
         alertLatitude: currentCoords.lat,
         alertLongitude: currentCoords.lng,
         alertMessage: finalMessage,

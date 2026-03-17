@@ -86,7 +86,7 @@ export function EmergencyContactsDialog() {
           <div className="space-y-2">
             <DialogTitle className="text-3xl font-black tracking-tighter text-foreground uppercase">SMS Contacts</DialogTitle>
             <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground pr-4">
-              Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is triggered.
+              
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -117,7 +117,7 @@ export function EmergencyContactsDialog() {
               <Info className="h-3.5 w-3.5 text-primary" />
             </div>
             <p className="text-[11px] font-bold leading-relaxed italic text-muted-foreground uppercase tracking-tight">
-              SMS protocol requires manual confirmation on your device to send. Ensure these numbers are correct and include country codes.
+             
             </p>
           </div>
         </div>
