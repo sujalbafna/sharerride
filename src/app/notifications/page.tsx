@@ -1,7 +1,7 @@
 "use client"
 
-import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, where, doc, updateDoc, addDoc, increment, arrayUnion, orderBy } from "firebase/firestore"
+import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
+import { collection, query, where, doc, updateDoc, addDoc, increment, arrayUnion, orderBy, setDoc } from "firebase/firestore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -43,11 +43,11 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
             {isJoinReq && <Activity className="h-4 w-4 text-primary" />}
             {isJoinApproved && <ShieldCheck className="h-4 w-4 text-primary" />}
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              {req.requestType.replace(/([A-Z])/g, ' $1').trim()}
+              {req.requestType?.replace(/([A-Z])/g, ' $1').trim()}
             </span>
           </div>
           <p className="text-[9px] font-bold text-muted-foreground uppercase">
-            {format(new Date(req.timestamp), "MMM d, h:mm a")}
+            {req.timestamp ? format(new Date(req.timestamp), "MMM d, h:mm a") : "Just now"}
           </p>
         </div>
 
@@ -157,10 +157,10 @@ export default function NotificationsPage() {
 
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
+    // Temporarily removing orderBy to prevent index failures while the app is being used
     return query(
       collection(db, "users", user.uid, "supportRequests"),
-      where("status", "==", "Pending"),
-      orderBy("timestamp", "desc")
+      where("status", "==", "Pending")
     )
   }, [db, user])
 
