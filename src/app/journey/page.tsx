@@ -46,7 +46,7 @@ import { firebaseConfig } from "@/firebase/config"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 
-const LIBRARIES: ("places")[] = ["places"];
+const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
 function JourneyContent() {
   const { user } = useUser()

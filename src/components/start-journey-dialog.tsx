@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { firebaseConfig } from "@/firebase/config"
 
-const LIBRARIES: ("places")[] = ["places"];
+const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
 export function StartJourneyDialog() {
   const { user } = useUser()
