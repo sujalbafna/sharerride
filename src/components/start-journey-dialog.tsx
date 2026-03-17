@@ -48,7 +48,6 @@ export function StartJourneyDialog() {
   const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
   const routeAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
 
-  // Use env var first, then fallback to Firebase API key
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
 
   const { isLoaded } = useJsApiLoader({
@@ -141,7 +140,7 @@ export function StartJourneyDialog() {
       
       if (contacts && contacts.length > 0) {
         const paymentDetail = paymentType === "Free" ? "Free ride" : `Fee: ₹${feeAmount}`;
-        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). ${paymentDetail}. Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
+        const detailString = `is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). ${paymentDetail}. Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
 
         for (const friendContact of contacts) {
           if (friendContact.appUserId) {
@@ -208,7 +207,6 @@ export function StartJourneyDialog() {
         className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
-          // Don't close dialog when clicking on Google Autocomplete suggestions
           if (target?.closest('.pac-container')) {
             e.preventDefault();
           }

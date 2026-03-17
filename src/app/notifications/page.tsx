@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   Activity,
   Milestone,
-  Wind
+  Wind,
+  Clock,
+  CircleDot
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -33,57 +35,88 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
   const isJoinApproved = req.requestType === "JoinApproved"
 
   return (
-    <Card className="rounded-2xl border-none shadow-md overflow-hidden bg-card animate-in slide-in-from-bottom-2">
-      <CardContent className="p-6 space-y-4">
+    <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-card animate-in slide-in-from-bottom-2 border border-border/40">
+      <CardContent className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {isConnection && <UserPlus className="h-4 w-4 text-primary" />}
-            {isJourney && <Car className="h-4 w-4 text-accent" />}
-            {isEnd && <CheckCircle2 className="h-4 w-4 text-accent" />}
-            {isJoinReq && <Activity className="h-4 w-4 text-primary" />}
-            {isJoinApproved && <ShieldCheck className="h-4 w-4 text-primary" />}
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              {isConnection && <UserPlus className="h-4 w-4 text-primary" />}
+              {isJourney && <Car className="h-4 w-4 text-primary" />}
+              {isEnd && <CheckCircle2 className="h-4 w-4 text-accent" />}
+              {isJoinReq && <Activity className="h-4 w-4 text-primary" />}
+              {isJoinApproved && <ShieldCheck className="h-4 w-4 text-primary" />}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary/70">
               {req.requestType?.replace(/([A-Z])/g, ' $1').trim()}
             </span>
           </div>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase">
+          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter">
             {req.timestamp ? format(new Date(req.timestamp), "MMM d, h:mm a") : "Just now"}
           </p>
         </div>
 
         <div className="flex gap-4">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-lg font-black text-primary uppercase">{req.senderName?.[0] || "?"}</span>
+          <div className="h-14 w-14 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0 shadow-inner">
+            <span className="text-xl font-black uppercase">{req.senderName?.[0] || "?"}</span>
           </div>
-          <div className="flex-1 space-y-2 min-w-0">
-            <p className="text-sm font-medium leading-relaxed">
-              <span className="font-black text-primary">{req.senderName}</span> {req.description}
-            </p>
+          <div className="flex-1 space-y-3 min-w-0">
+            <div className="space-y-1">
+              <p className="text-sm font-medium leading-relaxed text-card-foreground">
+                <span className="font-black text-primary text-base mr-1">{req.senderName}</span> 
+                {req.description}
+              </p>
+            </div>
 
             {isJourney && (
-              <div className="p-3 bg-muted rounded-xl space-y-2 border border-border/50">
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <p className="text-xs font-bold truncate">{req.startLocation}</p>
-                </div>
-                {req.routeVia && (
-                  <div className="flex items-start gap-2">
-                    <Milestone className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                    <p className="text-xs font-medium italic truncate">via {req.routeVia}</p>
+              <div className="p-5 bg-secondary/30 rounded-[1.5rem] space-y-4 border border-border/50">
+                <div className="space-y-3 relative">
+                  <div className="absolute left-2.5 top-3 bottom-3 w-0.5 bg-border/50 border-dashed border-l" />
+                  
+                  <div className="flex items-start gap-3 relative z-10">
+                    <div className="h-5 w-5 rounded-full bg-background border-2 border-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">Origin</p>
+                      <p className="text-xs font-bold text-card-foreground line-clamp-1">{req.startLocation}</p>
+                    </div>
                   </div>
-                )}
-                <div className="flex items-start gap-2">
-                  <Navigation className="h-3.5 w-3.5 text-primary mt-0.5" />
-                  <p className="text-xs font-black text-primary truncate">{req.endLocation}</p>
-                </div>
-                <div className="flex gap-3 pt-1 border-t border-border/30">
-                  <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
-                    <Wind className="h-3 w-3" /> {req.acStatus}
+
+                  {req.routeVia && (
+                    <div className="flex items-start gap-3 relative z-10">
+                      <div className="h-5 w-5 rounded-full bg-background border-2 border-border flex items-center justify-center shrink-0 mt-0.5">
+                        <Milestone className="h-2.5 w-2.5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">Via</p>
+                        <p className="text-xs font-medium italic text-card-foreground line-clamp-1">{req.routeVia}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-start gap-3 relative z-10">
+                    <div className="h-5 w-5 rounded-full bg-background border-2 border-accent flex items-center justify-center shrink-0 mt-0.5">
+                      <Navigation className="h-2.5 w-2.5 text-accent" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">Destination</p>
+                      <p className="text-xs font-black text-primary line-clamp-1">{req.endLocation}</p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-4 pt-3 border-t border-border/30">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-6 w-6 rounded-md bg-background flex items-center justify-center">
+                      <Wind className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase text-muted-foreground">{req.acStatus}</span>
+                  </div>
+                  <div className="h-4 w-px bg-border/50" />
                   {req.paymentType === "Paid" ? (
-                    <Badge className="bg-primary text-white text-[8px] h-4">₹{req.feeAmount}</Badge>
+                    <Badge className="bg-primary text-white text-[9px] font-black h-6 rounded-lg px-2">₹{req.feeAmount}</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">FREE</Badge>
+                    <Badge variant="outline" className="text-[9px] h-6 rounded-lg border-accent/30 text-accent font-black">FREE</Badge>
                   )}
                 </div>
               </div>
@@ -91,18 +124,18 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-3 pt-2">
           {(isConnection || isJoinReq) && (
             <>
               <Button 
-                className="flex-1 h-10 rounded-xl text-xs font-black uppercase bg-primary shadow-lg shadow-primary/20"
+                className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95"
                 onClick={() => onAccept(req, req.senderName)}
               >
                 Approve
               </Button>
               <Button 
                 variant="outline" 
-                className="flex-1 h-10 rounded-xl text-xs font-black uppercase"
+                className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest border-border/50 transition-all active:scale-95"
                 onClick={() => onDecline(req)}
               >
                 Decline
@@ -112,14 +145,14 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
           {isJourney && (
             <>
               <Button 
-                className="flex-1 h-10 rounded-xl text-xs font-black uppercase bg-primary shadow-lg shadow-primary/20"
+                className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
                 onClick={() => onJoinRequest(req)}
               >
                 Request to Join
               </Button>
               <Button 
                 variant="ghost" 
-                className="flex-1 h-10 rounded-xl text-xs font-black uppercase"
+                className="flex-1 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground hover:bg-muted/50 transition-all active:scale-95"
                 onClick={() => onDismiss(req.id)}
               >
                 Dismiss
@@ -128,7 +161,7 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
           )}
           {isJoinApproved && (
             <Button 
-              className="w-full h-10 rounded-xl text-xs font-black uppercase bg-accent text-primary shadow-lg shadow-accent/20"
+              className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest bg-accent text-primary shadow-lg shadow-accent/20 transition-all active:scale-95"
               onClick={() => onTrack(req.riderId, req.targetJourneyId)}
             >
               Track Live Now
@@ -136,11 +169,11 @@ function NotificationItem({ req, onAccept, onDecline, onTrack, onDismiss, onJoin
           )}
           {(isEnd || isJoinApproved) && !isJoinApproved && (
             <Button 
-              variant="ghost" 
-              className="w-full h-10 rounded-xl text-xs font-black uppercase bg-muted/50"
+              variant="secondary" 
+              className="w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
               onClick={() => onDismiss(req.id)}
             >
-              Okay
+              Acknowledged
             </Button>
           )}
         </div>
@@ -157,7 +190,6 @@ export default function NotificationsPage() {
 
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
-    // Temporarily removing orderBy to prevent index failures while the app is being used
     return query(
       collection(db, "users", user.uid, "supportRequests"),
       where("status", "==", "Pending")
@@ -273,7 +305,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
+      <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -283,10 +315,11 @@ export default function NotificationsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h2 className="text-xl font-bold tracking-tight">Notifications</h2>
+          <h2 className="text-xl font-black tracking-tight">Notifications</h2>
         </div>
         {requests && requests.length > 0 && (
-          <Badge variant="secondary" className="rounded-lg bg-primary/10 text-primary border-none font-black px-3 h-8">
+          <Badge variant="secondary" className="rounded-full bg-primary text-white border-none font-black px-3 h-7 flex items-center gap-1.5 shadow-lg shadow-primary/20">
+            <span className="animate-pulse h-1.5 w-1.5 rounded-full bg-white" />
             {requests.length} NEW
           </Badge>
         )}
@@ -296,24 +329,25 @@ export default function NotificationsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Checking alerts...</p>
+            <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Checking alerts...</p>
           </div>
         ) : !requests || requests.length === 0 ? (
-          <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent">
+          <Card className="rounded-[2.5rem] border-dashed border-2 bg-transparent border-border/60">
             <CardContent className="p-16 text-center space-y-6">
-              <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mx-auto opacity-50">
+              <div className="h-24 w-24 bg-secondary/50 rounded-full flex items-center justify-center mx-auto opacity-50 relative">
                 <Bell className="h-10 w-10 text-muted-foreground" />
+                <div className="absolute top-4 right-4 h-4 w-4 bg-background rounded-full" />
               </div>
               <div className="space-y-2">
-                <h4 className="text-xl font-bold">All Clear</h4>
-                <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                <h4 className="text-xl font-black tracking-tight">All Clear</h4>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto font-medium">
                   You don't have any pending notifications or alerts at the moment.
                 </p>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {requests.map((req) => (
               <NotificationItem 
                 key={req.id} 
