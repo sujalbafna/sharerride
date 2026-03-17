@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -23,7 +22,9 @@ import {
   Milestone,
   Eye,
   ShieldAlert,
-  UserPlus
+  UserPlus,
+  IndianRupee,
+  Gift
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -96,8 +97,15 @@ function JourneyAlertCard({ alert, onJoin, onDismiss }: { alert: any, onJoin: (a
              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-black">
               {senderName[0]}
             </div>
-            <div>
-              <p className="text-sm font-black leading-tight text-foreground">{senderName}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-black leading-tight text-foreground truncate">{senderName}</p>
+                {alert.paymentType === "Paid" ? (
+                  <Badge className="bg-primary text-white text-[9px] font-black">₹{alert.feeAmount}</Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-accent/20 text-primary text-[9px] font-black">FREE</Badge>
+                )}
+              </div>
               <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Verified Contact</p>
             </div>
           </div>
@@ -530,6 +538,12 @@ export default function Home() {
                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                     {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
                                   </p>
+                                  <span className="h-1 w-1 rounded-full bg-border" />
+                                  {j.paymentType === "Paid" ? (
+                                    <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary h-4">₹{j.feeAmount}</Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-[9px] uppercase font-black border-accent/30 text-accent h-4">FREE</Badge>
+                                  )}
                                   <span className="h-1 w-1 rounded-full bg-border" />
                                   <Badge 
                                     variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 

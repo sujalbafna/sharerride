@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -26,7 +25,9 @@ import {
   Info,
   Milestone,
   Eye,
-  Activity
+  Activity,
+  IndianRupee,
+  Gift
 } from "lucide-react"
 
 import {
@@ -95,7 +96,14 @@ function RequestItem({
             <Car className="h-3 w-3 text-primary" />
             <span className="text-[10px] font-bold uppercase text-primary">Travel Broadcast</span>
           </div>
-          <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">LIVE</Badge>
+          <div className="flex items-center gap-1.5">
+            {req.paymentType === "Paid" ? (
+              <Badge className="bg-primary text-white text-[8px] h-4">₹{req.feeAmount}</Badge>
+            ) : (
+              <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent">FREE</Badge>
+            )}
+            <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">LIVE</Badge>
+          </div>
         </div>
         
         <div className="space-y-2">

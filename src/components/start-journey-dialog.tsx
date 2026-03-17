@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useRef } from "react"
@@ -16,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, AlertCircle, Milestone } from "lucide-react"
+import { Navigation, Shield, Loader2, MapPin, Users, Car, Calendar, Clock, AlertCircle, Milestone, IndianRupee } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
@@ -41,6 +40,8 @@ export function StartJourneyDialog() {
   const [acStatus, setAcStatus] = useState("AC")
   const [journeyDate, setJourneyDate] = useState("")
   const [journeyTime, setJourneyTime] = useState("")
+  const [paymentType, setPaymentType] = useState<"Free" | "Paid">("Free")
+  const [feeAmount, setFeeAmount] = useState("")
 
   const startAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
   const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
@@ -125,7 +126,9 @@ export function StartJourneyDialog() {
       joinedUserIds: [],
       createdAt: currentTimestamp,
       vehicleName: vehicleName,
-      acStatus: acStatus
+      acStatus: acStatus,
+      paymentType: paymentType,
+      feeAmount: paymentType === "Paid" ? feeAmount : "0"
     }
 
     try {
@@ -133,7 +136,8 @@ export function StartJourneyDialog() {
       const journeyId = journeyDoc.id;
       
       if (contacts && contacts.length > 0) {
-        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
+        const paymentDetail = paymentType === "Free" ? "Free ride" : `Fee: ₹${feeAmount}`;
+        const detailString = `${userName} is traveling from ${startLoc} to ${endLoc}${routeVia ? ` via ${routeVia}` : ''}. Vehicle: ${vehicleName || 'Private Vehicle'} (${acStatus}). ${paymentDetail}. Departure: ${journeyDate || 'Today'} at ${journeyTime || 'Now'}.`
 
         for (const friendContact of contacts) {
           if (friendContact.appUserId) {
@@ -151,7 +155,9 @@ export function StartJourneyDialog() {
               routeVia: routeVia,
               vehicleName: vehicleName,
               acStatus: acStatus,
-              journeyStartTime: scheduledTime
+              journeyStartTime: scheduledTime,
+              paymentType: paymentType,
+              feeAmount: paymentType === "Paid" ? feeAmount : "0"
             })
           }
         }
@@ -172,6 +178,8 @@ export function StartJourneyDialog() {
       setJourneyTime("")
       setStartCoords(null)
       setEndCoords(null)
+      setPaymentType("Free")
+      setFeeAmount("")
     } catch (error) {
       console.error(error);
       toast({
@@ -359,21 +367,54 @@ export function StartJourneyDialog() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="seats">Seats Available</Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="seats" 
-                  type="number"
-                  min="0"
-                  placeholder="Enter capacity" 
-                  className="pl-10 h-12 rounded-xl"
-                  value={seats}
-                  onChange={(e) => setSeats(e.target.value)}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+              <div className="space-y-2">
+                <Label htmlFor="seats">Seats Available</Label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="seats" 
+                    type="number"
+                    min="0"
+                    placeholder="Enter capacity" 
+                    className="pl-10 h-12 rounded-xl"
+                    value={seats}
+                    onChange={(e) => setSeats(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Type</Label>
+                <RadioGroup value={paymentType} onValueChange={(v: any) => setPaymentType(v)} className="flex h-12 items-center gap-4 bg-secondary/50 rounded-xl px-4 border border-input/20">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Free" id="free" />
+                    <Label htmlFor="free" className="text-xs font-bold cursor-pointer">FREE</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Paid" id="paid" />
+                    <Label htmlFor="paid" className="text-xs font-bold cursor-pointer">PAID</Label>
+                  </div>
+                </RadioGroup>
               </div>
             </div>
+
+            {paymentType === "Paid" && (
+              <div className="space-y-2 animate-in slide-in-from-top-2">
+                <Label htmlFor="fee">Fee Amount (₹)</Label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="fee" 
+                    type="number"
+                    min="0"
+                    placeholder="Enter amount per person" 
+                    className="pl-10 h-12 rounded-xl"
+                    value={feeAmount}
+                    onChange={(e) => setFeeAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -381,7 +422,7 @@ export function StartJourneyDialog() {
           <Button 
             className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-xl" 
             onClick={handleStart}
-            disabled={isSubmitting || !startLoc || !endLoc}
+            disabled={isSubmitting || !startLoc || !endLoc || (paymentType === "Paid" && !feeAmount)}
           >
             {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
             BROADCAST ITINERARY
