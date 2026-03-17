@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
-import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc } from "firebase/firestore"
+import { collection, query, orderBy, limit, doc, updateDoc, getDocs, where, addDoc, increment, arrayUnion } from "firebase/firestore"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
@@ -27,7 +27,9 @@ import {
   AlertTriangle,
   ShieldAlert,
   Settings2,
-  GpsFixed
+  GpsFixed,
+  UserPlus,
+  X
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -107,6 +109,19 @@ function JourneyContent() {
 
   const activeJourney = riderIdParam && sharedJourney ? sharedJourney : myJourneys?.find(j => j.status === 'InProgress' || j.status === 'Broadcasted')
   const isRider = activeJourney && (!riderIdParam || riderIdParam === user?.uid)
+
+  // Join Requests specifically for this active journey
+  const joinRequestsQuery = useMemoFirebase(() => {
+    if (!db || !user || !activeJourney || !isRider) return null
+    return query(
+      collection(db, "users", user.uid, "supportRequests"),
+      where("status", "==", "Pending"),
+      where("requestType", "==", "JoinJourneyRequest"),
+      where("targetJourneyId", "==", activeJourney.id)
+    )
+  }, [db, user, activeJourney?.id, isRider])
+
+  const { data: pendingJoinRequests } = useCollection(joinRequestsQuery)
 
   const joinedFriendsQuery = useMemoFirebase(() => {
     if (!db || !activeJourney?.joinedUserIds || activeJourney.joinedUserIds.length === 0) return null
@@ -318,6 +333,44 @@ function JourneyContent() {
     }
   }
 
+  const handleApproveJoin = async (req: any) => {
+    if (!db || !user || !activeJourney) return
+    try {
+      const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
+      await updateDoc(journeyRef, {
+        availableSeats: increment(-1),
+        joinedUserIds: arrayUnion(req.senderId)
+      })
+
+      await addDoc(collection(db, "users", req.senderId, "supportRequests"), {
+        userId: req.senderId,
+        senderId: user.uid,
+        senderName: userName,
+        requestType: "JoinApproved",
+        description: "approved your request to join the journey.",
+        timestamp: new Date().toISOString(),
+        status: "Pending",
+        targetJourneyId: activeJourney.id,
+        riderId: user.uid
+      })
+
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
+      toast({ title: "Companion Approved", description: `${req.senderName} has joined your transit.` })
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to approve request." })
+    }
+  }
+
+  const handleDeclineJoin = async (req: any) => {
+    if (!db || !user) return
+    try {
+      await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Declined" })
+      toast({ title: "Request Declined", description: "The request has been removed." })
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to decline request." })
+    }
+  }
+
   const onPlaceChanged = () => {
     if (autocompleteRef.current !== null) {
       const place = autocompleteRef.current.getPlace()
@@ -452,7 +505,7 @@ function JourneyContent() {
         )}
       </header>
 
-      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 relative">
         {locationStatus === 'denied' && (
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -633,7 +686,7 @@ function JourneyContent() {
                               Companion Link
                             </h4>
                             {isRider && (
-                              <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black">
+                              <Badge variant="outline" className="text-[8px] border-white/30 text-white font-black uppercase">
                                 {activeJourney.availableSeats || 0} SLOTS FREE
                               </Badge>
                             )}
@@ -760,6 +813,43 @@ function JourneyContent() {
           </section>
         )}
 
+        {/* Floating Join Request Popup */}
+        {isRider && pendingJoinRequests && pendingJoinRequests.length > 0 && (
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 animate-in slide-in-from-bottom-4 duration-500">
+            <Card className="rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-card overflow-hidden">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black shadow-inner">
+                    {pendingJoinRequests[0].senderName?.[0] || "?"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black text-primary uppercase tracking-tight truncate">{pendingJoinRequests[0].senderName}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Wants to join this journey</p>
+                  </div>
+                  <Badge className="bg-accent text-primary text-[8px] font-black uppercase">
+                    {activeJourney?.availableSeats} SLOTS LEFT
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    className="flex-1 h-11 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95"
+                    onClick={() => handleApproveJoin(pendingJoinRequests[0])}
+                  >
+                    APPROVE
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="flex-1 h-11 rounded-xl font-black text-[10px] uppercase tracking-widest border-border transition-all active:scale-95"
+                    onClick={() => handleDeclineJoin(pendingJoinRequests[0])}
+                  >
+                    DECLINE
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {!riderIdParam && (
           <section className="space-y-6 pt-12">
             <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">
@@ -780,7 +870,7 @@ function JourneyContent() {
                         <Clock className="h-4 w-4" />
                         <span className="text-xs font-black">{j.startTime ? format(new Date(j.startTime), 'MMM d, yyyy') : 'Date unavailable'}</span>
                       </div>
-                      <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black px-2 py-0.5">COMPLETED</Badge>
+                      <Badge variant="secondary" className="text-[9px] bg-secondary text-primary border-none font-black px-2 py-0.5 uppercase">COMPLETED</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
