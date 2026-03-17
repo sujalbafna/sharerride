@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where, deleteDoc, doc, setDoc, addDoc, getDocs, limit, updateDoc } from "firebase/firestore"
+import { collection, query, orderBy, where, deleteDoc, doc, setDoc, getDocs, limit, updateDoc } from "firebase/firestore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -10,18 +11,15 @@ import { Badge } from "@/components/ui/badge"
 import { 
   Search, 
   UserPlus, 
-  Phone, 
   UserMinus, 
   Shield, 
   Loader2, 
-  Check, 
   X,
-  User,
   MessageSquare,
-  Clock,
-  Menu,
   Filter,
-  ArrowLeft
+  ArrowLeft,
+  Clock,
+  Send
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -48,7 +46,7 @@ export default function ContactsPage() {
   const [circleFilter, setCircleFilter] = useState("")
   const [contactToDelete, setContactToDelete] = useState<{id: string, name: string} | null>(null)
 
-  // My Connections
+  // My Verified Connections
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -59,15 +57,8 @@ export default function ContactsPage() {
 
   const { data: contacts, isLoading: loadingContacts } = useCollection(contactsQuery)
 
-  const filteredContacts = useMemo(() => {
-    if (!contacts) return []
-    return contacts.filter(c => 
-      c.contactName.toLowerCase().includes(circleFilter.toLowerCase())
-    )
-  }, [contacts, circleFilter])
-
-  // Pending Requests (Inbox)
-  const requestsQuery = useMemoFirebase(() => {
+  // Incoming Pending Requests (Requests sent to ME)
+  const incomingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
       collection(db, "users", user.uid, "supportRequests"),
@@ -76,7 +67,25 @@ export default function ContactsPage() {
     )
   }, [db, user])
 
-  const { data: requests, isLoading: loadingRequests } = useCollection(requestsQuery)
+  const { data: incomingRequests, isLoading: loadingIncoming } = useCollection(incomingRequestsQuery)
+
+  // Outgoing Pending Requests (Requests sent by ME)
+  const outgoingRequestsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "sentRequests"),
+      where("status", "==", "Pending")
+    )
+  }, [db, user])
+
+  const { data: outgoingRequests, isLoading: loadingOutgoing } = useCollection(outgoingRequestsQuery)
+
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return []
+    return contacts.filter(c => 
+      c.contactName.toLowerCase().includes(circleFilter.toLowerCase())
+    )
+  }, [contacts, circleFilter])
 
   const handleSearch = async () => {
     if (!db || !searchQuery.trim()) return
@@ -100,15 +109,30 @@ export default function ContactsPage() {
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
     try {
-      await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
+      // Create a unique shared ID for tracking this request across both accounts
+      const sharedRequestId = doc(collection(db, "temp")).id
+      
+      const requestData = {
+        id: sharedRequestId,
         userId: targetUser.userId,
         senderId: user.uid,
         senderName: user.displayName || "Unknown User",
+        targetName: targetUser.displayName,
         requestType: "ConnectionRequest",
         description: "wants to join your trusted network.",
         timestamp: new Date().toISOString(),
         status: "Pending"
+      }
+
+      // 1. Save to target user's incoming requests
+      await setDoc(doc(db, "users", targetUser.userId, "supportRequests", sharedRequestId), requestData)
+      
+      // 2. Save to my outgoing requests log
+      await setDoc(doc(db, "users", user.uid, "sentRequests", sharedRequestId), {
+        ...requestData,
+        isOutgoing: true
       })
+
       toast({ title: "Request Sent", description: `Connection request sent to ${targetUser.displayName}.` })
       setSearchResults([])
       setSearchQuery("")
@@ -142,8 +166,15 @@ export default function ContactsPage() {
         relationshipToUser: "Friend"
       })
 
-      // 3. Mark request as accepted
+      // 3. Mark incoming request as accepted
       await updateDoc(doc(db, "users", user.uid, "supportRequests", req.id), { status: "Accepted" })
+      
+      // 4. Update the sender's copy of the sent request
+      try {
+        await updateDoc(doc(db, "users", req.senderId, "sentRequests", req.id), { status: "Accepted" })
+      } catch (err) {
+        console.warn("Could not update sender's sentRequest log, but connection was made.")
+      }
       
       toast({ title: "Connection Approved", description: `You are now connected with ${req.senderName}.` })
     } catch (e) {
@@ -225,17 +256,18 @@ export default function ContactsPage() {
           )}
         </section>
 
-        {requests && requests.length > 0 && (
+        {/* Incoming Pending Requests (Inbox) */}
+        {incomingRequests && incomingRequests.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between px-2">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Requests</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Requests (Inbox)</h3>
               <Badge variant="destructive" className="font-black animate-pulse">
-                {requests.length} NEW
+                {incomingRequests.length} NEW
               </Badge>
             </div>
             
             <div className="grid gap-4">
-              {requests.map((req) => (
+              {incomingRequests.map((req) => (
                 <Card key={req.id} className="rounded-2xl border-none shadow-md bg-accent/5 border-l-4 border-accent animate-in slide-in-from-left-2 duration-500">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -255,6 +287,39 @@ export default function ContactsPage() {
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Outgoing Pending Requests (Sent) */}
+        {outgoingRequests && outgoingRequests.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+              <Send className="h-4 w-4" />
+              Sent Requests (Awaiting Approval)
+            </div>
+            <div className="grid gap-4">
+              {outgoingRequests.map((req) => (
+                <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-card border border-dashed">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-black text-xl">
+                        {req.targetName?.[0] || "?"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-black text-sm truncate uppercase tracking-tight">{req.targetName}</p>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic">Awaiting Response</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="rounded-xl px-3 font-black text-[9px] uppercase tracking-widest opacity-60">
+                      PENDING
+                    </Badge>
                   </CardContent>
                 </Card>
               ))}
