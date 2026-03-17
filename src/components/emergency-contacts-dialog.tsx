@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -71,11 +70,11 @@ export function EmergencyContactsDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
-          variant="outline" 
+          variant="secondary" 
           size="icon" 
-          className="h-24 w-24 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white transition-all shadow-2xl flex-shrink-0"
+          className="h-20 w-20 rounded-3xl bg-white text-primary hover:bg-slate-50 transition-all shadow-xl flex-shrink-0"
         >
-          <Settings2 className="h-8 w-8" />
+          <Settings2 className="h-6 w-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
@@ -86,7 +85,7 @@ export function EmergencyContactsDialog() {
           <div className="space-y-2">
             <DialogTitle className="text-3xl font-black tracking-tighter text-foreground uppercase">SMS Contacts</DialogTitle>
             <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground pr-4">
-              
+              Configure up to 3 mobile numbers that will receive your live GPS coordinates when you trigger an SOS.
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -114,10 +113,10 @@ export function EmergencyContactsDialog() {
           
           <div className="flex items-start gap-4 p-5 bg-muted/80 rounded-2xl border-l-[6px] border-primary animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-              <Info className="h-3.5 w-3.5 text-primary" />
+              <item className="h-3.5 w-3.5 text-primary" />
             </div>
             <p className="text-[11px] font-bold leading-relaxed italic text-muted-foreground uppercase tracking-tight">
-             
+              Protocol: Long-pressing the SOS button for 3s will automatically compose an SMS to these numbers with your Google Maps link.
             </p>
           </div>
         </div>

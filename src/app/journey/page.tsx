@@ -592,35 +592,28 @@ function JourneyContent() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
-                      <div className="flex-1 min-w-[340px] h-24 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] flex items-center px-4 gap-4 shadow-2xl relative overflow-hidden group">
-                        <div className="h-14 w-12 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
-                          <ShieldAlert className="h-6 w-6 text-white" />
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6 animate-in slide-in-from-bottom-2 duration-700">
+                      <div className="flex-1 h-20 bg-white rounded-3xl flex items-center px-5 gap-4 shadow-2xl border-none">
+                        <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                          <ShieldAlert className="h-6 w-6" />
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white/70">EMERGENCY HUB</span>
-                            {userLocation && (
-                              <div className="flex items-center gap-1">
-                                <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                                <span className="text-[8px] font-black text-accent tracking-tighter">GPS ACTIVE</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-base font-black text-white leading-tight">Immediate SMS Protocol</p>
+                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Emergency Protocol</p>
+                          <p className="text-sm font-black text-slate-900 truncate">Immediate SMS Broadcast</p>
                         </div>
 
                         <Button 
-                          className="h-14 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95 z-10"
+                          className="h-12 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-600/20 transition-all active:scale-95"
                           onClick={handleQuickSOS}
                         >
                           SEND SOS
                         </Button>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       </div>
                       
-                      <EmergencyContactsDialog />
+                      <div className="flex shrink-0">
+                        <EmergencyContactsDialog />
+                      </div>
                     </div>
 
                     <div className="space-y-4 pt-4">
