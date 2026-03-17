@@ -36,7 +36,6 @@ export function EmergencyContactsDialog() {
 
   useEffect(() => {
     if (userData?.emergencySmsNumbers) {
-      // Pad array to ensure 3 slots
       const existing = userData.emergencySmsNumbers
       const padded = [...existing, "", "", ""].slice(0, 3)
       setNumbers(padded)
@@ -71,21 +70,23 @@ export function EmergencyContactsDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
+        {/* Square-rounded glass button matching reference */}
         <Button 
           variant="outline" 
           size="icon" 
-          className="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20 text-white transition-all shadow-2xl flex-shrink-0"
+          className="h-24 w-24 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white transition-all shadow-2xl flex-shrink-0"
         >
-          <Settings2 className="h-6 w-6" />
+          <Settings2 className="h-8 w-8" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md rounded-[2rem] p-8 border-none shadow-2xl bg-card">
+      <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
         <DialogHeader className="space-y-6">
-          <div className="h-14 w-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
-            <Phone className="h-7 w-7" />
+          {/* Header icon matching reference */}
+          <div className="h-16 w-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
+            <Phone className="h-8 w-8" />
           </div>
           <div className="space-y-2">
-            <DialogTitle className="text-3xl font-black tracking-tighter text-foreground">SMS Contacts</DialogTitle>
+            <DialogTitle className="text-3xl font-black tracking-tighter text-foreground uppercase">SMS Contacts</DialogTitle>
             <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground pr-4">
               Configure up to 3 mobile numbers. These will receive an automated SMS with your live location when the SOS button is triggered.
             </DialogDescription>
@@ -101,6 +102,7 @@ export function EmergencyContactsDialog() {
                 </Label>
                 <div className="relative group">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  {/* Inputs with light-grey background and primary focus borders */}
                   <Input 
                     id={`num-${i}`}
                     placeholder="Enter phone number..." 
@@ -113,6 +115,7 @@ export function EmergencyContactsDialog() {
             ))}
           </div>
           
+          {/* Blue-accented info box matching reference */}
           <div className="flex items-start gap-4 p-5 bg-muted/80 rounded-2xl border-l-[6px] border-primary animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
               <Info className="h-3.5 w-3.5 text-primary" />
@@ -125,7 +128,7 @@ export function EmergencyContactsDialog() {
 
         <DialogFooter>
           <Button 
-            className="w-full h-16 rounded-[1.25rem] font-black text-lg bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+            className="w-full h-16 rounded-[1.25rem] font-black text-lg bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all uppercase"
             onClick={handleSave}
             disabled={isSaving}
           >

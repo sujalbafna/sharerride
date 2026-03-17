@@ -120,7 +120,6 @@ export default function JourneyPage() {
   }, [db, user])
   const { data: contacts } = useCollection(contactsQuery)
 
-  // Update live location in Firestore for companions to see
   useEffect(() => {
     if (isRider && activeJourney?.status === 'InProgress' && userLocation && db && user) {
       const journeyRef = doc(db, "users", user.uid, "journeys", activeJourney.id)
@@ -132,7 +131,6 @@ export default function JourneyPage() {
     }
   }, [isRider, activeJourney?.status, userLocation, db, user, activeJourney?.id])
 
-  // Monitor GPS status
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocationStatus('unsupported')
@@ -201,7 +199,6 @@ export default function JourneyPage() {
     toast({ title: "Initializing SOS", description: "Acquiring precise GPS location..." })
 
     try {
-      // Actively try to get a fresh high-accuracy position if the background one is missing
       const getPos = (): Promise<GeolocationPosition> => {
         return new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
@@ -234,13 +231,9 @@ export default function JourneyPage() {
       const googleMapsUrl = `https://www.google.com/maps?q=${locStr}`
       const finalMessage = `${baseMessage}\n\nTrack Live: ${googleMapsUrl}`
       
-      // Get all configured numbers
       const numbers = userData.emergencySmsNumbers.filter(n => n.trim() !== "").join(",")
-      
-      // Dispatch group SMS (Supported by both iOS and most Android group message protocols)
       window.location.href = `sms:${numbers}?body=${encodeURIComponent(finalMessage)}`
 
-      // Log to security
       addDoc(collection(db, "users", user.uid, "emergencyAlerts"), {
         userId: user.uid,
         timestamp: new Date().toISOString(),
@@ -366,7 +359,6 @@ export default function JourneyPage() {
     }
   }
 
-  // Calculate dynamic origin for navigation (The "Uber" effect)
   const navigationOrigin = useMemo(() => {
     if (activeJourney?.status === 'InProgress') {
       if (isRider) return userLocation || activeJourney.startLocationDescription;
@@ -384,7 +376,6 @@ export default function JourneyPage() {
     const markers = [];
     
     if (activeJourney) {
-      // Start Marker A (Static origin)
       if (activeJourney.startLatitude && activeJourney.startLongitude) {
         markers.push({
           lat: activeJourney.startLatitude,
@@ -393,7 +384,6 @@ export default function JourneyPage() {
         });
       }
       
-      // Meeting Point (Green)
       if (activeJourney.meetingPointLat && activeJourney.meetingPointLng) {
         markers.push({
           lat: activeJourney.meetingPointLat,
@@ -402,7 +392,6 @@ export default function JourneyPage() {
         });
       }
 
-      // End Marker B (Final destination)
       if (activeJourney.endLatitude && activeJourney.endLongitude) {
         markers.push({
           lat: activeJourney.endLatitude,
@@ -542,29 +531,39 @@ export default function JourneyPage() {
                       )}
                     </div>
 
-                    {/* High-Fidelity Emergency Hub */}
+                    {/* High-Fidelity Emergency Hub matching Reference */}
                     <div className="flex items-center gap-3 mt-4 animate-in slide-in-from-bottom-2 duration-700 overflow-x-auto pb-2 scrollbar-hide">
-                      <div className="flex-1 min-w-[280px] h-20 bg-primary/90 backdrop-blur-2xl border border-white/20 rounded-[1.5rem] flex items-center justify-between px-4 shadow-2xl relative overflow-hidden group">
-                        <div className="flex items-center gap-4 relative z-10">
-                          <div className="h-12 w-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner border border-white/10 group-hover:bg-white/20 transition-all">
-                            <ShieldAlert className="h-6 w-6" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/60 leading-none">Emergency Hub</p>
-                              {userLocation && <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" /><span className="text-[8px] font-black text-accent tracking-tighter">GPS ACTIVE</span></div>}
-                            </div>
-                            <p className="text-sm font-bold text-white tracking-tight">Immediate SMS Protocol</p>
-                          </div>
+                      <div className="flex-1 min-w-[340px] h-24 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2.5rem] flex items-center px-4 gap-4 shadow-2xl relative overflow-hidden group">
+                        {/* Shield Icon in dedicated glass container */}
+                        <div className="h-14 w-12 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                          <ShieldAlert className="h-6 w-6 text-white" />
                         </div>
+                        
+                        {/* Text Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white/70">EMERGENCY HUB</span>
+                            {userLocation && (
+                              <div className="flex items-center gap-1">
+                                <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                                <span className="text-[8px] font-black text-accent tracking-tighter">GPS ACTIVE</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-base font-black text-white leading-tight">Immediate SMS Protocol</p>
+                        </div>
+
+                        {/* Large Red Pill SOS Button */}
                         <Button 
-                          className="h-12 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95 z-10"
+                          className="h-14 px-8 rounded-full bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/30 transition-all active:scale-95 z-10"
                           onClick={handleQuickSOS}
                         >
                           SEND SOS
                         </Button>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       </div>
+                      
+                      {/* Square-Rounded Settings Dialog Trigger */}
                       <EmergencyContactsDialog />
                     </div>
 
