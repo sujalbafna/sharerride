@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
+import { firebaseConfig } from "@/firebase/config"
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -47,9 +48,12 @@ export function StartJourneyDialog() {
   const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
   const routeAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
 
+  // Use env var first, then fallback to Firebase API key
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
+
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: apiKey,
     libraries: LIBRARIES
   })
 
@@ -204,7 +208,7 @@ export function StartJourneyDialog() {
         className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
-          // Crucial fix: Don't close dialog when clicking on Google Autocomplete suggestions
+          // Don't close dialog when clicking on Google Autocomplete suggestions
           if (target?.closest('.pac-container')) {
             e.preventDefault();
           }

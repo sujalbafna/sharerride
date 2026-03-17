@@ -42,6 +42,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from "@/components/ui/input"
 import { EmergencyContactsDialog } from "@/components/emergency-contacts-dialog"
+import { firebaseConfig } from "@/firebase/config"
 
 const LIBRARIES: ("places")[] = ["places"];
 
@@ -68,9 +69,11 @@ function JourneyContent() {
     setMounted(true)
   }, [])
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
+
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: apiKey,
     libraries: LIBRARIES
   })
 
