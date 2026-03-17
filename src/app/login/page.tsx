@@ -62,16 +62,6 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router])
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (newUser) => {
-      if (newUser && db && fullName && !isPhoneVerified) {
-        // This is triggered by signInWithPhoneNumber success
-        // We only want to auto-verify if they haven't finished registration
-      }
-    })
-    return () => unsub()
-  }, [auth, db, fullName, isPhoneVerified])
-
   const setupRecaptcha = () => {
     try {
       if (recaptchaVerifierRef.current) {
@@ -172,34 +162,17 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
-    
-    // We create the user with email/pass now that phone is verified
     try {
-      // Note: initiateEmailSignUp doesn't return user, it uses onAuthStateChanged
-      // The onAuthStateChanged in root components or top level of this file will handle profile creation
-      // but let's add an explicit profile creation here for certainty if possible, 
-      // although standard Firebase Studio boilerplate prefers non-blocking.
-      
-      // To ensure profile data is saved, we rely on the useEffect listener or the function itself.
-      // Since initiateEmailSignUp is non-blocking, we'll keep the logic in the listener robust.
-      
-      // Explicitly saving data after successful signup will be handled by the listener
-      // that we've set up to watch 'auth' state.
-      
       initiateEmailSignUp(auth, regEmail, regPassword)
-      
-      // Wait for the auth listener to pick it up. The logic in useEffect handles the setDoc.
     } catch (error: any) {
       toast({ variant: "destructive", title: "Sign Up Failed", description: error.message })
       setIsLoading(false)
     }
   }
 
-  // Effect to handle profile creation after successful email signup
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (newUser) => {
       if (newUser && isPhoneVerified && !isLoading) {
-        // User successfully signed up or signed in
         const userRef = doc(db, "users", newUser.uid)
         const publicRef = doc(db, "publicProfiles", newUser.uid)
         
@@ -394,7 +367,7 @@ export default function LoginPage() {
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                         <Input 
                           type="tel" 
-                          placeholder="7249260870" 
+                          placeholder="XXXXXXXXXX" 
                           className="pl-10 h-12 rounded-xl" 
                           value={mobileNumber} 
                           onChange={(e) => setMobileNumber(e.target.value)} 
@@ -422,7 +395,7 @@ export default function LoginPage() {
                         <div className="relative group flex-1">
                           <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                           <Input 
-                            placeholder="123456" 
+                            placeholder="_ _ _ _ _ _" 
                             className="pl-10 h-12 rounded-xl text-center font-black tracking-widest" 
                             value={otp} 
                             onChange={(e) => setOtp(e.target.value)} 
