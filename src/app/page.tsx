@@ -22,7 +22,8 @@ import {
   Calendar,
   Milestone,
   Eye,
-  ShieldAlert
+  ShieldAlert,
+  UserPlus
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -461,11 +462,13 @@ export default function Home() {
             <Card className="rounded-[2rem] border-none shadow-sm bg-accent/5 overflow-hidden">
                <CardContent className="p-6 space-y-4 text-center">
                   <div className="h-12 w-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto text-accent">
-                    <ShieldAlert className="h-6 w-6" />
+                    <UserPlus className="h-6 w-6" />
                   </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-black uppercase tracking-tight">Safety Network Active</h4>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Global Watch Protocols Enabled</p>
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-black uppercase tracking-tight">Connect With Friends</h4>
+                    <p className="text-[10px] text-muted-foreground font-bold leading-relaxed uppercase tracking-widest">
+                      Search for your friends by name in the sidebar and send a request to connect. Once they accept, they can join your safe transit circle.
+                    </p>
                   </div>
                </CardContent>
             </Card>
