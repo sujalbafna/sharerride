@@ -4,16 +4,24 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useUser, useFirestore } from "@/firebase"
-import { initiateEmailSignIn, initiateEmailSignUp } from "@/firebase/non-blocking-login"
+import { initiateEmailSignIn } from "@/firebase/non-blocking-login"
 import { doc, setDoc } from "firebase/firestore"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { onAuthStateChanged, updateProfile, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth"
+import { 
+  onAuthStateChanged, 
+  updateProfile, 
+  RecaptchaVerifier, 
+  signInWithPhoneNumber, 
+  ConfirmationResult,
+  EmailAuthProvider,
+  linkWithCredential
+} from "firebase/auth"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { Badge } from "@/components/ui/badge"
@@ -58,10 +66,11 @@ export default function LoginPage() {
   const authImage = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
   useEffect(() => {
-    if (user && !isUserLoading && !isRegistering) {
+    // Only redirect if user is fully logged in and not in the middle of registration flow
+    if (user && !isUserLoading && !isRegistering && !isPhoneVerified) {
       router.push("/")
     }
-  }, [user, isUserLoading, router, isRegistering])
+  }, [user, isUserLoading, router, isRegistering, isPhoneVerified])
 
   const setupRecaptcha = () => {
     try {
@@ -123,7 +132,7 @@ export default function LoginPage() {
         await confirmationResultRef.current.confirm(otp)
         setIsPhoneVerified(true)
         setIsOtpSent(false)
-        toast({ title: "Phone Verified", description: "Mobile identity confirmed successfully. Please complete the rest of the form." })
+        toast({ title: "Phone Verified", description: "Mobile identity confirmed. Please complete the rest of the form to register." })
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "Verification Failed", description: "The OTP entered is incorrect or expired." })
@@ -159,65 +168,61 @@ export default function LoginPage() {
     setIsLoading(true)
     setIsRegistering(true)
     try {
-      initiateEmailSignUp(auth, regEmail, regPassword)
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("Session lost. Please verify phone again.");
+
+      // 1. Link Email/Password to the Phone Authenticated User
+      const credential = EmailAuthProvider.credential(regEmail, regPassword);
+      await linkWithCredential(currentUser, credential);
+
+      // 2. Update Profile & Firestore
+      await updateProfile(currentUser, { displayName: fullName });
+      
+      const userRef = doc(db, "users", currentUser.uid);
+      const publicRef = doc(db, "publicProfiles", currentUser.uid);
+      
+      const names = fullName.trim().split(/\s+/);
+      const fName = names[0] || "User";
+      const lName = names.slice(1).join(' ') || "";
+
+      const userData = {
+        id: currentUser.uid,
+        firstName: fName,
+        lastName: lName,
+        email: regEmail,
+        phoneNumber: mobileNumber,
+        address: address,
+        role: role,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emergencySmsNumbers: []
+      };
+
+      const publicData = {
+        userId: currentUser.uid,
+        displayName: fullName,
+        email: regEmail,
+        photoURL: "",
+        phoneNumber: mobileNumber,
+        address: address,
+        role: role
+      };
+
+      await setDoc(userRef, userData, { merge: true });
+      await setDoc(publicRef, publicData, { merge: true });
+
+      toast({ title: "Welcome!", description: "Account created successfully with MIT ADT ShareRide." });
+      setIsRegistering(false);
+      router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Sign Up Failed", description: error.message })
-      setIsLoading(false)
-      setIsRegistering(false)
+      console.error(error);
+      toast({ variant: "destructive", title: "Sign Up Failed", description: error.message });
+      setIsLoading(false);
+      setIsRegistering(false);
     }
   }
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (newUser) => {
-      // Only proceed with Firestore registration if we are in the "Registering" phase
-      if (newUser && isRegistering && isPhoneVerified) {
-        const userRef = doc(db, "users", newUser.uid)
-        const publicRef = doc(db, "publicProfiles", newUser.uid)
-        
-        const names = fullName.trim().split(/\s+/)
-        const fName = names[0] || "User"
-        const lName = names.slice(1).join(' ') || ""
-
-        const userData = {
-          id: newUser.uid,
-          firstName: fName,
-          lastName: lName,
-          email: newUser.email || regEmail,
-          phoneNumber: mobileNumber,
-          address: address,
-          role: role,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          emergencySmsNumbers: []
-        }
-
-        const publicData = {
-          userId: newUser.uid,
-          displayName: fullName,
-          email: newUser.email || regEmail,
-          photoURL: newUser.photoURL || "",
-          phoneNumber: mobileNumber,
-          address: address,
-          role: role
-        }
-
-        try {
-          await updateProfile(newUser, { displayName: fullName })
-          await setDoc(userRef, userData, { merge: true })
-          await setDoc(publicRef, publicData, { merge: true })
-          setIsRegistering(false)
-          router.push("/")
-        } catch (e) {
-          console.error("Error saving profile:", e)
-          setIsRegistering(false)
-          setIsLoading(false)
-        }
-      }
-    })
-    return () => unsubscribe()
-  }, [auth, isRegistering, isPhoneVerified, db, fullName, regEmail, mobileNumber, address, role, router])
-
-  if (isUserLoading) {
+  if (isUserLoading && !isPhoneVerified) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
