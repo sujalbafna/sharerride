@@ -27,7 +27,8 @@ import {
   Eye,
   Activity,
   IndianRupee,
-  Gift
+  Gift,
+  Users
 } from "lucide-react"
 
 import {
@@ -55,6 +56,7 @@ import { format } from "date-fns"
 
 const items = [
   { title: "Home Dashboard", url: "/", icon: Home },
+  { title: "My Network", url: "/contacts", icon: Users },
   { title: "Live Journeys", url: "/journey", icon: Car },
 ]
 
@@ -260,7 +262,7 @@ export function AppSidebar() {
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
-                <span className="truncate font-black text-foreground">{currentUserDisplayName}</span>
+                <span className="truncate font-black text-sidebar-foreground">{currentUserDisplayName}</span>
                 <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary font-bold">
                   {currentUserRole}
                 </Badge>

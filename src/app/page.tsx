@@ -45,8 +45,6 @@ export default function Home() {
   const router = useRouter()
   const { toast } = useToast()
   
-  const [friendFilter, setFriendFilter] = useState("")
-
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/login")
@@ -84,19 +82,11 @@ export default function Home() {
   const contactsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
-      collection(db, "users", user.uid, "trustedContacts"),
-      orderBy("contactName", "asc")
+      collection(db, "users", user.uid, "trustedContacts")
     )
   }, [db, user])
 
-  const { data: contacts, isLoading: isContactsLoading } = useCollection(contactsQuery)
-
-  const filteredFriends = useMemo(() => {
-    if (!contacts) return []
-    return contacts.filter(c => 
-      c.contactName.toLowerCase().includes(friendFilter.toLowerCase())
-    )
-  }, [contacts, friendFilter])
+  const { data: contacts } = useCollection(contactsQuery)
 
   const pendingRequestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -269,15 +259,15 @@ export default function Home() {
               </Button>
             )}
 
-            <Card className="rounded-[2rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden">
+            <Card className="rounded-[2rem] border-none shadow-2xl bg-primary text-primary-foreground overflow-hidden cursor-pointer active:scale-95 transition-all" onClick={() => router.push("/contacts")}>
                <CardContent className="p-6 space-y-4 text-center">
                   <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center mx-auto">
                     <UserPlus className="h-6 w-6 text-white" />
                   </div>
                   <div className="space-y-2">
-                    <h4 className="text-sm font-black uppercase tracking-tight">Connect With Friends</h4>
+                    <h4 className="text-sm font-black uppercase tracking-tight">Manage Trusted Circle</h4>
                     <p className="text-[10px] opacity-90 font-bold leading-relaxed uppercase tracking-widest">
-                      Search for your friends by name in the sidebar and send a request to connect. Once they accept, they can join your safe transit circle.
+                      View your network, search for friends, and start secure conversations.
                     </p>
                   </div>
                </CardContent>
@@ -286,13 +276,20 @@ export default function Home() {
 
           <div className="lg:col-span-2 space-y-10">
             <div className="grid grid-cols-1 gap-6">
-              <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300">
+              <Card className="rounded-3xl border-none shadow-sm bg-card transition-all hover:shadow-md duration-300 cursor-pointer" onClick={() => router.push("/contacts")}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Friend Circle</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
-                  <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-5xl font-black text-primary tracking-tighter">{contacts?.length || 0}</p>
+                      <p className="text-xs font-bold text-muted-foreground mt-2">Verified safety connections</p>
+                    </div>
+                    <Button variant="ghost" className="rounded-full h-12 w-12 bg-secondary/50 text-primary">
+                      <ArrowRight className="h-6 w-6" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -372,71 +369,6 @@ export default function Home() {
                 </ScrollArea>
               )}
             </div>
-
-            <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="font-black text-lg flex items-center gap-3 text-primary">
-                  <Users className="h-5 w-5" />
-                  My Trusted Circle
-                </h3>
-                <div className="relative w-full sm:w-64 group">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    placeholder="Search circle..." 
-                    className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs focus-visible:ring-primary/20 transition-all shadow-inner"
-                    value={friendFilter}
-                    onChange={(e) => setFriendFilter(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              {isContactsLoading ? (
-                <div className="flex justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : !contacts || contacts.length === 0 ? (
-                <Card className="rounded-[2.5rem] border-dashed border-2 bg-secondary/30 border-primary/10 animate-in fade-in duration-500">
-                  <CardContent className="p-12 text-center space-y-4">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Connect with friends to enable virtual companionship.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <ScrollArea className="h-[300px] pr-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {filteredFriends.map((contact) => (
-                      <Card key={contact.id} className="rounded-2xl border-none shadow-sm hover:shadow-md transition-all group bg-card h-20 animate-in zoom-in-95 duration-300">
-                        <CardContent className="p-3 flex items-center justify-between h-full">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-base shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                              {contact.contactName?.[0]}
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="font-bold text-xs tracking-tight truncate">{contact.contactName}</h3>
-                              <Badge variant="outline" className="text-[8px] uppercase border-primary/20 text-primary font-bold px-1.5 h-4">CONNECTED</Badge>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="h-8 w-8 rounded-full text-primary bg-secondary hover:bg-muted shrink-0 transition-all active:scale-95"
-                              onClick={() => router.push(`/chat?with=${contact.appUserId}&name=${encodeURIComponent(contact.contactName)}`)}
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {filteredFriends.length === 0 && friendFilter && (
-                      <div className="col-span-full py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest bg-secondary/50 rounded-2xl border-none animate-in fade-in duration-300">
-                        No matches found in your circle.
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              )}
-            </section>
           </div>
         </div>
       </main>
