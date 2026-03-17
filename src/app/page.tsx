@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -194,21 +193,6 @@ export default function Home() {
                 </span>
               </div>
             </div>
-          </div>
-          <div className="relative">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-12 w-12 rounded-2xl bg-secondary/50 border-none shadow-inner transition-all hover:bg-secondary active:scale-95"
-              onClick={() => router.push("/notifications")}
-            >
-              <Bell className="h-6 w-6 text-primary" />
-            </Button>
-            {pendingRequests && pendingRequests.length > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-[10px] bg-primary text-white border-2 border-card animate-bounce">
-                {pendingRequests.length}
-              </Badge>
-            )}
           </div>
         </div>
       </header>

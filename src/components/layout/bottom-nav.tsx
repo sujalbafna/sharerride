@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -12,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
   { icon: Compass, label: "Journeys", href: "/journey" },
-  { icon: Bell, label: "Alerts", href: "/notifications", isNotification: true },
+  { icon: Bell, label: "Notifications", href: "/notifications", isNotification: true },
   { icon: Users, label: "Circle", href: "/contacts" },
   { icon: User, label: "Profile", href: "/profile" },
 ]
