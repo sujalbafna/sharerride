@@ -1,7 +1,8 @@
+
 "use client"
 
-import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
-import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Loader2, Flag, AlertTriangle } from "lucide-react"
+import React, { useMemo, useState, useEffect, useRef } from "react"
+import { AlertTriangle, Loader2, Navigation } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
@@ -28,6 +29,50 @@ const containerStyle = {
 
 const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
+// Navigation-optimized map styles for better road visibility
+const navigationStyles = [
+  {
+    "featureType": "all",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#444444"}]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "all",
+    "stylers": [{"color": "#f5f5f5"}]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "all",
+    "stylers": [{"visibility": "on"}]
+  },
+  {
+    "featureType": "road",
+    "elementType": "all",
+    "stylers": [{"saturation": -100}, {"lightness": 45}]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "all",
+    "stylers": [{"visibility": "simplified"}]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels.icon",
+    "stylers": [{"visibility": "off"}]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "all",
+    "stylers": [{"visibility": "off"}]
+  },
+  {
+    "featureType": "water",
+    "elementType": "all",
+    "stylers": [{"color": "#2280B3"}, {"visibility": "on"}, {"opacity": 0.2}]
+  }
+];
+
 export function GoogleMap({ 
   className, 
   address, 
@@ -35,7 +80,7 @@ export function GoogleMap({
   destination,
   lat,
   lng,
-  zoom = 14, 
+  zoom = 15, // Slightly tighter zoom for navigation
   markers = [], 
   interactive = true,
   variant = 'active',
@@ -50,7 +95,7 @@ export function GoogleMap({
     libraries: LIBRARIES
   });
 
-  // Stabilize waypoints to prevent unnecessary route recalculations
+  // Stabilize waypoints
   const mapWaypoints = useMemo(() => {
     return markers
       .filter(m => m.type === 'meeting')
@@ -60,7 +105,6 @@ export function GoogleMap({
       }));
   }, [JSON.stringify(markers.filter(m => m.type === 'meeting'))]);
 
-  // Use refs to keep track of previous origin/destination to avoid loops
   const lastParams = useRef("");
 
   useEffect(() => {
@@ -100,7 +144,7 @@ export function GoogleMap({
         setDirections(null);
       }
     });
-  }, [isLoaded, origin, destination, mapWaypoints]); // Removed onRouteInfo from deps to stop infinite loop
+  }, [isLoaded, origin, destination, mapWaypoints]);
 
   const handleExternalNavigation = () => {
     const meetingPoint = markers.find(m => m.type === 'meeting');
@@ -171,19 +215,8 @@ export function GoogleMap({
           zoomControl: interactive,
           mapTypeControl: false,
           streetViewControl: false,
-          fullscreenControl: false,
-          styles: [
-            {
-              "featureType": "all",
-              "elementType": "labels.text.fill",
-              "stylers": [{"color": "#746855"}]
-            },
-            {
-              "featureType": "water",
-              "elementType": "geometry.fill",
-              "stylers": [{"color": "#c9c9c9"}]
-            }
-          ]
+          fullscreenControl: interactive,
+          styles: navigationStyles
         }}
       >
         {directions && (
@@ -193,8 +226,8 @@ export function GoogleMap({
               suppressMarkers: true,
               polylineOptions: {
                 strokeColor: "#2280B3",
-                strokeWeight: 6,
-                strokeOpacity: 0.8
+                strokeWeight: 8, // Thicker for better navigation visibility
+                strokeOpacity: 0.9
               }
             }}
           />
@@ -204,7 +237,10 @@ export function GoogleMap({
           let label = undefined;
           let color = "#2280B3";
           
+          // Only show Start marker if journey hasn't moved yet (optional logic)
           if (marker.type === 'start') {
+            // Hide Start marker if we have active GPS coordinates nearby to avoid clutter
+            if (lat && lng && Math.abs(lat - marker.lat) < 0.001) return null;
             label = { text: "A", color: "white", fontWeight: "bold" };
             color = "#ef4444";
           } else if (marker.type === 'end') {
@@ -235,14 +271,17 @@ export function GoogleMap({
         {(lat && lng) && (
           <Marker 
             position={{ lat, lng }} 
-            zIndex={100}
+            zIndex={1000}
             icon={{
-              path: google.maps.SymbolPath.CIRCLE,
+              // Navigation Arrow Path
+              path: "M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z",
               fillColor: "#2280B3",
               fillOpacity: 1,
               strokeWeight: 3,
               strokeColor: "#ffffff",
-              scale: 8,
+              scale: 2,
+              anchor: new google.maps.Point(12, 12),
+              // Note: Rotation could be handled here if heading data was available
             }}
           />
         )}
