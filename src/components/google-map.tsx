@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
@@ -6,6 +5,7 @@ import { MapPin, Navigation, Shield, ZoomIn, ZoomOut, Loader2, Flag, AlertTriang
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api'
+import { firebaseConfig } from "@/firebase/config"
 
 interface GoogleMapProps {
   className?: string
@@ -41,7 +41,8 @@ export function GoogleMap({
   variant = 'active',
   onRouteInfo
 }: GoogleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  // Use env var first, then fallback to Firebase API key which often has Maps enabled
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const directionsRequested = useRef(false);
   
@@ -51,7 +52,7 @@ export function GoogleMap({
     libraries: libraries
   });
 
-  // Reset directions when origin or destination changes to simulate Uber-style path shortening
+  // Reset directions when origin or destination changes
   useEffect(() => {
     setDirections(null);
     directionsRequested.current = false;
@@ -104,17 +105,34 @@ export function GoogleMap({
         </div>
         <div className="space-y-1">
           <p className="text-sm font-black uppercase tracking-widest">Maps API Key Missing</p>
-          <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env file to enable live tracking.</p>
+          <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env file or ensure Firebase config has an API key.</p>
         </div>
       </div>
     );
   }
 
   if (loadError) {
+    const isReferrerError = loadError.message?.includes('RefererNotAllowedMapError') || 
+                           loadError.toString().includes('RefererNotAllowedMapError');
+    
     return (
-      <div className={cn("flex flex-col items-center justify-center bg-destructive/5 rounded-[2rem] border-4 border-destructive/20 p-8 text-center gap-2", className)}>
-        <AlertTriangle className="h-6 w-6 text-destructive" />
-        <p className="text-xs font-bold text-destructive uppercase tracking-widest">Map Load Error</p>
+      <div className={cn("flex flex-col items-center justify-center bg-destructive/5 rounded-[2rem] border-4 border-destructive/20 p-8 text-center gap-4", className)}>
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <div className="space-y-2">
+          <p className="text-sm font-black uppercase tracking-widest text-destructive">
+            {isReferrerError ? "Domain Not Authorized" : "Map Load Error"}
+          </p>
+          <p className="text-xs text-muted-foreground max-w-[250px] mx-auto leading-relaxed">
+            {isReferrerError 
+              ? "This URL needs to be added to your Google Maps API key restrictions in the Google Cloud Console." 
+              : "There was a problem loading the Google Maps script. Check your API key status."}
+          </p>
+          {isReferrerError && typeof window !== 'undefined' && (
+            <div className="p-3 bg-card/80 rounded-xl border text-[9px] font-mono break-all mt-2 select-all shadow-inner">
+              {window.location.origin}/*
+            </div>
+          )}
+        </div>
       </div>
     );
   }
