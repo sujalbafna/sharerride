@@ -1,8 +1,8 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyBZL38PBrHo1fzUu4bTmr_YrYqTddUhWBI",
-  authDomain: "trackmyride-287f8.firebaseapp.com",
-  projectId: "trackmyride-287f8",
-  storageBucket: "trackmyride-287f8.firebasestorage.app",
-  messagingSenderId: "1007096709919",
-  appId: "1:1007096709919:web:2cefbf91d59c602a63a62a"
+  apiKey: "AIzaSyBXYPTCiUhqXtwvgOra4Z2AD1UKEuMXl08",
+  authDomain: "studio-4512849101-9f1de.firebaseapp.com",
+  projectId: "studio-4512849101-9f1de",
+  storageBucket: "studio-4512849101-9f1de.firebasestorage.app",
+  messagingSenderId: "41408433912",
+  appId: "1:41408433912:web:2ce13a0e4413f775ac350d"
 };
