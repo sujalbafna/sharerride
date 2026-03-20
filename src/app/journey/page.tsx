@@ -72,7 +72,7 @@ function JourneyContent() {
     setMounted(true)
   }, [])
 
-  const apiKey = "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
+  const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',

@@ -40,11 +40,6 @@ const navigationStyles = [
     "stylers": [{"color": "#f5f5f5"}]
   },
   {
-    "featureType": "poi",
-    "elementType": "all",
-    "stylers": [{"visibility": "on"}]
-  },
-  {
     "featureType": "road",
     "elementType": "all",
     "stylers": [{"saturation": -100}, {"lightness": 45}]
@@ -84,7 +79,7 @@ export function GoogleMap({
   variant = 'active',
   onRouteInfo
 }: GoogleMapProps) {
-  const apiKey = "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
+  const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   
   const { isLoaded, loadError } = useJsApiLoader({
