@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo, useState, useEffect, useRef } from "react"
@@ -6,7 +5,6 @@ import { AlertTriangle, Loader2, Navigation } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
-import { firebaseConfig } from "@/firebase/config"
 
 interface GoogleMapProps {
   className?: string
@@ -86,7 +84,7 @@ export function GoogleMap({
   variant = 'active',
   onRouteInfo
 }: GoogleMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
+  const apiKey = "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   
   const { isLoaded, loadError } = useJsApiLoader({

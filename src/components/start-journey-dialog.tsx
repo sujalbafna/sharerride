@@ -20,7 +20,6 @@ import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
-import { firebaseConfig } from "@/firebase/config"
 
 const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
@@ -48,7 +47,7 @@ export function StartJourneyDialog() {
   const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
   const routeAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || firebaseConfig.apiKey || "";
+  const apiKey = "AIzaSyCtpK8wvhnxWhgb6USb6g83T5kqgcpqt_k";
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
