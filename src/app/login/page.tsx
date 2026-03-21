@@ -19,7 +19,8 @@ import {
   signInWithPhoneNumber, 
   ConfirmationResult,
   EmailAuthProvider,
-  linkWithCredential
+  linkWithCredential,
+  sendPasswordResetEmail
 } from "firebase/auth"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
@@ -148,6 +149,34 @@ export default function LoginPage() {
     if (!loginEmail || !loginPassword) return
     setIsLoading(true)
     initiateEmailSignIn(auth, loginEmail, loginPassword)
+  }
+
+  const handleResetPassword = async () => {
+    if (!loginEmail) {
+      toast({ 
+        variant: "destructive", 
+        title: "Email Required", 
+        description: "Please enter your email address in the field above to receive a reset link." 
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, loginEmail)
+      toast({ 
+        title: "Reset Link Sent", 
+        description: "Password reset instructions have been sent to your inbox." 
+      })
+    } catch (error: any) {
+      toast({ 
+        variant: "destructive", 
+        title: "Request Failed", 
+        description: error.message || "Could not send reset link." 
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -313,6 +342,15 @@ export default function LoginPage() {
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                       <Input id="password-login" type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl transition-all focus:shadow-md" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+                    </div>
+                    <div className="flex justify-end pt-1">
+                      <button 
+                        type="button" 
+                        onClick={handleResetPassword}
+                        className="text-[10px] font-black text-muted-foreground hover:text-primary underline uppercase tracking-widest transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
                     </div>
                   </div>
                 </CardContent>
