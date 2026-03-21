@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
@@ -164,7 +163,7 @@ export default function ContactsPage() {
       await setDoc(doc(db, "users", req.senderId, "trustedContacts", user.uid), {
         id: user.uid,
         userId: req.senderId,
-        contactName: user.displayName || "User",
+        contactName: user.displayName || "USER",
         contactPhoneNumber: "Private",
         isAppUser: true,
         appUserId: user.uid,
@@ -239,10 +238,10 @@ export default function ContactsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                className="pl-12 h-14 bg-card rounded-[1.25rem] border-none shadow-sm focus-visible:ring-primary/20" 
-                placeholder="Search by name..." 
+                className="pl-12 h-14 bg-card rounded-[1.25rem] border-none shadow-sm focus-visible:ring-primary/20 uppercase" 
+                placeholder="SEARCH BY NAME..." 
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>

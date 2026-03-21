@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -91,10 +90,10 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  className="pl-10 h-12 rounded-xl bg-muted/50 border-none text-sm font-bold" 
-                  placeholder="Enter name..." 
+                  className="pl-10 h-12 rounded-xl bg-muted/50 border-none text-sm font-bold uppercase" 
+                  placeholder="ENTER NAME..." 
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>

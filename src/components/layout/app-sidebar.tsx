@@ -200,10 +200,10 @@ export function AppSidebar() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
                 <Input 
-                  placeholder="Find friend..." 
-                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs shadow-inner"
+                  placeholder="FIND FRIEND..." 
+                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs shadow-inner uppercase"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>

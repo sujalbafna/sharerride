@@ -1,3 +1,0 @@
-# Project Introduction: ShareRide
-
-ShareRide is a community-driven transit safety platform designed specifically for the MIT Art, Design & Technology University community. It addresses the critical need for secure commuting by connecting students and faculty with a verified network of trusted friends. Unlike standard navigation apps, ShareRide prioritizes social oversight through features like live GPS tracking with dynamic route visuals and a specialized 3-second SOS emergency protocol. Built with Next.js and Firebase, the platform allows users to broadcast detailed itineraries and coordinate companion rendezvous in real-time. By bridging navigation with community security, ShareRide ensures no one travels alone, fostering a safer campus environment.

@@ -1,3 +1,0 @@
-# How ShareRide Works
-
-ShareRide operates as a real-time safety network tailored for the university community. Users first register using institutional roles and verify their identity via mobile OTP. Once authenticated, they build a "Trusted Circle" by connecting with verified campus peers. To initiate a journey, a user broadcasts their route and vehicle details to their circle. The platform leverages live GPS tracking to visualize the journey on a dynamic map that updates in real-time. Friends can monitor movement, request to join as companions, or coordinate rendezvous at safety points. In critical situations, a specialized SOS protocol triggers immediate SMS and system-wide alerts.
