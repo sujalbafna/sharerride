@@ -196,7 +196,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="p-4 sm:p-8 space-y-12 max-w-7xl mx-auto">
+      <main className="p-4 sm:p-8 space-y-12 max-w-7xl mx-auto overflow-x-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-1 space-y-8">
             
@@ -304,46 +304,50 @@ export default function Home() {
                   <div className="space-y-4">
                     {journeys.map((j) => (
                       <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card animate-in slide-in-from-left-4 duration-500">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-5 flex-1 min-w-0">
-                              <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                                <Car className="h-7 w-7" />
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
+                              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                                <Car className="h-6 w-6 sm:h-7 sm:w-7" />
                               </div>
-                              <div className="space-y-1 min-w-0">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
+                              <div className="space-y-2 min-w-0 flex-1">
+                                <div className="flex items-center gap-2 text-[9px] font-black uppercase text-primary tracking-widest">
                                   <Navigation className="h-3 w-3" />
-                                  {j.userName || userName}
+                                  <span className="truncate">{j.userName || userName}</span>
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-bold text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
-                                  <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
-                                  <p className="font-black text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
+                                
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                  <p className="font-bold text-[11px] sm:text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-3 w-px bg-border ml-1.5" />
+                                    <p className="font-black text-sm sm:text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+
+                                <div className="flex items-center gap-2 flex-wrap pt-1">
+                                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">
                                     {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
                                   </p>
-                                  <span className="h-1 w-1 rounded-full bg-border" />
-                                  {j.paymentType === "Paid" ? (
-                                    <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary h-4">₹{j.feeAmount}</Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="text-[9px] uppercase font-black border-accent/30 text-accent h-4">FREE</Badge>
-                                  )}
-                                  <span className="h-1 w-1 rounded-full bg-border" />
-                                  <Badge 
-                                    variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 
-                                    className="text-[9px] uppercase font-black px-2 h-4"
-                                  >
-                                    {j.status}
-                                  </Badge>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {j.paymentType === "Paid" ? (
+                                      <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/30 text-primary h-4 px-1.5">₹{j.feeAmount}</Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-[8px] uppercase font-black border-accent/30 text-accent h-4 px-1.5">FREE</Badge>
+                                    )}
+                                    <Badge 
+                                      variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 
+                                      className="text-[8px] uppercase font-black px-1.5 h-4"
+                                    >
+                                      {j.status}
+                                    </Badge>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                             <Button 
                               size="icon" 
                               variant="ghost" 
-                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 ml-4 active:scale-95"
+                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 active:scale-95"
                               onClick={() => router.push(j.status === 'InProgress' ? "/journey" : "/journey")}
                             >
                               <ArrowRight className="h-5 w-5" />
