@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -303,55 +304,49 @@ export default function Home() {
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="space-y-4">
                     {journeys.map((j) => (
-                      <Card key={j.id} className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card animate-in slide-in-from-left-4 duration-500">
+                      <Card 
+                        key={j.id} 
+                        className="rounded-3xl border-none shadow-sm hover:shadow-xl transition-all group bg-card animate-in slide-in-from-left-4 duration-500 cursor-pointer active:scale-[0.98]"
+                        onClick={() => router.push("/journey")}
+                      >
                         <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
-                              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                                <Car className="h-6 w-6 sm:h-7 sm:w-7" />
+                          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+                            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center shadow-inner shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                              <Car className="h-6 w-6 sm:h-7 sm:w-7" />
+                            </div>
+                            <div className="space-y-2 min-w-0 flex-1">
+                              <div className="flex items-center gap-2 text-[9px] font-black uppercase text-primary tracking-widest">
+                                <Navigation className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{j.userName || userName}</span>
                               </div>
-                              <div className="space-y-2 min-w-0 flex-1">
-                                <div className="flex items-center gap-2 text-[9px] font-black uppercase text-primary tracking-widest">
-                                  <Navigation className="h-3 w-3" />
-                                  <span className="truncate">{j.userName || userName}</span>
+                              
+                              <div className="flex flex-col gap-0.5 min-w-0">
+                                <p className="font-bold text-[11px] sm:text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className="h-3 w-px bg-border ml-1.5 shrink-0" />
+                                  <p className="font-black text-sm sm:text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
                                 </div>
-                                
-                                <div className="flex flex-col gap-0.5 min-w-0">
-                                  <p className="font-bold text-[11px] sm:text-sm text-muted-foreground truncate">{j.startLocationDescription}</p>
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-3 w-px bg-border ml-1.5" />
-                                    <p className="font-black text-sm sm:text-base tracking-tight truncate text-primary">{j.endLocationDescription}</p>
-                                  </div>
-                                </div>
+                              </div>
 
-                                <div className="flex items-center gap-2 flex-wrap pt-1">
-                                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">
-                                    {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
-                                  </p>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    {j.paymentType === "Paid" ? (
-                                      <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/30 text-primary h-4 px-1.5">₹{j.feeAmount}</Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-[8px] uppercase font-black border-accent/30 text-accent h-4 px-1.5">FREE</Badge>
-                                    )}
-                                    <Badge 
-                                      variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 
-                                      className="text-[8px] uppercase font-black px-1.5 h-4"
-                                    >
-                                      {j.status}
-                                    </Badge>
-                                  </div>
+                              <div className="flex items-center gap-2 flex-wrap pt-1">
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">
+                                  {j.startTime ? format(new Date(j.startTime), "MMM d, h:mm a") : "Active"}
+                                </p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {j.paymentType === "Paid" ? (
+                                    <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/30 text-primary h-4 px-1.5">₹{j.feeAmount}</Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-[8px] uppercase font-black border-accent/30 text-accent h-4 px-1.5">FREE</Badge>
+                                  )}
+                                  <Badge 
+                                    variant={j.status === 'InProgress' || j.status === 'Broadcasted' ? 'default' : 'secondary'} 
+                                    className="text-[8px] uppercase font-black px-1.5 h-4"
+                                  >
+                                    {j.status}
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="rounded-xl h-10 w-10 bg-secondary hover:bg-muted text-primary transition-all shrink-0 active:scale-95"
-                              onClick={() => router.push(j.status === 'InProgress' ? "/journey" : "/journey")}
-                            >
-                              <ArrowRight className="h-5 w-5" />
-                            </Button>
                           </div>
                         </CardContent>
                       </Card>
