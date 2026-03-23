@@ -113,7 +113,7 @@ export function EmergencyContactsDialog() {
           
           <div className="flex items-start gap-4 p-5 bg-muted/80 rounded-2xl border-l-[6px] border-primary animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-              <item className="h-3.5 w-3.5 text-primary" />
+              <Info className="h-3.5 w-3.5 text-primary" />
             </div>
             <p className="text-[11px] font-bold leading-relaxed italic text-muted-foreground uppercase tracking-tight">
               Protocol: Long-pressing the SOS button for 3s will automatically compose an SMS to these numbers with your Google Maps link.

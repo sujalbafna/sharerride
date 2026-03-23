@@ -591,26 +591,26 @@ function JourneyContent() {
                       </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row gap-3 mt-6 animate-in slide-in-from-bottom-2 duration-700">
-                      <div className="flex-1 h-20 bg-white rounded-3xl flex items-center px-5 gap-4 shadow-2xl border-none">
-                        <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-                          <ShieldAlert className="h-6 w-6" />
+                    <div className="flex flex-row gap-3 mt-6 animate-in slide-in-from-bottom-2 duration-700 items-stretch">
+                      <div className="flex-1 min-w-0 h-20 bg-white rounded-3xl flex items-center px-4 gap-3 shadow-2xl border-none">
+                        <div className="h-10 w-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                          <ShieldAlert className="h-5 w-5" />
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Emergency Protocol</p>
-                          <p className="text-sm font-black text-slate-900 truncate">Immediate SMS Broadcast</p>
+                          <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Safety Link</p>
+                          <p className="text-xs font-black text-slate-900 truncate uppercase">Emergency SMS</p>
                         </div>
 
                         <Button 
-                          className="h-12 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-600/20 transition-all active:scale-95"
+                          className="h-12 px-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-600/20 transition-all active:scale-95 shrink-0"
                           onClick={handleQuickSOS}
                         >
                           SEND SOS
                         </Button>
                       </div>
                       
-                      <div className="flex shrink-0">
+                      <div className="shrink-0">
                         <EmergencyContactsDialog />
                       </div>
                     </div>
