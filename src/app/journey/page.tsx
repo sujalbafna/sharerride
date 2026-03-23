@@ -643,27 +643,27 @@ function JourneyContent() {
                   </div>
                   
                   <div className="space-y-6">
-                    <div className="bg-white rounded-[2rem] p-8 space-y-8 shadow-sm text-foreground">
-                      <div className="relative space-y-12">
-                        <div className="absolute left-6 top-8 bottom-8 w-px bg-muted-foreground/20 border-dashed border-l" />
+                    <div className="bg-white rounded-[2rem] p-6 md:p-8 space-y-8 shadow-sm text-foreground">
+                      <div className="relative space-y-10 md:space-y-12">
+                        <div className="absolute left-5 top-8 bottom-8 w-px bg-muted-foreground/20 border-dashed border-l" />
                         
-                        <div className="flex items-start gap-6 relative z-10">
-                          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
-                            <MapPin className="h-6 w-6" />
+                        <div className="flex items-start gap-4 md:gap-6 relative z-10">
+                          <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
+                            <MapPin className="h-5 w-5 md:h-6 md:w-6" />
                           </div>
-                          <div className="min-w-0 overflow-hidden pt-1">
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Starting Point</p>
-                            <p className="font-black text-xl tracking-tight truncate">{activeJourney.startLocationDescription}</p>
+                          <div className="min-w-0 flex-1 pt-0.5">
+                            <p className="text-[9px] md:text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-0.5 md:mb-1">Starting Point</p>
+                            <p className="font-black text-lg md:text-xl tracking-tight leading-tight">{activeJourney.startLocationDescription}</p>
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-6 relative z-10">
-                          <div className="h-12 w-12 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
-                            <Navigation className="h-6 w-6" />
+                        <div className="flex items-start gap-4 md:gap-6 relative z-10">
+                          <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/5">
+                            <Navigation className="h-5 w-5 md:h-6 md:w-6" />
                           </div>
-                          <div className="min-w-0 overflow-hidden pt-1">
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Destination</p>
-                            <p className="font-black text-xl tracking-tight truncate">{activeJourney.endLocationDescription}</p>
+                          <div className="min-w-0 flex-1 pt-0.5">
+                            <p className="text-[9px] md:text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-0.5 md:mb-1">Destination</p>
+                            <p className="font-black text-lg md:text-xl tracking-tight leading-tight">{activeJourney.endLocationDescription}</p>
                           </div>
                         </div>
                       </div>

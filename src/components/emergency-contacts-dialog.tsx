@@ -79,10 +79,10 @@ export function EmergencyContactsDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
         <DialogHeader className="space-y-6">
-          <div className="h-16 w-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg">
-            <Phone className="h-8 w-8" />
-          </div>
-          <div className="space-y-2">
+          
+           
+         
+          <div className="space-y-1">
             <DialogTitle className="text-3xl font-black tracking-tighter text-foreground uppercase">SMS Contacts</DialogTitle>
             <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground pr-4">
               Configure up to 3 mobile numbers that will receive your live GPS coordinates when you trigger an SOS.
@@ -90,7 +90,7 @@ export function EmergencyContactsDialog() {
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 py-8">
+        <div className="space-y-3 py-3">
           <div className="space-y-5">
             {numbers.map((num, i) => (
               <div key={i} className="space-y-2">
