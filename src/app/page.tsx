@@ -165,11 +165,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-in fade-in duration-700">
-      <header className="h-24 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-4 w-full">
-          <SidebarTrigger />
-          <div className="flex items-center gap-4 flex-1">
-            <div className="h-14 w-14 relative shrink-0">
+      <header className="h-20 sm:h-24 border-b flex items-center justify-between px-4 sm:px-6 bg-card sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4 w-full min-w-0">
+          <SidebarTrigger className="shrink-0" />
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+            <div className="h-10 w-10 sm:h-14 sm:w-14 relative shrink-0">
               <Image 
                 src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
                 alt="MIT Logo" 
@@ -178,17 +178,18 @@ export default function Home() {
               />
             </div>
             <div className="flex flex-col min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground truncate">
+              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground truncate">
                 MIT Art, Design & Technology
               </p>
-              <h2 className="text-xl font-black tracking-tighter leading-tight truncate">
+              <h2 className="text-base sm:text-xl font-black tracking-tighter leading-tight truncate">
                 Welcome, {userName}
               </h2>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mt-0.5">
+                <span className="text-[7px] sm:text-[8px] font-bold text-primary uppercase tracking-widest">
                   ShareRide Portal
                 </span>
-                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+                <span className="hidden sm:inline text-[8px] text-muted-foreground opacity-50">•</span>
+                <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-widest truncate">
                   by Sujal Bafna
                 </span>
               </div>
