@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -90,16 +89,6 @@ export default function Home() {
 
   const { data: contacts } = useCollection(contactsQuery)
 
-  const pendingRequestsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "supportRequests"),
-      where("status", "==", "Pending")
-    )
-  }, [db, user])
-
-  const { data: pendingRequests } = useCollection(pendingRequestsQuery)
-
   const handleEndJourney = async () => {
     if (!db || !user || !activeJourney) return
     const journeyId = activeJourney.id
@@ -181,14 +170,13 @@ export default function Home() {
               <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground truncate">
                 MIT Art, Design & Technology
               </p>
-              <h2 className="text-base sm:text-xl font-black tracking-tighter leading-tight truncate">
+              <h2 className="text-sm sm:text-xl font-black tracking-tighter leading-tight truncate">
                 Welcome, {userName}
               </h2>
               <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 mt-0.5">
                 <span className="text-[7px] sm:text-[8px] font-bold text-primary uppercase tracking-widest">
                   ShareRide Portal
                 </span>
-                <span className="hidden sm:inline text-[8px] text-muted-foreground opacity-50">•</span>
                 <span className="text-[7px] sm:text-[8px] font-bold text-muted-foreground uppercase tracking-widest truncate">
                   by Sujal Bafna
                 </span>
