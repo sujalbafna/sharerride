@@ -20,6 +20,17 @@ University students and faculty often face heightened anxiety and security risks
 
 ---
 
+## 4. Proposed Solution & Innovation
+**ShareRide** is a specialized "Social-Safety" platform that transforms transit from a solo vulnerability into a shared, secure experience. 
+
+### Key Innovations:
+- **Trusted Circles**: A "Privacy-First" social graph where location is only visible to a user-defined inner circle during an active journey, preventing data exposure to the general public.
+- **AI-Powered Meeting Points**: Leverages Generative AI (Genkit) to analyze route coordinates and suggest optimal, safe rendezvous points based on proximate friends and lighting/safety scores.
+- **3-Way Verification Protocol**: A unique security handshake for the "Extended Network" feature. It ensures that if a friend's friend offers assistance, their identity is cryptographically validated by the rider, the assistant, and the mutual contact simultaneously.
+- **Zero-Latency SOS**: A single-tap protocol that bypasses traditional menu navigation to instantly broadcast GPS coordinates via system-level SMS, ensuring alerts reach guardians even in areas with poor data connectivity.
+
+---
+
 **Prepared for:** MIT ADT University Presentation  
 **Project:** ShareRide Safety Platform  
 **Developer:** Sujal Bafna
