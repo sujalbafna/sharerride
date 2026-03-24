@@ -290,9 +290,6 @@ export default function LoginPage() {
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center leading-tight">
             MIT Art, Design & Technology
           </h2>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
-            Supported By Crieya
-          </p>
         </div>
 
         <div className="flex flex-col items-center mb-6">
