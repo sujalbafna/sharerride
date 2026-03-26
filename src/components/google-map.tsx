@@ -1,7 +1,8 @@
+
 "use client"
 
-import React, { useMemo, useState, useEffect, useRef } from "react"
-import { AlertTriangle, Loader2, Navigation } from "lucide-react"
+import React, { useMemo, useState, useEffect, useRef, useCallback } from "react"
+import { AlertTriangle, Loader2, Navigation, GpsFixed } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
@@ -27,7 +28,6 @@ const containerStyle = {
 
 const LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 
-// Navigation-optimized map styles for better road visibility
 const navigationStyles = [
   {
     "featureType": "all",
@@ -81,6 +81,7 @@ export function GoogleMap({
 }: GoogleMapProps) {
   const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -88,7 +89,14 @@ export function GoogleMap({
     libraries: LIBRARIES
   });
 
-  // Stabilize waypoints using literals to avoid "google.maps is not a constructor" before loading
+  const onLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
   const mapWaypoints = useMemo(() => {
     return markers
       .filter(m => m.type === 'meeting')
@@ -161,6 +169,13 @@ export function GoogleMap({
     }
   };
 
+  const handleRecentre = () => {
+    if (map && lat && lng) {
+      map.panTo({ lat, lng });
+      map.setZoom(16);
+    }
+  };
+
   const center = useMemo(() => ({
     lat: lat || 18.5204,
     lng: lng || 73.8567
@@ -203,6 +218,8 @@ export function GoogleMap({
         mapContainerStyle={containerStyle}
         center={center}
         zoom={zoom}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
         options={{
           disableDefaultUI: !interactive,
           zoomControl: interactive,
@@ -277,7 +294,15 @@ export function GoogleMap({
       </GoogleMapBase>
 
       {interactive && (
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-end pointer-events-none">
+        <div className="absolute bottom-4 right-4 flex flex-col gap-3 pointer-events-none">
+          <Button 
+            size="icon" 
+            className="h-12 w-12 rounded-2xl bg-white text-primary shadow-xl pointer-events-auto hover:bg-slate-50 active:scale-95 transition-all border border-border/50"
+            onClick={handleRecentre}
+            title="Recentre Map"
+          >
+            <GpsFixed className="h-6 w-6" />
+          </Button>
           <Button 
             size="icon" 
             className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto hover:scale-105 active:scale-95 transition-all"
