@@ -256,7 +256,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="h-auto py-2" onClick={() => router.push("/profile")}>
               <Avatar className="h-8 w-8 rounded-lg border border-primary/20">
-                <AvatarImage src={user?.photoURL || ""} alt={currentUserDisplayName} />
+                <AvatarImage src={user?.photoURL || undefined} alt={currentUserDisplayName} />
                 <AvatarFallback className="rounded-lg bg-secondary text-primary font-black">
                   {currentUserDisplayName[0]?.toUpperCase() || <User className="h-4 w-4" />}
                 </AvatarFallback>

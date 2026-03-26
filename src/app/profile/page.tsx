@@ -181,7 +181,7 @@ export default function ProfilePage() {
         <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border">
           <div className="relative group cursor-pointer" onClick={handlePhotoClick}>
             <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl overflow-hidden transition-all group-hover:opacity-90">
-              <AvatarImage src={userData?.profileImageUrl || user?.photoURL || ""} className="object-cover" />
+              <AvatarImage src={userData?.profileImageUrl || user?.photoURL || undefined} className="object-cover" />
               <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
                 {displayName[0]}
               </AvatarFallback>

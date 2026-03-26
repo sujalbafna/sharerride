@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -225,7 +224,7 @@ export default function EditProfilePage() {
             <CardHeader className="pt-10 text-center space-y-2">
               <div className="relative mx-auto mb-4 group cursor-pointer" onClick={handlePhotoClick}>
                 <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-lg overflow-hidden transition-all group-hover:opacity-90">
-                  <AvatarImage src={userData?.profileImageUrl || user?.photoURL || ""} className="object-cover" />
+                  <AvatarImage src={userData?.profileImageUrl || user?.photoURL || undefined} className="object-cover" />
                   <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary uppercase">
                     {(firstName[0] || user?.displayName?.[0] || 'U')}
                   </AvatarFallback>
