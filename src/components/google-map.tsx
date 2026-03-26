@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react"
-import { AlertTriangle, Loader2, Navigation, GpsFixed } from "lucide-react"
+import { AlertTriangle, Loader2, Navigation, LocateFixed } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GoogleMap as GoogleMapBase, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
@@ -145,7 +145,7 @@ export function GoogleMap({
         setDirections(null);
       }
     });
-  }, [isLoaded, origin, destination, mapWaypoints]);
+  }, [isLoaded, origin, destination, mapWaypoints, onRouteInfo]);
 
   const handleExternalNavigation = () => {
     const meetingPoint = markers.find(m => m.type === 'meeting');
@@ -301,7 +301,7 @@ export function GoogleMap({
             onClick={handleRecentre}
             title="Recentre Map"
           >
-            <GpsFixed className="h-6 w-6" />
+            <LocateFixed className="h-6 w-6" />
           </Button>
           <Button 
             size="icon" 

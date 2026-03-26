@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from "react"
@@ -27,7 +28,7 @@ import {
   AlertTriangle,
   ShieldAlert,
   Settings2,
-  GpsFixed,
+  LocateFixed,
   UserPlus,
   X
 } from "lucide-react"
