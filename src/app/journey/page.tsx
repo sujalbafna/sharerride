@@ -420,16 +420,21 @@ function JourneyContent() {
 
   const navigationOrigin = useMemo(() => {
     if (activeJourney?.status === 'InProgress') {
-      if (isRider) return userLocation || activeJourney.startLocationDescription;
-      if (activeJourney.currentLat && activeJourney.currentLng) {
+      // For the rider, use their local live GPS. 
+      // For the friend, use the live GPS synced from Firebase.
+      if (isRider) {
+        return userLocation || activeJourney.startLocationDescription;
+      } else if (activeJourney.currentLat && activeJourney.currentLng) {
         return { lat: activeJourney.currentLat, lng: activeJourney.currentLng };
       }
     }
+    
+    // Fallback if not started or coordinates not available
     if (activeJourney?.startLatitude && activeJourney?.startLongitude) {
       return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
     }
     return activeJourney?.startLocationDescription;
-  }, [activeJourney?.status, isRider, userLocation, activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.startLocationDescription]);
+  }, [activeJourney?.status, isRider, userLocation, activeJourney?.currentLat, activeJourney?.currentLng, activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.startLocationDescription]);
 
   const mapMarkers = useMemo(() => {
     const markers = [];
