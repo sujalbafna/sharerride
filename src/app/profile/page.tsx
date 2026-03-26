@@ -128,14 +128,6 @@ export default function ProfilePage() {
           <SidebarTrigger className="md:hidden" />
           <h2 className="text-xl font-bold tracking-tight">Security Hub</h2>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full"
-          onClick={() => router.push("/settings")}
-        >
-          <Settings className="h-5 w-5" />
-        </Button>
       </header>
 
       <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8">
@@ -287,7 +279,6 @@ export default function ProfilePage() {
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferences</h3>
           <div className="bg-card rounded-[2rem] border border-border overflow-hidden divide-y divide-border">
             {[
-              { label: "Settings", icon: Settings, href: "/settings" },
               { label: "Help & Support", icon: HelpCircle, href: "/support" }
             ].map((item) => (
               <button 
