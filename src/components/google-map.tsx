@@ -82,6 +82,8 @@ export function GoogleMap({
   const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [internalZoom, setInternalZoom] = useState(zoom);
+  const [isFollowing, setIsFollowing] = useState(true);
   
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -170,10 +172,25 @@ export function GoogleMap({
   };
 
   const handleRecentre = () => {
+    setIsFollowing(true);
     if (map && lat && lng) {
       map.panTo({ lat, lng });
       map.setZoom(16);
+      setInternalZoom(16);
     }
+  };
+
+  const onZoomChanged = () => {
+    if (map) {
+      const newZoom = map.getZoom();
+      if (newZoom !== undefined) {
+        setInternalZoom(newZoom);
+      }
+    }
+  };
+
+  const onDragStart = () => {
+    setIsFollowing(false);
   };
 
   const center = useMemo(() => ({
@@ -216,10 +233,12 @@ export function GoogleMap({
     <div className={cn("relative rounded-[2rem] overflow-hidden border-4 border-card shadow-2xl group", className)}>
       <GoogleMapBase
         mapContainerStyle={containerStyle}
-        center={center}
-        zoom={zoom}
+        center={isFollowing ? center : undefined}
+        zoom={internalZoom}
         onLoad={onLoad}
         onUnmount={onUnmount}
+        onZoomChanged={onZoomChanged}
+        onDragStart={onDragStart}
         options={{
           disableDefaultUI: !interactive,
           zoomControl: interactive,
@@ -234,6 +253,7 @@ export function GoogleMap({
             options={{
               directions: directions,
               suppressMarkers: true,
+              preserveViewport: true,
               polylineOptions: {
                 strokeColor: "#2280B3",
                 strokeWeight: 8,
@@ -297,7 +317,10 @@ export function GoogleMap({
         <div className="absolute bottom-4 right-4 flex flex-col gap-3 pointer-events-none">
           <Button 
             size="icon" 
-            className="h-12 w-12 rounded-2xl bg-white text-primary shadow-xl pointer-events-auto hover:bg-slate-50 active:scale-95 transition-all border border-border/50"
+            className={cn(
+              "h-12 w-12 rounded-2xl shadow-xl pointer-events-auto transition-all border border-border/50",
+              isFollowing ? "bg-primary text-white" : "bg-white text-primary hover:bg-slate-50"
+            )}
             onClick={handleRecentre}
             title="Recentre Map"
           >
@@ -305,7 +328,7 @@ export function GoogleMap({
           </Button>
           <Button 
             size="icon" 
-            className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto hover:scale-105 active:scale-95 transition-all"
+            className="h-12 w-12 rounded-2xl shadow-xl shadow-primary/30 pointer-events-auto hover:scale-105 active:scale-95 transition-all bg-primary text-white"
             onClick={handleExternalNavigation}
             title="Open in Google Maps"
           >
