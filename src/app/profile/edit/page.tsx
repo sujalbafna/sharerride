@@ -21,7 +21,8 @@ import {
   Loader2, 
   ShieldCheck,
   MapPin,
-  Camera
+  Camera,
+  X
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -94,6 +95,31 @@ export default function EditProfilePage() {
     } catch (error: any) {
       console.error(error)
       toast({ variant: "destructive", title: "Upload Failed", description: "Could not save photo to storage." })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleRemovePhoto = async () => {
+    if (!db || !user) return
+
+    setIsUploading(true)
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        profileImageUrl: "",
+        updatedAt: new Date().toISOString()
+      })
+
+      await setDoc(doc(db, "publicProfiles", user.uid), {
+        photoURL: ""
+      }, { merge: true })
+
+      await updateProfile(user, { photoURL: "" })
+
+      toast({ title: "Photo Removed", description: "Your profile picture has been removed." })
+    } catch (error: any) {
+      console.error(error)
+      toast({ variant: "destructive", title: "Error", description: "Could not remove photo." })
     } finally {
       setIsUploading(false)
     }
@@ -220,6 +246,34 @@ export default function EditProfilePage() {
                   onChange={handleFileChange}
                 />
               </div>
+
+              <div className="flex flex-wrap justify-center gap-2 pb-4">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest border-primary/20 text-primary"
+                  onClick={handlePhotoClick}
+                  disabled={isUploading}
+                >
+                  <Camera className="h-3.5 w-3.5 mr-1.5" />
+                  Add Profile Photo
+                </Button>
+                {(userData?.profileImageUrl || user?.photoURL) && (
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest text-destructive hover:bg-destructive/5"
+                    onClick={handleRemovePhoto}
+                    disabled={isUploading}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1.5" />
+                    Remove Profile Photo
+                  </Button>
+                )}
+              </div>
+
               <CardTitle className="text-2xl font-black">Personal Information</CardTitle>
               <CardDescription>Update your contact details for your trusted network.</CardDescription>
             </CardHeader>
