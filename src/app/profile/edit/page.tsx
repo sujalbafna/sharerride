@@ -1,14 +1,16 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
-import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
+import { useState, useEffect, useRef } from "react"
+import { useFirestore, useUser, useDoc, useMemoFirebase, useStorage } from "@/firebase"
 import { doc, updateDoc, setDoc } from "firebase/firestore"
-import { updateEmail, updatePassword } from "firebase/auth"
+import { updateEmail, updatePassword, updateProfile } from "firebase/auth"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
   User, 
   Mail, 
@@ -18,7 +20,8 @@ import {
   ArrowLeft, 
   Loader2, 
   ShieldCheck,
-  MapPin
+  MapPin,
+  Camera
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -26,8 +29,10 @@ import { useToast } from "@/hooks/use-toast"
 export default function EditProfilePage() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
+  const storage = useStorage()
   const router = useRouter()
   const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -43,6 +48,7 @@ export default function EditProfilePage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (userData) {
@@ -53,6 +59,45 @@ export default function EditProfilePage() {
       setAddress(userData.address || "")
     }
   }, [userData])
+
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !storage || !user || !db) return
+
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: "destructive", title: "Invalid File", description: "Please select an image file." })
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const storageRef = ref(storage, `profilePhotos/${user.uid}`)
+      await uploadBytes(storageRef, file)
+      const downloadURL = await getDownloadURL(storageRef)
+
+      await updateDoc(doc(db, "users", user.uid), {
+        profileImageUrl: downloadURL,
+        updatedAt: new Date().toISOString()
+      })
+
+      await setDoc(doc(db, "publicProfiles", user.uid), {
+        photoURL: downloadURL
+      }, { merge: true })
+
+      await updateProfile(user, { photoURL: downloadURL })
+
+      toast({ title: "Photo Updated", description: "Your profile picture has been changed." })
+    } catch (error: any) {
+      console.error(error)
+      toast({ variant: "destructive", title: "Upload Failed", description: "Could not save photo to storage." })
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,7 +125,6 @@ export default function EditProfilePage() {
       
       await updateDoc(doc(db, "users", user.uid), updateData)
 
-      // Also update public profile
       await setDoc(doc(db, "publicProfiles", user.uid), {
         displayName: `${firstName} ${lastName}`,
         email: email,
@@ -153,8 +197,28 @@ export default function EditProfilePage() {
         <form onSubmit={handleSave}>
           <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
             <CardHeader className="pt-10 text-center space-y-2">
-              <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-2">
-                <User className="h-8 w-8" />
+              <div className="relative mx-auto mb-4 group cursor-pointer" onClick={handlePhotoClick}>
+                <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-lg overflow-hidden transition-all group-hover:opacity-90">
+                  <AvatarImage src={userData?.profileImageUrl || user?.photoURL || ""} className="object-cover" />
+                  <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary uppercase">
+                    {(firstName[0] || user?.displayName?.[0] || 'U')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+                {isUploading && (
+                  <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center z-10">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                )}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleFileChange}
+                />
               </div>
               <CardTitle className="text-2xl font-black">Personal Information</CardTitle>
               <CardDescription>Update your contact details for your trusted network.</CardDescription>
@@ -276,7 +340,7 @@ export default function EditProfilePage() {
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
-                disabled={isSaving}
+                disabled={isSaving || isUploading}
               >
                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
                 SAVE CHANGES
