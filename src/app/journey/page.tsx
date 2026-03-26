@@ -390,19 +390,23 @@ function JourneyContent() {
   }
 
   const handleSaveMeetingPoint = async () => {
-    if (!db || !activeJourney || !meetingPointInput.trim()) return
+    if (!db || !activeJourney || !meetingPointInput.trim() || !user) return
     setIsUpdatingMeetingPoint(true)
-    const riderId = riderIdParam || user?.uid
+    const riderId = riderIdParam || user.uid
     if (!riderId) return
 
     const journeyRef = doc(db, "users", riderId, "journeys", activeJourney.id)
     try {
+      // Use friend's UID as key to support multiple individual meeting points
       await updateDoc(journeyRef, {
-        meetingPoint: meetingPointInput.trim(),
-        meetingPointLat: meetingPointCoords?.lat || null,
-        meetingPointLng: meetingPointCoords?.lng || null
+        [`meetingPoints.${user.uid}`]: {
+          address: meetingPointInput.trim(),
+          lat: meetingPointCoords?.lat || null,
+          lng: meetingPointCoords?.lng || null,
+          userName: userName
+        }
       })
-      toast({ title: "Meeting Point Set", description: "The rider has been notified of the rendezvous location." })
+      toast({ title: "Meeting Point Set", description: "The rider has been notified of your rendezvous location." })
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to update meeting point." })
     } finally {
@@ -420,8 +424,6 @@ function JourneyContent() {
 
   const navigationOrigin = useMemo(() => {
     if (activeJourney?.status === 'InProgress') {
-      // For the rider, use their local live GPS. 
-      // For the friend, use the live GPS synced from Firebase.
       if (isRider) {
         return userLocation || activeJourney.startLocationDescription;
       } else if (activeJourney.currentLat && activeJourney.currentLng) {
@@ -429,7 +431,6 @@ function JourneyContent() {
       }
     }
     
-    // Fallback if not started or coordinates not available
     if (activeJourney?.startLatitude && activeJourney?.startLongitude) {
       return { lat: activeJourney.startLatitude, lng: activeJourney.startLongitude };
     }
@@ -448,11 +449,16 @@ function JourneyContent() {
         });
       }
       
-      if (activeJourney.meetingPointLat && activeJourney.meetingPointLng) {
-        markers.push({
-          lat: activeJourney.meetingPointLat,
-          lng: activeJourney.meetingPointLng,
-          type: 'meeting' as const
+      // Render all individual meeting points from all participants
+      if (activeJourney.meetingPoints) {
+        Object.values(activeJourney.meetingPoints).forEach((mp: any) => {
+          if (mp.lat && mp.lng) {
+            markers.push({
+              lat: mp.lat,
+              lng: mp.lng,
+              type: 'meeting' as const
+            });
+          }
         });
       }
 
@@ -466,7 +472,7 @@ function JourneyContent() {
     }
     
     return markers;
-  }, [activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.meetingPointLat, activeJourney?.meetingPointLng, activeJourney?.endLatitude, activeJourney?.endLongitude]);
+  }, [activeJourney?.startLatitude, activeJourney?.startLongitude, activeJourney?.meetingPoints, activeJourney?.endLatitude, activeJourney?.endLongitude]);
 
   const trackingLat = !isRider && activeJourney?.currentLat ? activeJourney.currentLat : userLocation?.lat
   const trackingLng = !isRider && activeJourney?.currentLng ? activeJourney.currentLng : userLocation?.lng
@@ -716,29 +722,33 @@ function JourneyContent() {
                           <div className="flex items-center justify-between">
                             <h4 className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
                               <Handshake className="h-4 w-4" />
-                              Meeting Point
+                              Meeting Points
                             </h4>
                           </div>
 
                           <div className="space-y-4">
-                            {activeJourney.meetingPoint ? (
-                              <div className="p-4 bg-accent/20 rounded-2xl border border-accent/30 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Confirmed Location</p>
-                                  <Badge className="bg-accent text-primary text-[8px] font-black">ON MAP</Badge>
-                                </div>
-                                <p className="text-sm font-black text-white">{activeJourney.meetingPoint}</p>
+                            {activeJourney.meetingPoints && Object.keys(activeJourney.meetingPoints).length > 0 ? (
+                              <div className="space-y-2">
+                                {Object.entries(activeJourney.meetingPoints).map(([friendId, data]: [string, any]) => (
+                                  <div key={friendId} className="p-4 bg-accent/20 rounded-2xl border border-accent/30 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-[10px] font-black uppercase text-accent tracking-widest">{data.userName || 'Friend'}'s Stop</p>
+                                      <Badge className="bg-accent text-primary text-[8px] font-black">CONFIRMED</Badge>
+                                    </div>
+                                    <p className="text-sm font-black text-white">{data.address}</p>
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 italic text-xs opacity-60">
-                                No meeting point has been set for this journey.
+                                No rendezvous locations set yet.
                               </div>
                             )}
 
                             {!isRider && (
                               <div className="pt-2 space-y-3">
                                 <div className="space-y-1.5">
-                                  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest ml-1">Propose Rendezvous</p>
+                                  <p className="text-[10px] font-black uppercase text-white/60 tracking-widest ml-1">Propose Your Meeting Stop</p>
                                   <div className="relative group">
                                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 z-10" />
                                     {isLoaded ? (
@@ -748,7 +758,7 @@ function JourneyContent() {
                                         fields={['formatted_address', 'geometry', 'name']}
                                       >
                                         <Input 
-                                          placeholder="Enter meeting location..." 
+                                          placeholder="Where should we meet?" 
                                           className="h-12 pl-10 bg-white/10 border-none rounded-xl text-white placeholder:text-white/30 focus-visible:ring-accent/50"
                                           value={meetingPointInput}
                                           onChange={(e) => setMeetingPointInput(e.target.value)}
@@ -765,7 +775,7 @@ function JourneyContent() {
                                   disabled={isUpdatingMeetingPoint || !meetingPointInput.trim()}
                                 >
                                   {isUpdatingMeetingPoint ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                                  SET MEETING POINT
+                                  SAVE MY MEETING POINT
                                 </Button>
                               </div>
                             )}
@@ -856,7 +866,7 @@ function JourneyContent() {
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight text-foreground">
                 Ready for your next safe travel?
               </h1>
-              <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed max-w-xl">
+              <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed max-xl">
                 ShareRide provides virtual companionship and real-time tracking for every step of your journey.
               </p>
               <div className="pt-4">

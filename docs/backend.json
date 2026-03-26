@@ -132,9 +132,19 @@
         "joinedUserIds": { "type": "array", "items": { "type": "string" } },
         "vehicleName": { "type": "string" },
         "acStatus": { "type": "string", "enum": ["AC", "Non-AC"] },
-        "meetingPoint": { "type": "string", "description": "Specific meeting point set by companions." },
-        "meetingPointLat": { "type": "number" },
-        "meetingPointLng": { "type": "number" },
+        "meetingPoints": {
+          "type": "object",
+          "description": "Map of participant userId to their specific meeting point data.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "address": { "type": "string" },
+              "lat": { "type": "number" },
+              "lng": { "type": "number" },
+              "userName": { "type": "string" }
+            }
+          }
+        },
         "currentLat": { "type": "number" },
         "currentLng": { "type": "number" },
         "lastLocationUpdate": { "type": "string", "format": "date-time" }
