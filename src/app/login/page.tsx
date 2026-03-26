@@ -365,6 +365,7 @@ export default function LoginPage() {
                 <CardHeader className="pt-8 text-center">
                   <CardTitle className="text-2xl font-black">Join Network</CardTitle>
                   <CardDescription>Start your first safe journey today.</CardDescription>
+                  <p className="text-[10px] font-black text-destructive uppercase tracking-widest mt-1">Fill All Details</p>
                 </CardHeader>
                 <CardContent className="space-y-4 max-h-[450px] overflow-y-auto px-6 custom-scrollbar pb-6">
                   <div className="space-y-2">
@@ -469,24 +470,24 @@ export default function LoginPage() {
                   )}
 
                   <div className="space-y-2">
-                    <Label>Address</Label>
+                    <Label htmlFor="address-reg">Address</Label>
                     <div className="relative group">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input placeholder="Your Address" className="pl-10 h-12 rounded-xl" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                      <Input id="address-reg" placeholder="Your Address" className="pl-10 h-12 rounded-xl" value={address} onChange={(e) => setAddress(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Password</Label>
+                    <Label htmlFor="password-reg">Password</Label>
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
+                      <Input id="password-reg" type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Confirm Password</Label>
+                    <Label htmlFor="confirm-password-reg">Confirm Password</Label>
                     <div className="relative group">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
-                      <Input type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                      <Input id="confirm-password-reg" type="password" placeholder="••••••••" className="pl-10 h-12 rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </div>
                   </div>
                 </CardContent>
