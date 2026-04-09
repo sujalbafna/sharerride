@@ -1,7 +1,12 @@
 # Presentation Details: Problem Statement & Validation
 
-## 1. Problem Statement (50-60 Words)
-University students and faculty often face heightened anxiety and security risks during late-night or solo transits between campus and residences. Generic navigation tools focus on efficiency rather than safety, leaving university members without immediate communal support or real-time monitoring by trusted peers, thereby increasing vulnerability during high-stress situations or in unfamiliar transit environments.
+## 1. Problem Statement (Detailed)
+University students and faculty often face heightened anxiety and security risks during late-night or solo transits between campus and residences. Generic navigation tools focus on **Pathfinding Efficiency** rather than **Personal Safety**, leaving university members without immediate communal support or real-time monitoring by trusted peers. 
+
+ShareRide specifically solves:
+1. **The Anxiety Gap**: The psychological stress of traveling alone in low-light environments.
+2. **The Latency Gap**: The time-consuming nature of manual emergency alerts.
+3. **The Isolation Factor**: The lack of a verified, community-restricted safety network.
 
 ---
 
@@ -26,7 +31,7 @@ University students and faculty often face heightened anxiety and security risks
 ### Key Innovations:
 - **Trusted Circles**: A "Privacy-First" social graph where location is only visible to a user-defined inner circle during an active journey, preventing data exposure to the general public.
 - **AI-Powered Meeting Points**: Leverages Generative AI (Genkit) to analyze route coordinates and suggest optimal, safe rendezvous points based on proximate friends and lighting/safety scores.
-- **3-Way Verification Protocol**: A unique security handshake for the "Extended Network" feature. It ensures that if a friend's friend offers assistance, their identity is cryptographically validated by the rider, the assistant, and the mutual contact simultaneously.
+- **Shrinking Blue Line Navigation**: A professional-grade UI where the route recalculates from the rider's *current live position*, providing companions with precise tracking.
 - **Zero-Latency SOS**: A single-tap protocol that bypasses traditional menu navigation to instantly broadcast GPS coordinates via system-level SMS, ensuring alerts reach guardians even in areas with poor data connectivity.
 
 ---
