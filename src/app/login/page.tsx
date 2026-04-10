@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { 
-  onAuthStateChanged, 
   updateProfile, 
   RecaptchaVerifier, 
   signInWithPhoneNumber, 
@@ -26,13 +25,6 @@ import {
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 function LoginContent() {
   const { user, isUserLoading } = useUser()
@@ -59,7 +51,6 @@ function LoginContent() {
   const [address, setAddress] = useState("")
   const [regPassword, setRegPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [role, setRole] = useState<"student" | "faculty">("student")
 
   // OTP State
   const [otp, setOtp] = useState("")
@@ -187,7 +178,7 @@ function LoginContent() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !role || !address) {
+    if (!fullName || !regEmail || !mobileNumber || !regPassword || !confirmPassword || !address) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill in all registration fields." })
       return
     }
@@ -227,7 +218,7 @@ function LoginContent() {
         email: regEmail,
         phoneNumber: mobileNumber,
         address: address,
-        role: role,
+        role: "user",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         emergencySmsNumbers: []
@@ -240,7 +231,7 @@ function LoginContent() {
         photoURL: "",
         phoneNumber: mobileNumber,
         address: address,
-        role: role
+        role: "user"
       };
 
       await setDoc(userRef, userData, { merge: true });
@@ -374,18 +365,6 @@ function LoginContent() {
                   <p className="text-[10px] font-black text-destructive uppercase tracking-widest mt-1">Fill All Details</p>
                 </CardHeader>
                 <CardContent className="space-y-4 max-h-[450px] overflow-y-auto px-6 custom-scrollbar pb-6">
-                  <div className="space-y-2">
-                    <Label>Role</Label>
-                    <Select value={role} onValueChange={(val: any) => setRole(val)}>
-                      <SelectTrigger className="h-12 rounded-xl bg-card border">
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="faculty">Faculty</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                   <div className="space-y-2">
                     <Label>Full Name</Label>
                     <div className="relative group">

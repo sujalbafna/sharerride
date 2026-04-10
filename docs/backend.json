@@ -39,8 +39,7 @@
         },
         "role": {
           "type": "string",
-          "enum": ["student", "faculty"],
-          "description": "The college role of the user."
+          "description": "The role of the user (standardized to 'user')."
         },
         "createdAt": {
           "type": "string",
@@ -76,7 +75,7 @@
         "photoURL": { "type": "string" },
         "phoneNumber": { "type": "string" },
         "address": { "type": "string" },
-        "role": { "type": "string", "enum": ["student", "faculty"] }
+        "role": { "type": "string" }
       },
       "required": ["userId", "displayName", "email", "role"]
     },
@@ -88,7 +87,7 @@
       "properties": {
         "senderId": { "type": "string" },
         "content": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "timestamp": { "type": "string", format: "date-time" }
       },
       "required": ["senderId", "content", "timestamp"]
     },

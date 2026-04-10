@@ -22,8 +22,7 @@ import {
   Send,
   Mail,
   MapPin,
-  ShieldCheck,
-  GraduationCap
+  ShieldCheck
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -195,16 +194,14 @@ export default function ContactsPage() {
 
   const handleViewProfile = async (contact: any) => {
     if (!db) return
-    // Fetch latest public profile for more details
     try {
       const snap = await getDocs(query(collection(db, "publicProfiles"), where("userId", "==", contact.appUserId || contact.id)))
       if (!snap.empty) {
         setSelectedProfile(snap.docs[0].data())
       } else {
-        // Fallback to basic contact data if profile not found
         setSelectedProfile({
           displayName: contact.contactName,
-          role: contact.relationshipToUser,
+          role: "user",
           phoneNumber: contact.contactPhoneNumber
         })
       }
@@ -254,7 +251,7 @@ export default function ContactsPage() {
           {searchResults.length > 0 && (
             <div className="grid gap-3 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
               {searchResults.map((u) => (
-                <Card className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
+                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div 
                       className="flex items-center gap-4 cursor-pointer flex-1 group"
@@ -265,7 +262,6 @@ export default function ContactsPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
-                        <p className="text-[10px] text-muted-foreground truncate font-bold uppercase">{u.role}</p>
                       </div>
                     </div>
                     <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 px-4 h-10 border-primary/20 text-primary hover:bg-primary/5">
@@ -309,38 +305,6 @@ export default function ContactsPage() {
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {outgoingRequests && outgoingRequests.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
-              <Send className="h-4 w-4" />
-              Sent Requests (Awaiting Approval)
-            </div>
-            <div className="grid gap-4">
-              {outgoingRequests.map((req) => (
-                <Card key={req.id} className="rounded-2xl border-none shadow-sm bg-card border border-dashed">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-black text-xl">
-                        {req.targetName?.[0] || "?"}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-black text-sm truncate uppercase tracking-tight">{req.targetName}</p>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest italic">Awaiting Response</p>
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="rounded-xl px-3 font-black text-[9px] uppercase tracking-widest opacity-60">
-                      PENDING
-                    </Badge>
                   </CardContent>
                 </Card>
               ))}
@@ -433,9 +397,6 @@ export default function ContactsPage() {
                   {selectedProfile?.displayName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full uppercase text-[9px] font-black tracking-widest shadow-lg">
-                {selectedProfile?.role || "Friend"}
-              </Badge>
             </div>
             <div className="space-y-1">
               <DialogTitle className="text-2xl font-black tracking-tight">{selectedProfile?.displayName}</DialogTitle>
@@ -458,16 +419,6 @@ export default function ContactsPage() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Institutional Identity</p>
-                  <p className="text-sm font-bold truncate capitalize">{selectedProfile?.role} at MIT Art, Design & Tech</p>
-                </div>
-              </div>
-
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground" />

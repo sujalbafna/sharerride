@@ -3,32 +3,16 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   Home, 
   LogOut,
   User,
   Search,
   UserPlus,
-  X,
   Loader2,
-  Bell,
   Car,
-  CheckCircle2,
-  Check,
-  MapPin,
-  Navigation,
-  Clock,
-  Wind,
-  ShieldCheck,
-  Mail,
-  Phone,
-  Info,
-  Milestone,
-  Eye,
   Activity,
-  IndianRupee,
-  Gift,
   Users
 } from "lucide-react"
 
@@ -51,9 +35,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc, setDoc, updateDoc, increment, arrayUnion, orderBy } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
-import { format } from "date-fns"
 
 const items = [
   { title: "Home Dashboard", url: "/dashboard", icon: Home },
@@ -126,8 +109,6 @@ export function AppSidebar() {
     }
     return user?.displayName || user?.email?.split('@')[0] || "User"
   }, [currentUserDoc, user])
-
-  const currentUserRole = currentUserDoc?.role || "student"
 
   const sendRequest = async (targetUser: any) => {
     if (!db || !user) return
@@ -265,9 +246,6 @@ export function AppSidebar() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
                 <span className="truncate font-black text-sidebar-foreground">{currentUserDisplayName}</span>
-                <Badge variant="outline" className="w-fit text-[8px] h-4 uppercase mt-0.5 border-primary/20 text-primary font-bold">
-                  {currentUserRole}
-                </Badge>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

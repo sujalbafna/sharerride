@@ -1,22 +1,19 @@
+
 "use client"
 
 import { useState, useMemo, useRef } from "react"
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth, useStorage } from "@/firebase"
 import { doc, collection, query, where, deleteDoc, updateDoc, setDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { 
-  User, 
   Mail, 
   Phone, 
   Users, 
-  Bell, 
-  Settings, 
-  HelpCircle, 
   LogOut, 
   Edit2, 
   ChevronRight,
@@ -25,9 +22,9 @@ import {
   UserMinus,
   Search,
   X,
-  GraduationCap,
   MapPin,
-  Camera
+  Camera,
+  HelpCircle
 } from "lucide-react"
 import { signOut, updateProfile } from "firebase/auth"
 import { useRouter } from "next/navigation"
@@ -119,7 +116,6 @@ export default function ProfilePage() {
     const file = e.target.files?.[0]
     if (!file || !storage || !user || !db) return
 
-    // Basic validation
     if (!file.type.startsWith('image/')) {
       toast({ variant: "destructive", title: "Invalid File", description: "Please select an image file." })
       return
@@ -131,18 +127,15 @@ export default function ProfilePage() {
       await uploadBytes(storageRef, file)
       const downloadURL = await getDownloadURL(storageRef)
 
-      // Update Firestore Private User Doc
       await updateDoc(doc(db, "users", user.uid), {
         profileImageUrl: downloadURL,
         updatedAt: new Date().toISOString()
       })
 
-      // Update Firestore Public Profile
       await setDoc(doc(db, "publicProfiles", user.uid), {
         photoURL: downloadURL
       }, { merge: true })
 
-      // Update Firebase Auth Profile
       await updateProfile(user, { photoURL: downloadURL })
 
       toast({ title: "Profile Updated", description: "Your new profile photo has been saved." })
@@ -165,8 +158,6 @@ export default function ProfilePage() {
   const displayName = userData?.firstName && userData?.lastName 
     ? `${userData.firstName} ${userData.lastName}`
     : user?.displayName || "User"
-
-  const userRole = userData?.role || "student"
 
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -204,10 +195,6 @@ export default function ProfilePage() {
               accept="image/*" 
               onChange={handleFileChange}
             />
-
-            <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full uppercase text-[10px] font-black tracking-widest shadow-lg">
-              {userRole}
-            </Badge>
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-4">

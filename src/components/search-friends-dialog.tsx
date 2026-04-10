@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -14,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, UserPlus, Loader2, User, Mail, MapPin, Phone, ShieldCheck, GraduationCap } from "lucide-react"
+import { Search, UserPlus, Loader2, User, Mail, MapPin, ShieldCheck } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -115,7 +116,6 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
                       </div>
                       <div className="min-w-0">
                         <p className="font-bold text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
-                        <p className="text-[10px] text-muted-foreground truncate font-bold uppercase">{u.role}</p>
                       </div>
                     </div>
                     <Button size="sm" variant="ghost" onClick={() => sendRequest(u)} className="rounded-xl font-black text-[10px] uppercase text-primary hover:bg-primary/10 transition-all active:scale-95 shrink-0">
@@ -146,9 +146,6 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
                   {selectedUser?.displayName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full uppercase text-[9px] font-black tracking-widest shadow-lg">
-                {selectedUser?.role}
-              </Badge>
             </div>
             <div className="space-y-1">
               <DialogTitle className="text-2xl font-black tracking-tight">{selectedUser?.displayName}</DialogTitle>
@@ -171,16 +168,6 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Institution Role</p>
-                  <p className="text-sm font-bold truncate capitalize">{selectedUser?.role} at MIT ADT</p>
-                </div>
-              </div>
-
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
