@@ -173,17 +173,17 @@ export default function LandingPage() {
               { step: "04", title: "Track Live", desc: "Friends watch your 'blue line' shrink in real-time.", icon: Activity },
               { step: "05", title: "Arrive Safe", desc: "End your trip or use SOS if needed.", icon: CheckCircle2 },
             ].map((item, i) => (
-              <div key={i} className="relative space-y-6 group">
-                <div className="h-24 w-24 rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20">
+              <div key={i} className="relative space-y-6 group flex flex-col items-center text-center">
+                <div className="h-24 w-24 rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20 relative z-10">
                   <item.icon className="h-12 w-12" />
                 </div>
                 <div className="space-y-2">
-                  <span className="text-xs font-black text-accent tracking-[0.2em]">{item.step}</span>
+                  <span className="text-xs font-black text-primary tracking-[0.2em]">{item.step}</span>
                   <h4 className="text-xl font-black uppercase tracking-tight">{item.title}</h4>
-                  <p className="text-muted-foreground text-sm font-medium leading-relaxed">{item.desc}</p>
+                  <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-[180px]">{item.desc}</p>
                 </div>
                 {i < 4 && (
-                  <div className="hidden md:block absolute top-12 -right-4 w-8 h-px bg-border" />
+                  <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
                 )}
               </div>
             ))}
