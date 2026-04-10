@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft, ShieldCheck } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   updateProfile, 
@@ -36,6 +35,8 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
   
+  const logoUrl = "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png"
+
   // Tab State
   const initialTab = searchParams.get("tab") === "register" ? "register" : "login"
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -116,6 +117,7 @@ function LoginContent() {
         recaptchaVerifierRef.current = null;
       }
     } finally {
+      setIsPhoneVerified(false)
       setVerificationLoading(false)
     }
   }
@@ -287,8 +289,13 @@ function LoginContent() {
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700 pt-20 sm:pt-24">
         
         <div className="flex flex-col items-center mb-10">
-          <div className="h-20 w-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 shadow-xl backdrop-blur-md border border-white/20">
-            <ShieldCheck className="h-10 w-10 text-primary" />
+          <div className="h-24 w-24 relative mb-6">
+            <Image 
+              src={logoUrl} 
+              alt="ShareRide Logo" 
+              fill 
+              className="object-contain drop-shadow-xl" 
+            />
           </div>
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase text-primary drop-shadow-sm">SHARERIDE</h1>

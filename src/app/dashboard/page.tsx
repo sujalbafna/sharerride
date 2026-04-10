@@ -11,27 +11,13 @@ import {
   ArrowRight, 
   Activity, 
   Loader2, 
-  MessageSquare,
-  Users,
   Car,
-  CheckCircle2,
-  Check,
-  Filter,
   Navigation,
-  Wind,
-  Calendar,
-  Milestone,
-  Eye,
-  ShieldAlert,
   ShieldCheck,
-  UserPlus,
-  IndianRupee,
-  Gift,
-  Bell
+  UserPlus
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { useUser, useCollection, useMemoFirebase, useFirestore, useDoc } from "@/firebase"
 import { collection, query, orderBy, limit, where, addDoc, doc, updateDoc, getDocs } from "firebase/firestore"
 import { format } from "date-fns"
@@ -47,6 +33,7 @@ export default function Dashboard() {
   const db = useFirestore()
   const router = useRouter()
   const { toast } = useToast()
+  const logoUrl = "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png"
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -160,8 +147,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-3 sm:gap-4 w-full min-w-0">
           <SidebarTrigger className="shrink-0" />
           <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0 border border-primary/5 shadow-sm">
-              <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
+            <div className="h-12 w-12 sm:h-14 sm:w-14 relative shrink-0">
+              <Image src={logoUrl} alt="Logo" fill className="object-contain" />
             </div>
             <div className="flex flex-col min-w-0">
               <h2 className="text-sm sm:text-xl font-black tracking-tighter leading-tight truncate">

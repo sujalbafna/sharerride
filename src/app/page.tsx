@@ -8,11 +8,9 @@ import {
   MapPin, 
   Calendar, 
   Users, 
-  ShieldCheck, 
   Zap, 
   IndianRupee, 
   Navigation,
-  ChevronRight,
   ArrowRight,
   CheckCircle2,
   Car
@@ -27,6 +25,7 @@ export default function LandingPage() {
   const { user } = useUser()
 
   const heroBg = PlaceHolderImages.find(img => img.id === 'auth-bg')
+  const logoUrl = "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png"
 
   const handleSearchClick = () => {
     if (user) {
@@ -41,8 +40,13 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="h-20 flex items-center justify-between px-6 md:px-12 bg-white border-b sticky top-0 z-50">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/10 shadow-sm shrink-0">
-            <ShieldCheck className="h-6 w-6" />
+          <div className="h-12 w-12 relative shrink-0">
+            <Image 
+              src={logoUrl} 
+              alt="ShareRide Logo" 
+              fill 
+              className="object-contain"
+            />
           </div>
           <span className="font-black text-2xl tracking-tighter text-primary uppercase">SHARERIDE</span>
         </div>
@@ -139,8 +143,10 @@ export default function LandingPage() {
       {/* Features */}
       <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-12">
         <div className="space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-            <ShieldCheck className="h-8 w-8" />
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+            <div className="relative h-10 w-10">
+              <Image src={logoUrl} alt="Logo" fill className="object-contain" />
+            </div>
           </div>
           <h3 className="text-xl font-black uppercase tracking-tight">Your safety, our priority</h3>
           <p className="text-muted-foreground leading-relaxed font-medium">
@@ -200,8 +206,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
-                <ShieldCheck className="h-6 w-6" />
+              <div className="h-10 w-10 relative shrink-0">
+                <Image src={logoUrl} alt="Logo" fill className="object-contain" />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase text-primary">SHARERIDE</span>
             </div>

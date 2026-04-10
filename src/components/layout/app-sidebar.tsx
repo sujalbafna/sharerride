@@ -3,6 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { 
   Home, 
@@ -10,11 +11,9 @@ import {
   User,
   Search,
   UserPlus,
-  Loader2,
   Car,
   Activity,
-  Users,
-  ShieldCheck
+  Users
 } from "lucide-react"
 
 import {
@@ -33,7 +32,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
 import { collection, query, where, getDocs, limit, addDoc, doc } from "firebase/firestore"
@@ -53,6 +51,7 @@ export function AppSidebar() {
   const db = useFirestore()
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
+  const logoUrl = "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png"
 
   const [searchQuery, setSearchQuery] = React.useState("")
   const [searchResults, setSearchResults] = React.useState<any[]>([])
@@ -154,8 +153,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-20 flex flex-col items-center justify-center border-b bg-sidebar overflow-hidden">
         <div className="flex items-center gap-3 px-4 w-full cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary border border-primary/10 shadow-sm shrink-0">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="h-10 w-10 relative shrink-0">
+            <Image src={logoUrl} alt="Logo" fill className="object-contain" />
           </div>
           <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase text-sidebar-foreground">SHARERIDE</span>
         </div>
