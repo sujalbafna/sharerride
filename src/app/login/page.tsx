@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   updateProfile, 
@@ -237,7 +236,7 @@ function LoginContent() {
       await setDoc(userRef, userData, { merge: true });
       await setDoc(publicRef, publicData, { merge: true });
 
-      toast({ title: "Welcome!", description: "Account created successfully with MIT ADT ShareRide." });
+      toast({ title: "Welcome!", description: "Account created successfully with ShareRide." });
       setIsRegistering(false);
       router.push("/dashboard");
     } catch (error: any) {
@@ -275,21 +274,26 @@ function LoginContent() {
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
         
-        <div className="flex flex-col items-center mb-2 pt-2 animate-in fade-in slide-in-from-top-4 duration-1000 w-full">
-          <div className="h-20 w-20 relative mb-2" onClick={() => router.push("/")} style={{ cursor: 'pointer' }}>
+        <div className="w-full max-w-md flex justify-start mb-8">
+          <Button 
+            variant="ghost" 
+            className="rounded-full bg-white/20 backdrop-blur-md text-foreground font-black hover:bg-white/40 shadow-sm"
+            onClick={() => router.push("/")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            BACK TO HOME
+          </Button>
+        </div>
+
+        <div className="flex flex-col items-center mb-6">
+          <div className="h-20 w-20 relative mb-4">
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-              alt="MIT University Logo" 
+              alt="Logo" 
               fill 
               className="object-contain"
             />
           </div>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center leading-tight">
-            MIT Art, Design & Technology
-          </h2>
-        </div>
-
-        <div className="flex flex-col items-center mb-6">
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
             <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase text-primary">SHARERIDE</h1>
           </div>

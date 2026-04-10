@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -162,15 +161,12 @@ export default function Dashboard() {
             <div className="h-10 w-10 sm:h-14 sm:w-14 relative shrink-0">
               <Image 
                 src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-                alt="MIT Logo" 
+                alt="Logo" 
                 fill 
                 className="object-contain"
               />
             </div>
             <div className="flex flex-col min-w-0">
-              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground truncate">
-                MIT Art, Design & Technology
-              </p>
               <h2 className="text-sm sm:text-xl font-black tracking-tighter leading-tight truncate">
                 Welcome, {userName}
               </h2>

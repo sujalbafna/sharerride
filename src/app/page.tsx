@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -44,7 +43,7 @@ export default function LandingPage() {
           <div className="h-10 w-10 relative">
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-              alt="MIT Logo" 
+              alt="Logo" 
               fill 
               className="object-contain"
             />
@@ -111,7 +110,7 @@ export default function LandingPage() {
               Travel anywhere <br className="hidden md:block" /> <span className="text-primary">together.</span>
             </h1>
             <p className="text-lg md:text-xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
-              Your trusted safety companion for campus transit. Connecting students and faculty for secure, shared journeys.
+              Your trusted safety companion for campus transit. Connecting community members for secure, shared journeys.
             </p>
           </div>
 
@@ -158,7 +157,7 @@ export default function LandingPage() {
           </div>
           <h3 className="text-xl font-black uppercase tracking-tight">Travel everywhere together</h3>
           <p className="text-muted-foreground leading-relaxed font-medium">
-            Join a network of thousands of students and faculty members. Find a ride heading your way in seconds.
+            Join a network of thousands of community members. Find a ride heading your way in seconds.
           </p>
         </div>
         <div className="space-y-4">
@@ -167,7 +166,7 @@ export default function LandingPage() {
           </div>
           <h3 className="text-xl font-black uppercase tracking-tight">Prices like nowhere else</h3>
           <p className="text-muted-foreground leading-relaxed font-medium">
-            Split costs fairly or find free peer-to-peer transit options. Affordable campus travel for everyone.
+            Split costs fairly or find free peer-to-peer transit options. Affordable community travel for everyone.
           </p>
         </div>
       </section>
@@ -206,21 +205,21 @@ export default function LandingPage() {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 relative">
-                <Image src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" alt="MIT Logo" fill className="object-contain" />
+                <Image src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" alt="Logo" fill className="object-contain" />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase text-primary">SHARERIDE</span>
             </div>
             <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-              Official safety companion portal for MIT Art, Design & Technology University. Empowering secure campus transit.
+              Official safety companion portal empowering secure community transit.
             </p>
           </div>
           
           <div className="space-y-6">
             <h4 className="font-black text-xs uppercase tracking-widest text-foreground">Top carpool routes</h4>
             <ul className="space-y-3 text-sm font-bold text-muted-foreground">
-              <li className="hover:text-primary cursor-pointer transition-colors">Hostel to Main Library</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Campus to Metro Station</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Design Lab to ADT Plaza</li>
+              <li className="hover:text-primary cursor-pointer transition-colors">Residential to Main Library</li>
+              <li className="hover:text-primary cursor-pointer transition-colors">Complex to Metro Station</li>
+              <li className="hover:text-primary cursor-pointer transition-colors">Tech Hub to City Plaza</li>
             </ul>
           </div>
 
@@ -249,7 +248,7 @@ export default function LandingPage() {
         
         <div className="max-w-7xl mx-auto pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-            © 2025 MIT Art, Design & Technology. All rights reserved.
+            © 2025 ShareRide. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
              <CheckCircle2 className="h-5 w-5 text-primary" />
