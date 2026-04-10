@@ -286,10 +286,10 @@ function LoginContent() {
         </Button>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700 pt-20 sm:pt-24">
+      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700 pt-8 sm:pt-12">
         
-        <div className="flex flex-col items-center mb-10">
-          <div className="h-24 w-24 relative mb-6">
+        <div className="flex flex-col items-center mb-8">
+          <div className="h-32 w-32 md:h-40 md:w-40 relative mb-4">
             <Image 
               src={logoUrl} 
               alt="ShareRide Logo" 
