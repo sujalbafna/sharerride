@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -216,7 +217,7 @@ export default function ContactsPage() {
     <div className="min-h-screen bg-background pb-20 md:pb-12">
       <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => router.push("/")}>
+          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => router.push("/dashboard")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h2 className="text-xl font-bold tracking-tight">My Trusted Circle</h2>
@@ -253,7 +254,7 @@ export default function ContactsPage() {
           {searchResults.length > 0 && (
             <div className="grid gap-3 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
               {searchResults.map((u) => (
-                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
+                <Card className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div 
                       className="flex items-center gap-4 cursor-pointer flex-1 group"

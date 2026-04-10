@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -69,7 +70,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && !isUserLoading && !isRegistering && !isPhoneVerified) {
-      router.push("/")
+      router.push("/dashboard")
     }
   }, [user, isUserLoading, router, isRegistering, isPhoneVerified])
 
@@ -242,7 +243,7 @@ export default function LoginPage() {
 
       toast({ title: "Welcome!", description: "Account created successfully with MIT ADT ShareRide." });
       setIsRegistering(false);
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       console.error(error);
       toast({ variant: "destructive", title: "Sign Up Failed", description: error.message });
@@ -279,7 +280,7 @@ export default function LoginPage() {
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
         
         <div className="flex flex-col items-center mb-2 pt-2 animate-in fade-in slide-in-from-top-4 duration-1000 w-full">
-          <div className="h-20 w-20 relative mb-2">
+          <div className="h-20 w-20 relative mb-2" onClick={() => router.push("/")} style={{ cursor: 'pointer' }}>
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
               alt="MIT University Logo" 

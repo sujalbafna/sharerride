@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
@@ -117,7 +118,7 @@ function ChatContent() {
         </div>
         <h3 className="text-xl font-bold mb-2">No Active Chat</h3>
         <p className="text-muted-foreground text-sm text-center max-w-xs mb-6">Select a friend from your circle to start a secure conversation.</p>
-        <Button onClick={() => router.push("/")} className="rounded-xl px-8 font-bold">Return to Dashboard</Button>
+        <Button onClick={() => router.push("/dashboard")} className="rounded-xl px-8 font-bold">Return to Dashboard</Button>
       </div>
     )
   }
@@ -126,7 +127,7 @@ function ChatContent() {
     <div className="flex flex-col h-screen bg-background">
       <header className="h-20 border-b flex items-center justify-between px-6 bg-card shrink-0 z-10 shadow-sm">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")} className="rounded-full">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-4">
@@ -232,7 +233,7 @@ function ChatContent() {
         <div ref={scrollRef} />
       </main>
 
-      <footer className="p-6 border-t bg-card shrink-0 shadow-2xl">
+      <footer className="p-6 border-t bg-card shrink-0 shadow-2xl pb-24 md:pb-6">
         <form onSubmit={sendMessage} className="flex gap-3 max-w-5xl mx-auto">
           <Input 
             value={message}

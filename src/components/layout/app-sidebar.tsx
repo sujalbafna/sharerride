@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -55,7 +56,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 
 const items = [
-  { title: "Home Dashboard", url: "/", icon: Home },
+  { title: "Home Dashboard", url: "/dashboard", icon: Home },
   { title: "My Network", url: "/contacts", icon: Users },
   { title: "Live Journeys", url: "/journey", icon: Car },
 ]
@@ -164,12 +165,13 @@ export function AppSidebar() {
   }
 
   const isLoginPage = pathname === "/login"
-  if (!mounted || isLoginPage || (!isUserLoading && !user)) return null
+  const isLandingPage = pathname === "/"
+  if (!mounted || isLoginPage || isLandingPage || (!isUserLoading && !user)) return null
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-20 flex flex-col items-center justify-center border-b bg-sidebar overflow-hidden">
-        <div className="flex items-center gap-2 px-4 w-full">
+        <div className="flex items-center gap-2 px-4 w-full cursor-pointer" onClick={() => router.push("/")}>
           <span className="font-black text-lg tracking-tight group-data-[collapsible=icon]:hidden uppercase text-sidebar-foreground">SHARERIDE</span>
         </div>
         <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest group-data-[collapsible=icon]:hidden mt-1 px-4 w-full truncate text-center">

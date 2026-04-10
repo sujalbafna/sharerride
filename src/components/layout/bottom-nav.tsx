@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -9,7 +10,7 @@ import { collection, query, where } from "firebase/firestore"
 import { Badge } from "@/components/ui/badge"
 
 const navItems = [
-  { icon: Home, label: "Home", href: "/" },
+  { icon: Home, label: "Home", href: "/dashboard" },
   { icon: Compass, label: "Journeys", href: "/journey" },
   { icon: Bell, label: "Notifications", href: "/notifications", isNotification: true },
   { icon: Users, label: "Circle", href: "/contacts" },
@@ -32,7 +33,8 @@ export function BottomNav() {
   const { data: pendingRequests } = useCollection(pendingRequestsQuery)
 
   const isLoginPage = pathname === "/login"
-  if (isLoginPage || !user) return null
+  const isLandingPage = pathname === "/"
+  if (isLoginPage || isLandingPage || !user) return null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-safe md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">

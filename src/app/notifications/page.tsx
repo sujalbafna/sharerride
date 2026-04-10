@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from "@/firebase"
@@ -304,14 +305,14 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background pb-20 md:pb-12">
       <header className="h-20 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon" 
             className="rounded-full"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

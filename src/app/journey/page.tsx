@@ -493,15 +493,9 @@ function JourneyContent() {
     <div className="min-h-screen bg-background">
       <header className="h-16 border-b flex items-center justify-between px-6 bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          {riderIdParam ? (
-            <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          ) : (
-            <SidebarTrigger className="md:hidden">
-              <Menu className="h-6 w-6" />
-            </SidebarTrigger>
-          )}
+          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")} className="rounded-full">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h2 className="text-xl font-bold tracking-tight text-foreground">
             {riderIdParam ? "Live Friend Tracking" : "Journeys"}
           </h2>
@@ -516,7 +510,7 @@ function JourneyContent() {
         )}
       </header>
 
-      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 relative">
+      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 relative pb-20 md:pb-8">
         {locationStatus === 'denied' && (
           <Card className="rounded-2xl border-none bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-2">
             <CardContent className="p-4 flex items-center justify-between gap-4">
