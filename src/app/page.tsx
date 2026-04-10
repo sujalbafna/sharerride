@@ -203,7 +203,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-muted py-20 px-6 md:px-12 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 relative shrink-0">
@@ -217,15 +217,6 @@ export default function LandingPage() {
           </div>
           
           <div className="space-y-6">
-            <h4 className="font-black text-xs uppercase tracking-widest text-foreground">Top carpool routes</h4>
-            <ul className="space-y-3 text-sm font-bold text-muted-foreground">
-              <li className="hover:text-primary cursor-pointer transition-colors">Residential to Main Library</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Complex to Metro Station</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Tech Hub to City Plaza</li>
-            </ul>
-          </div>
-
-          <div className="space-y-6">
             <h4 className="font-black text-xs uppercase tracking-widest text-foreground">About</h4>
             <ul className="space-y-3 text-sm font-bold text-muted-foreground">
               <li className="hover:text-primary cursor-pointer transition-colors">How it works</li>
@@ -233,29 +224,12 @@ export default function LandingPage() {
               <li className="hover:text-primary cursor-pointer transition-colors">Privacy Policy</li>
             </ul>
           </div>
-
-          <div className="space-y-6">
-            <h4 className="font-black text-xs uppercase tracking-widest text-foreground">Developer</h4>
-            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.open("https://www.linkedin.com/in/sujal-bafna/", "_blank")}>
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                <ArrowRight className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-black uppercase tracking-tight">Sujal Bafna</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">Project Lead & Hosting</p>
-              </div>
-            </div>
-          </div>
         </div>
         
         <div className="max-w-7xl mx-auto pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
             © 2025 ShareRide. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-             <CheckCircle2 className="h-5 w-5 text-primary" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Cloud Architecture Verified</span>
-          </div>
         </div>
       </footer>
     </div>
