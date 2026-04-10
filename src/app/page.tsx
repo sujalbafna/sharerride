@@ -390,6 +390,24 @@ export default function LandingPage() {
           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">
             © 2025 ShareRide. Developed by Sujal Bafna.
           </p>
+
+          <a 
+            href="https://www.sdslabourcontractor.com/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 group"
+          >
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Managed By</span>
+            <div className="h-10 w-24 relative overflow-hidden">
+              <Image 
+                src="https://i.postimg.cc/3xbMtPny/sdslogo.png" 
+                alt="SDS Logo" 
+                fill 
+                className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300" 
+              />
+            </div>
+            <span className="text-xs font-black text-foreground group-hover:text-primary transition-colors uppercase">SDS Sai Datta Services</span>
+          </a>
         </div>
       </footer>
     </div>
