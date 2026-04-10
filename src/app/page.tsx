@@ -38,9 +38,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col font-body">
       {/* Navbar */}
-      <header className="h-20 flex items-center justify-between px-6 md:px-12 bg-white border-b sticky top-0 z-50">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-12 w-12 relative shrink-0">
+      <header className="h-24 flex items-center justify-between px-6 md:px-12 bg-white border-b sticky top-0 z-50">
+        <div className="flex items-center gap-4 cursor-pointer" onClick={() => router.push("/")}>
+          <div className="h-16 w-16 relative shrink-0">
             <Image 
               src={logoUrl} 
               alt="ShareRide Logo" 
@@ -48,7 +48,7 @@ export default function LandingPage() {
               className="object-contain"
             />
           </div>
-          <span className="font-black text-2xl tracking-tighter text-primary uppercase">SHARERIDE</span>
+          <span className="font-black text-3xl md:text-4xl tracking-tighter text-primary uppercase">SHARERIDE</span>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
