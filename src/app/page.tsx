@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -40,13 +41,8 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="h-20 flex items-center justify-between px-6 md:px-12 bg-white border-b sticky top-0 z-50">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-10 w-10 relative">
-            <Image 
-              src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-              alt="Logo" 
-              fill 
-              className="object-contain"
-            />
+          <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/10 shadow-sm shrink-0">
+            <ShieldCheck className="h-6 w-6" />
           </div>
           <span className="font-black text-2xl tracking-tighter text-primary uppercase">SHARERIDE</span>
         </div>
@@ -204,8 +200,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 relative">
-                <Image src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" alt="Logo" fill className="object-contain" />
+              <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
+                <ShieldCheck className="h-6 w-6" />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase text-primary">SHARERIDE</span>
             </div>

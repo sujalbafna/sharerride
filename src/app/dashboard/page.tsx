@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -22,6 +23,7 @@ import {
   Milestone,
   Eye,
   ShieldAlert,
+  ShieldCheck,
   UserPlus,
   IndianRupee,
   Gift,
@@ -158,13 +160,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-3 sm:gap-4 w-full min-w-0">
           <SidebarTrigger className="shrink-0" />
           <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-            <div className="h-10 w-10 sm:h-14 sm:w-14 relative shrink-0">
-              <Image 
-                src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-                alt="Logo" 
-                fill 
-                className="object-contain"
-              />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0 border border-primary/5 shadow-sm">
+              <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
             <div className="flex flex-col min-w-0">
               <h2 className="text-sm sm:text-xl font-black tracking-tighter leading-tight truncate">

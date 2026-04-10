@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft, Shield } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft, ShieldCheck } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   updateProfile, 
@@ -287,7 +288,7 @@ function LoginContent() {
         
         <div className="flex flex-col items-center mb-10">
           <div className="h-20 w-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 shadow-xl backdrop-blur-md border border-white/20">
-            <Shield className="h-10 w-10 text-primary" />
+            <ShieldCheck className="h-10 w-10 text-primary" />
           </div>
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase text-primary drop-shadow-sm">SHARERIDE</h1>
