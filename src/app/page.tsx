@@ -225,11 +225,11 @@ export default function LandingPage() {
 
           <div className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white order-1 lg:order-2">
             <Image 
-              src="https://picsum.photos/seed/shareride-network/800/1000" 
+              src="https://i.postimg.cc/hjxxhRXV/Gemini-Generated-Image-njfpiwnjfpiwnjfp.png" 
               alt="Safety Network" 
               fill 
               className="object-cover"
-              data-ai-hint="friends walking"
+              data-ai-hint="safety network"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
             <div className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl">
