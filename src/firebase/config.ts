@@ -1,8 +1,9 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyBXYPTCiUhqXtwvgOra4Z2AD1UKEuMXl08",
-  authDomain: "studio-4512849101-9f1de.firebaseapp.com",
-  projectId: "studio-4512849101-9f1de",
-  storageBucket: "studio-4512849101-9f1de.firebasestorage.app",
-  messagingSenderId: "41408433912",
-  appId: "1:41408433912:web:2ce13a0e4413f775ac350d"
+  apiKey: "AIzaSyCShdhlJik2gS6veZ-oqviEKdCDHE7vhOg",
+  authDomain: "shareride-278cc.firebaseapp.com",
+  projectId: "shareride-278cc",
+  storageBucket: "shareride-278cc.firebasestorage.app",
+  messagingSenderId: "879591575084",
+  appId: "1:879591575084:web:2db1cf4b8cc7ca94044b89",
+  measurementId: "G-FENS2NZ8YF"
 };

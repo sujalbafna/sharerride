@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react"
@@ -79,7 +78,7 @@ export function GoogleMap({
   variant = 'active',
   onRouteInfo
 }: GoogleMapProps) {
-  const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
+  const apiKey = "AIzaSyADy_2QsuH5bddwVvGXi2Yhwr4croztqnw";
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [internalZoom, setInternalZoom] = useState(zoom);

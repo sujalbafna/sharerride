@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from "react"
@@ -73,7 +72,7 @@ function JourneyContent() {
     setMounted(true)
   }, [])
 
-  const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
+  const apiKey = "AIzaSyADy_2QsuH5bddwVvGXi2Yhwr4croztqnw";
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',

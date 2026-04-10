@@ -47,7 +47,7 @@ export function StartJourneyDialog() {
   const endAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
   const routeAutocomplete = useRef<google.maps.places.Autocomplete | null>(null)
 
-  const apiKey = "AIzaSyA_zfRnZdq83nF6g6-LLYR3Uy3AM8wqAZ4";
+  const apiKey = "AIzaSyADy_2QsuH5bddwVvGXi2Yhwr4croztqnw";
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
