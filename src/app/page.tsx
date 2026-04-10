@@ -364,14 +364,6 @@ export default function LandingPage() {
             <p className="text-lg font-medium text-muted-foreground leading-relaxed max-w-md">
               The official safety companion portal empowering secure community transit through real-time technology and human connection.
             </p>
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                <Smartphone className="h-5 w-5" />
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-8">
