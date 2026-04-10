@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft } from "lucide-react"
+import { Loader2, Mail, Lock, UserPlus, LogIn, User, Phone, MapPin, CheckCircle2, MessageSquare, ArrowLeft, Shield } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   updateProfile, 
@@ -272,38 +272,33 @@ function LoginContent() {
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
-        
-        {/* Back Button positioned on the left with updated styling */}
-        <div className="w-full max-w-2xl flex justify-start mb-12 mt-4">
-          <Button 
-            className="rounded-full bg-primary text-white font-black hover:bg-primary/90 shadow-xl shadow-primary/20 h-12 px-6 transition-all active:scale-95"
-            onClick={() => router.push("/")}
-          >
-            <ArrowLeft className="mr-2 h-5 w-5" />
-            BACK TO HOME
-          </Button>
-        </div>
+      {/* Absolute positioned Back Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <Button 
+          className="rounded-full bg-primary text-white font-black hover:bg-primary/90 shadow-2xl shadow-primary/40 h-14 px-8 transition-all active:scale-95 flex items-center gap-2 border-2 border-white/20"
+          onClick={() => router.push("/")}
+        >
+          <ArrowLeft className="h-6 w-6" />
+          <span className="hidden sm:inline">BACK TO HOME</span>
+        </Button>
+      </div>
 
-        <div className="flex flex-col items-center mb-6">
-          <div className="h-24 w-24 relative mb-4">
-            <Image 
-              src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
-              alt="Logo" 
-              fill 
-              className="object-contain"
-            />
+      <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700 pt-20 sm:pt-24">
+        
+        <div className="flex flex-col items-center mb-10">
+          <div className="h-20 w-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 shadow-xl backdrop-blur-md border border-white/20">
+            <Shield className="h-10 w-10 text-primary" />
           </div>
           <div className="flex items-center gap-3 transition-transform hover:scale-105 duration-300">
-            <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase text-primary">SHARERIDE</h1>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase text-primary drop-shadow-sm">SHARERIDE</h1>
           </div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mt-2">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] text-center mt-4 bg-white/50 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
             Developed and Hosted by{" "}
             <a 
               href="https://www.linkedin.com/in/sujal-bafna/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-primary hover:underline transition-all font-black"
+              className="text-primary hover:underline transition-all"
             >
               Sujal Bafna
             </a>
