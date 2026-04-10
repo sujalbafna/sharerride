@@ -158,7 +158,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="py-24 px-6 md:px-12 bg-white">
+      <section id="how-it-works" className="pt-8 pb-24 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter">How ShareRide Works</h2>
@@ -174,8 +174,8 @@ export default function LandingPage() {
               { step: "05", title: "Arrive Safe", desc: "End your trip or use SOS if needed.", icon: CheckCircle2 },
             ].map((item, i) => (
               <div key={i} className="relative space-y-6 group">
-                <div className="h-20 w-20 rounded-3xl bg-secondary flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
-                  <item.icon className="h-10 w-10" />
+                <div className="h-24 w-24 rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20">
+                  <item.icon className="h-12 w-12" />
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-black text-accent tracking-[0.2em]">{item.step}</span>
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   <p className="text-muted-foreground text-sm font-medium leading-relaxed">{item.desc}</p>
                 </div>
                 {i < 4 && (
-                  <div className="hidden md:block absolute top-10 -right-4 w-8 h-px bg-border" />
+                  <div className="hidden md:block absolute top-12 -right-4 w-8 h-px bg-border" />
                 )}
               </div>
             ))}
