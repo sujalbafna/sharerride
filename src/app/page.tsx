@@ -352,7 +352,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white pt-20 pb-16 px-6 md:px-12 border-t mt-auto">
+      <footer className="bg-white pt-12 pb-16 px-6 md:px-12 border-t mt-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
           <div className="space-y-8">
             <div className="flex items-center gap-4">
