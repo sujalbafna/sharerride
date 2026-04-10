@@ -165,7 +165,7 @@ export default function LandingPage() {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Five simple steps to ensure you and your loved ones never travel alone.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-16 md:gap-8 relative">
             {[
               { step: "01", title: "Join Circle", desc: "Build your network of trusted friends.", icon: UserPlus },
               { step: "02", title: "Plan Journey", desc: "Enter your route and vehicle details.", icon: MapPin },
@@ -182,8 +182,13 @@ export default function LandingPage() {
                   <h4 className="text-xl font-black uppercase tracking-tight">{item.title}</h4>
                   <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-[180px]">{item.desc}</p>
                 </div>
+                {/* Horizontal line for desktop */}
                 {i < 4 && (
                   <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
+                )}
+                {/* Vertical line for mobile */}
+                {i < 4 && (
+                  <div className="md:hidden absolute top-[calc(100%+1rem)] left-1/2 w-px h-12 bg-border -translate-x-1/2" />
                 )}
               </div>
             ))}
