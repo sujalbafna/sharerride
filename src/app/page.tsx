@@ -129,7 +129,7 @@ export default function LandingPage() {
         <div className="relative z-10 w-full max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-4">
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
-              Your safety, <br className="hidden md:block" /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment.</span>
+              Your safety, <br className="hidden md:block" /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment</span>
             </h1>
             <p className="text-xl md:text-2xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
               The social-safety platform that turns university transit from solo vulnerability into a secure, monitored experience.
@@ -256,7 +256,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
           <div className="relative h-[400px] md:h-[500px] rounded-[3rem] border-4 border-white/20 overflow-hidden shadow-2xl group">
             <Image 
-              src="https://picsum.photos/seed/shareride-map-demo/800/600" 
+              src="https://i.postimg.cc/nzb8qqh2/tl.jpg" 
               alt="Live Tracking" 
               fill 
               className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
@@ -341,7 +341,7 @@ export default function LandingPage() {
           </div>
           <div className="h-80 md:h-[500px] w-full md:w-[450px] relative z-10 hidden md:block">
              <Image 
-              src="https://picsum.photos/seed/shareride-hero-cta/800/1000" 
+              src="https://i.postimg.cc/k4sm9B7W/sujal.png" 
               alt="Community Travel" 
               fill 
               className="object-cover rounded-[3rem] shadow-2xl border-4 border-white/10"
@@ -398,10 +398,6 @@ export default function LandingPage() {
           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">
             © 2025 ShareRide. Developed by Sujal Bafna.
           </p>
-          <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-full">
-            <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-primary">All systems operational</span>
-          </div>
         </div>
       </footer>
     </div>
