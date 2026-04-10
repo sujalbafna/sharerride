@@ -274,19 +274,19 @@ function LoginContent() {
 
       <div className="relative z-10 flex flex-col items-center w-full p-4 animate-in fade-in slide-in-from-top-8 duration-700">
         
-        <div className="w-full max-w-md flex justify-start mb-8">
+        {/* Back Button positioned on the left with updated styling */}
+        <div className="w-full max-w-2xl flex justify-start mb-12 mt-4">
           <Button 
-            variant="ghost" 
-            className="rounded-full bg-white/20 backdrop-blur-md text-foreground font-black hover:bg-white/40 shadow-sm"
+            className="rounded-full bg-primary text-white font-black hover:bg-primary/90 shadow-xl shadow-primary/20 h-12 px-6 transition-all active:scale-95"
             onClick={() => router.push("/")}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-5 w-5" />
             BACK TO HOME
           </Button>
         </div>
 
         <div className="flex flex-col items-center mb-6">
-          <div className="h-20 w-20 relative mb-4">
+          <div className="h-24 w-24 relative mb-4">
             <Image 
               src="https://i.postimg.cc/XvjD0vWw/cropped-circle-image.png" 
               alt="Logo" 
