@@ -13,7 +13,13 @@ import {
   Navigation,
   ArrowRight,
   CheckCircle2,
-  Car
+  Car,
+  ShieldCheck,
+  UserPlus,
+  Activity,
+  Bell,
+  Smartphone,
+  MessageSquare
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,10 +41,17 @@ export default function LandingPage() {
     }
   }
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col font-body">
       {/* Navbar */}
-      <header className="h-24 flex items-center justify-between px-6 md:px-12 bg-white border-b sticky top-0 z-50">
+      <header className="h-24 flex items-center justify-between px-6 md:px-12 bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => router.push("/")}>
           <div className="h-16 w-16 relative shrink-0">
             <Image 
@@ -52,9 +65,17 @@ export default function LandingPage() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
-          <button className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            Search
+          <button 
+            onClick={() => scrollToSection('how-it-works')}
+            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors"
+          >
+            How it works
+          </button>
+          <button 
+            onClick={() => scrollToSection('safety-network')}
+            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors"
+          >
+            Safety Network
           </button>
           <button 
             className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
@@ -90,7 +111,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[600px] md:h-[700px] flex items-center justify-center overflow-hidden">
         {heroBg && (
           <div className="absolute inset-0 z-0">
             <Image 
@@ -106,130 +127,280 @@ export default function LandingPage() {
         
         <div className="relative z-10 w-full max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
-              Travel anywhere <br className="hidden md:block" /> <span className="text-primary">together.</span>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
+              Your safety, <br className="hidden md:block" /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment.</span>
             </h1>
-            <p className="text-lg md:text-xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
-              Your trusted safety companion for campus transit. Connecting community members for secure, shared journeys.
+            <p className="text-xl md:text-2xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
+              The social-safety platform that turns university transit from solo vulnerability into a secure, monitored experience.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="bg-white rounded-[2rem] shadow-2xl p-2 md:p-4 flex flex-col md:flex-row items-stretch md:items-center gap-2 border border-border/50 animate-in zoom-in-95 duration-1000 delay-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl p-3 md:p-5 flex flex-col md:flex-row items-stretch md:items-center gap-3 border border-border/50 animate-in zoom-in-95 duration-1000 delay-300">
             <div className="flex-1 relative flex items-center group">
-              <MapPin className="absolute left-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-base font-bold placeholder:text-muted-foreground/60" placeholder="Leaving from..." />
+              <MapPin className="absolute left-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-lg font-bold placeholder:text-muted-foreground/60" placeholder="Leaving from..." />
             </div>
-            <div className="hidden md:block w-px h-8 bg-border" />
+            <div className="hidden md:block w-px h-10 bg-border" />
             <div className="flex-1 relative flex items-center group">
-              <Navigation className="absolute left-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-base font-bold placeholder:text-muted-foreground/60" placeholder="Going to..." />
-            </div>
-            <div className="hidden md:block w-px h-8 bg-border" />
-            <div className="flex-1 relative flex items-center group">
-              <Calendar className="absolute left-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input type="date" className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-base font-bold text-muted-foreground" />
+              <Navigation className="absolute left-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-lg font-bold placeholder:text-muted-foreground/60" placeholder="Going to..." />
             </div>
             <Button 
-              className="h-14 md:h-16 px-8 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+              className="h-14 md:h-16 px-10 rounded-2xl bg-primary text-white font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
               onClick={handleSearchClick}
             >
-              SEARCH
+              FIND SECURE RIDE
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-12">
-        <div className="space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
-            <div className="relative h-10 w-10">
-              <Image src={logoUrl} alt="Logo" fill className="object-contain" />
+      {/* How it Works Section */}
+      <section id="how-it-works" className="py-24 px-6 md:px-12 bg-white">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter">How ShareRide Works</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Five simple steps to ensure you and your loved ones never travel alone.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+            {[
+              { step: "01", title: "Join Circle", desc: "Build your network of trusted friends.", icon: UserPlus },
+              { step: "02", title: "Plan Journey", desc: "Enter your route and vehicle details.", icon: MapPin },
+              { step: "03", title: "Broadcast", desc: "Notify your circle of your departure.", icon: Bell },
+              { step: "04", title: "Track Live", desc: "Friends watch your 'blue line' shrink in real-time.", icon: Activity },
+              { step: "05", title: "Arrive Safe", desc: "End your trip or use SOS if needed.", icon: CheckCircle2 },
+            ].map((item, i) => (
+              <div key={i} className="relative space-y-6 group">
+                <div className="h-20 w-20 rounded-3xl bg-secondary flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
+                  <item.icon className="h-10 w-10" />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-accent tracking-[0.2em]">{item.step}</span>
+                  <h4 className="text-xl font-black uppercase tracking-tight">{item.title}</h4>
+                  <p className="text-muted-foreground text-sm font-medium leading-relaxed">{item.desc}</p>
+                </div>
+                {i < 4 && (
+                  <div className="hidden md:block absolute top-10 -right-4 w-8 h-px bg-border" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Safety Network Section */}
+      <section id="safety-network" className="py-24 px-6 md:px-12 bg-secondary/30">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div className="space-y-8 order-2 lg:order-1">
+            <div className="space-y-4">
+              <Badge className="bg-accent/20 text-primary border-none font-black px-4 py-1">THE TRUST GRAPH</Badge>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">Your Private Safety Network</h2>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Connect with friends and family within our verified community. You choose exactly who can see your journey, ensuring privacy during downtime and visibility during transit.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                { title: "Trusted Circles", desc: "Only those you approve see your live movement.", icon: Users },
+                { title: "Identity Verified", desc: "Every user is verified via institution credentials.", icon: ShieldCheck },
+                { title: "Direct Connect", desc: "Instant secure messaging with your active companions.", icon: MessageSquare },
+                { title: "3-Way SOS", desc: "Broadcast emergency alerts to your network instantly.", icon: Smartphone },
+              ].map((feature, i) => (
+                <div key={i} className="flex gap-4 p-4 bg-white rounded-2xl shadow-sm border border-border/50">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <feature.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h5 className="font-black text-sm uppercase tracking-tight">{feature.title}</h5>
+                    <p className="text-xs text-muted-foreground font-medium mt-1">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <h3 className="text-xl font-black uppercase tracking-tight">Your safety, our priority</h3>
-          <p className="text-muted-foreground leading-relaxed font-medium">
-            We use real-time GPS tracking and 3-way identity verification to ensure every journey is secure and transparent.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-            <Zap className="h-8 w-8" />
+
+          <div className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white order-1 lg:order-2">
+            <Image 
+              src="https://picsum.photos/seed/shareride-network/800/1000" 
+              alt="Safety Network" 
+              fill 
+              className="object-cover"
+              data-ai-hint="friends walking"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
+            <div className="absolute bottom-10 left-10 right-10 p-6 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-primary font-black">SB</div>
+                <div>
+                  <p className="font-black text-sm uppercase">Sujal Bafna</p>
+                  <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Added to Circle</p>
+                </div>
+                <div className="ml-auto flex -space-x-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-primary/20 flex items-center justify-center text-[8px] font-black">U{i}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 className="text-xl font-black uppercase tracking-tight">Travel everywhere together</h3>
-          <p className="text-muted-foreground leading-relaxed font-medium">
-            Join a network of thousands of community members. Find a ride heading your way in seconds.
-          </p>
         </div>
-        <div className="space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-            <IndianRupee className="h-8 w-8" />
+      </section>
+
+      {/* Real-time Journey Section */}
+      <section className="py-24 px-6 md:px-12 bg-primary text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
+          <div className="relative h-[400px] md:h-[500px] rounded-[3rem] border-4 border-white/20 overflow-hidden shadow-2xl group">
+            <Image 
+              src="https://picsum.photos/seed/shareride-map-demo/800/600" 
+              alt="Live Tracking" 
+              fill 
+              className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
+              data-ai-hint="city map"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/60 to-transparent" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-10">
+              <div className="bg-white rounded-3xl p-6 shadow-2xl space-y-4 animate-in slide-in-from-bottom-8 duration-700">
+                <div className="flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center gap-3">
+                    <Activity className="h-5 w-5 text-primary animate-pulse" />
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Live Transit</span>
+                  </div>
+                  <Badge variant="outline" className="text-primary border-primary text-[8px] font-black">IN PROGRESS</Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none">Arriving In</p>
+                  <p className="text-3xl font-black text-slate-900 tracking-tighter">12 Minutes</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 className="text-xl font-black uppercase tracking-tight">Prices like nowhere else</h3>
-          <p className="text-muted-foreground leading-relaxed font-medium">
-            Split costs fairly or find free peer-to-peer transit options. Affordable community travel for everyone.
-          </p>
+
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">The "Shrinking Blue Line" Experience</h2>
+              <p className="text-xl opacity-80 leading-relaxed font-medium">
+                Our proprietary UI recalculates your route from your current live position. As you move, your circle sees exactly how far you are from home, providing unparalleled peace of mind.
+              </p>
+            </div>
+            
+            <ul className="space-y-4">
+              {[
+                "Zero-latency GPS synchronization",
+                "Sub-200ms location propagation",
+                "Automated arrival notifications",
+                "Multi-point rendezvous support"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 font-black uppercase tracking-widest text-sm">
+                  <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <Button 
+              className="h-16 px-10 rounded-full bg-white text-primary hover:bg-slate-50 font-black text-lg shadow-2xl transition-all active:scale-95"
+              onClick={() => router.push("/login?tab=register")}
+            >
+              START TRACKING NOW
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 md:px-12 py-12">
-        <div className="max-w-7xl mx-auto bg-primary rounded-[3rem] p-12 md:p-20 text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-          <div className="space-y-6 relative z-10 max-w-xl">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">Driving in your car soon?</h2>
-            <p className="text-xl opacity-80 font-medium">
-              Don't travel alone. Share your ride, split costs, and help your community travel safer.
+      <section className="px-6 md:px-12 py-24">
+        <div className="max-w-7xl mx-auto bg-slate-900 rounded-[4rem] p-12 md:p-24 text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+          <div className="space-y-6 relative z-10 max-w-xl text-center md:text-left">
+            <h2 className="text-4xl md:text-7xl font-black tracking-tighter leading-tight italic">Share your ride, <br /> change your community.</h2>
+            <p className="text-xl opacity-70 font-medium">
+              Join thousands of community members splitting costs and traveling safer together.
             </p>
-            <Button 
-              className="h-16 px-10 rounded-full bg-white text-primary hover:bg-white/90 font-black text-lg transition-all active:scale-95 shadow-2xl"
-              onClick={() => router.push(user ? "/journey" : "/login")}
-            >
-              OFFER A RIDE
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center md:justify-start">
+              <Button 
+                className="h-16 px-10 rounded-2xl bg-primary text-white hover:bg-primary/90 font-black text-lg transition-all active:scale-95 shadow-2xl"
+                onClick={() => router.push(user ? "/journey" : "/login")}
+              >
+                PUBLISH A RIDE
+              </Button>
+              <Button 
+                variant="outline"
+                className="h-16 px-10 rounded-2xl border-white/20 bg-white/5 text-white hover:bg-white/10 font-black text-lg transition-all active:scale-95"
+                onClick={() => scrollToSection('how-it-works')}
+              >
+                LEARN MORE
+              </Button>
+            </div>
           </div>
-          <div className="h-64 md:h-80 w-full md:w-96 relative z-10 hidden md:block">
+          <div className="h-80 md:h-[500px] w-full md:w-[450px] relative z-10 hidden md:block">
              <Image 
-              src="https://picsum.photos/seed/shareride-car/600/400" 
-              alt="Car sharing" 
+              src="https://picsum.photos/seed/shareride-hero-cta/800/1000" 
+              alt="Community Travel" 
               fill 
-              className="object-cover rounded-[2rem] shadow-2xl"
-              data-ai-hint="car sharing"
+              className="object-cover rounded-[3rem] shadow-2xl border-4 border-white/10"
+              data-ai-hint="happy people traveling"
             />
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-muted pt-10 pb-16 px-6 md:px-12 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 relative shrink-0">
+      <footer className="bg-white pt-20 pb-16 px-6 md:px-12 border-t mt-auto">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
+          <div className="space-y-8">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 relative shrink-0">
                 <Image src={logoUrl} alt="Logo" fill className="object-contain" />
               </div>
-              <span className="font-black text-xl tracking-tighter uppercase text-primary">SHARERIDE</span>
+              <span className="font-black text-3xl tracking-tighter uppercase text-primary">SHARERIDE</span>
             </div>
-            <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-              Official safety companion portal empowering secure community transit.
+            <p className="text-lg font-medium text-muted-foreground leading-relaxed max-w-md">
+              The official safety companion portal empowering secure community transit through real-time technology and human connection.
             </p>
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-6">
-            <h4 className="font-black text-xs uppercase tracking-widest text-foreground">About</h4>
-            <ul className="space-y-3 text-sm font-bold text-muted-foreground">
-              <li className="hover:text-primary cursor-pointer transition-colors">How it works</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Safety Protocols</li>
-              <li className="hover:text-primary cursor-pointer transition-colors">Privacy Policy</li>
-            </ul>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground">Platform</h4>
+              <ul className="space-y-4 text-sm font-bold text-muted-foreground">
+                <li className="hover:text-primary cursor-pointer transition-colors" onClick={() => scrollToSection('how-it-works')}>How it works</li>
+                <li className="hover:text-primary cursor-pointer transition-colors" onClick={() => scrollToSection('safety-network')}>Safety Network</li>
+                <li className="hover:text-primary cursor-pointer transition-colors" onClick={() => router.push('/journey')}>Active Journeys</li>
+              </ul>
+            </div>
+            <div className="space-y-6">
+              <h4 className="font-black text-xs uppercase tracking-[0.2em] text-foreground">Company</h4>
+              <ul className="space-y-4 text-sm font-bold text-muted-foreground">
+                <li className="hover:text-primary cursor-pointer transition-colors">Privacy Policy</li>
+                <li className="hover:text-primary cursor-pointer transition-colors">Terms of Service</li>
+                <li className="hover:text-primary cursor-pointer transition-colors">Safety Protocols</li>
+              </ul>
+            </div>
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto pt-12 mt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-            © 2025 ShareRide. All rights reserved.
+        <div className="max-w-7xl mx-auto pt-16 mt-16 border-t border-border flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">
+            © 2025 ShareRide. Developed by Sujal Bafna.
           </p>
+          <div className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-full">
+            <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary">All systems operational</span>
+          </div>
         </div>
       </footer>
     </div>
