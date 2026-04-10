@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth, useUser, useFirestore } from "@/firebase"
 import { initiateEmailSignIn } from "@/firebase/non-blocking-login"
 import { doc, setDoc } from "firebase/firestore"
@@ -34,15 +34,20 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export default function LoginPage() {
+function LoginContent() {
   const { user, isUserLoading } = useUser()
   const auth = useAuth()
   const db = useFirestore()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
   
+  // Tab State
+  const initialTab = searchParams.get("tab") === "register" ? "register" : "login"
+  const [activeTab, setActiveTab] = useState(initialTab)
+
   // Login State
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
@@ -311,7 +316,7 @@ export default function LoginPage() {
         </div>
 
         <Card className="w-full max-w-md rounded-[2.5rem] border-none shadow-2xl overflow-hidden bg-card/95 backdrop-blur-md">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 h-16 bg-muted p-0 rounded-t-[2.5rem] overflow-hidden">
               <TabsTrigger value="login" className="rounded-none data-[state=active]:bg-card data-[state=active]:text-primary font-black text-xs tracking-widest h-full transition-all">
                 LOGIN
@@ -507,5 +512,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <LoginContent />
+    </Suspense>
   )
 }

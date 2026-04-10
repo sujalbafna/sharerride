@@ -28,6 +28,14 @@ export default function LandingPage() {
 
   const heroBg = PlaceHolderImages.find(img => img.id === 'auth-bg')
 
+  const handleSearchClick = () => {
+    if (user) {
+      router.push("/dashboard")
+    } else {
+      router.push("/login?tab=register")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col font-body">
       {/* Navbar */}
@@ -123,7 +131,10 @@ export default function LandingPage() {
               <Calendar className="absolute left-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input type="date" className="h-14 md:h-16 pl-12 border-none rounded-2xl bg-transparent focus-visible:ring-0 text-base font-bold text-muted-foreground" />
             </div>
-            <Button className="h-14 md:h-16 px-8 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+            <Button 
+              className="h-14 md:h-16 px-8 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+              onClick={handleSearchClick}
+            >
               SEARCH
             </Button>
           </div>
