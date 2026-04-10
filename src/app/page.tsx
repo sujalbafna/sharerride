@@ -129,7 +129,7 @@ export default function LandingPage() {
         <div className="relative z-10 w-full max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-4">
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
-              Your safety, <br className="hidden md:block" /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment</span>
+              Your safety, <br /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment</span>
             </h1>
             <p className="text-xl md:text-2xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
               The social-safety platform that turns university transit from solo vulnerability into a secure, monitored experience.
