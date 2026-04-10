@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useUser } from "@/firebase"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { cn } from "@/lib/utils"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -54,7 +55,7 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="h-24 flex items-center justify-between px-6 md:px-12 bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-16 w-16 relative shrink-0">
+          <div className="h-20 w-20 relative shrink-0">
             <Image 
               src={logoUrl} 
               alt="ShareRide Logo" 
@@ -62,7 +63,7 @@ export default function LandingPage() {
               className="object-contain"
             />
           </div>
-          <span className="font-black text-3xl md:text-4xl tracking-tighter text-primary uppercase">SHARERIDE</span>
+          <span className="font-black text-4xl md:text-5xl tracking-tighter text-primary uppercase">SHARERIDE</span>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -129,7 +130,10 @@ export default function LandingPage() {
         <div className="relative z-10 w-full max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-4">
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
-              Your safety, <br /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment</span>
+              Your safety, <br /> 
+              <span className="text-primary underline decoration-accent/30 underline-offset-8 block mt-2">
+                Our commitment
+              </span>
             </h1>
             <p className="text-xl md:text-2xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
               The social-safety platform that turns university transit from solo vulnerability into a secure, monitored experience.
@@ -158,14 +162,14 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="pt-8 pb-24 px-6 md:px-12 bg-white">
+      <section id="how-it-works" className="py-12 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter">How ShareRide Works</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Five simple steps to ensure you and your loved ones never travel alone.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-16 md:gap-8 relative">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-y-12 gap-x-4 md:gap-8 relative">
             {[
               { step: "01", title: "Join Circle", desc: "Build your network of trusted friends.", icon: UserPlus },
               { step: "02", title: "Plan Journey", desc: "Enter your route and vehicle details.", icon: MapPin },
@@ -173,22 +177,24 @@ export default function LandingPage() {
               { step: "04", title: "Track Live", desc: "Friends watch your 'blue line' shrink in real-time.", icon: Activity },
               { step: "05", title: "Arrive Safe", desc: "End your trip or use SOS if needed.", icon: CheckCircle2 },
             ].map((item, i) => (
-              <div key={i} className="relative space-y-6 group flex flex-col items-center text-center">
-                <div className="h-24 w-24 rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20 relative z-10">
-                  <item.icon className="h-12 w-12" />
+              <div 
+                key={i} 
+                className={cn(
+                  "relative space-y-6 group flex flex-col items-center text-center",
+                  i === 4 ? "col-span-2 md:col-span-1" : "col-span-1"
+                )}
+              >
+                <div className="h-20 w-20 md:h-24 md:w-24 rounded-[1.5rem] md:rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20 relative z-10">
+                  <item.icon className="h-10 w-10 md:h-12 md:w-12" />
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-black text-primary tracking-[0.2em]">{item.step}</span>
-                  <h4 className="text-xl font-black uppercase tracking-tight">{item.title}</h4>
-                  <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-[180px]">{item.desc}</p>
+                  <h4 className="text-lg md:text-xl font-black uppercase tracking-tight">{item.title}</h4>
+                  <p className="text-muted-foreground text-xs md:text-sm font-medium leading-relaxed max-w-[180px] mx-auto">{item.desc}</p>
                 </div>
                 {/* Horizontal line for desktop */}
                 {i < 4 && (
                   <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
-                )}
-                {/* Vertical line for mobile */}
-                {i < 4 && (
-                  <div className="md:hidden absolute top-[calc(100%+1rem)] left-1/2 w-px h-12 bg-border -translate-x-1/2" />
                 )}
               </div>
             ))}
@@ -357,7 +363,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white pt-12 pb-16 px-6 md:px-12 border-t mt-auto">
+      <footer className="bg-white pt-8 pb-16 px-6 md:px-12 border-t mt-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
           <div className="space-y-8">
             <div className="flex items-center gap-4">
