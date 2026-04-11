@@ -19,7 +19,9 @@ import {
   Activity,
   Bell,
   Smartphone,
-  MessageSquare
+  MessageSquare,
+  Quote,
+  Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +29,7 @@ import { Badge } from "@/components/ui/badge"
 import { useUser } from "@/firebase"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -49,6 +52,33 @@ export default function LandingPage() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   }
+
+  const reviews = [
+    {
+      name: "Sneha Kulkarni",
+      role: "Student, MIT ADT",
+      text: "Being a student at MIT ADT, late night lab sessions are common. ShareRide's live tracking is a lifesaver for my walk back to the hostel. My parents are much more relaxed now.",
+      rating: 5
+    },
+    {
+      name: "Rohan Mehra",
+      role: "Graduate Assistant",
+      text: "The SOS protocol is genuinely zero-latency. Tested it with my 'Trusted Circle' and the SMS with GPS was sent in seconds. This is exactly what a campus needs.",
+      rating: 5
+    },
+    {
+      name: "Amit Sharma",
+      role: "Final Year Student",
+      text: "Finally an app that understands student privacy. It only tracks when I want it to. The 'Shrinking Blue Line' UI is very professional. Great work Sujal!",
+      rating: 4
+    },
+    {
+      name: "Megha Joshi",
+      role: "Hostel Warden",
+      text: "Safety is a major concern for girls on campus. This app makes students feel much more confident while traveling. It's a great community-driven safety initiative.",
+      rating: 5
+    }
+  ]
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-body">
@@ -196,6 +226,11 @@ export default function LandingPage() {
                 {i < 4 && (
                   <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
                 )}
+                {/* Vertical line for mobile flow */}
+                <div className={cn(
+                  "md:hidden absolute -bottom-12 left-1/2 w-px h-8 bg-border border-dashed border-l",
+                  i === 4 && "hidden"
+                )} />
               </div>
             ))}
           </div>
@@ -321,6 +356,49 @@ export default function LandingPage() {
             >
               START TRACKING NOW
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Reviews Section */}
+      <section className="py-24 px-6 md:px-12 bg-white">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1">COMMUNITY VOICES</Badge>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter">Trusted by Peers</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">See how ShareRide is making a difference in everyday transit for students and faculty.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {reviews.map((review, i) => (
+              <Card key={i} className="rounded-3xl border-none shadow-sm bg-secondary/20 hover:shadow-xl transition-all duration-500 flex flex-col group">
+                <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, starI) => (
+                      <Star 
+                        key={starI} 
+                        className={cn(
+                          "h-4 w-4", 
+                          starI < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"
+                        )} 
+                      />
+                    ))}
+                  </div>
+                  
+                  <div className="relative flex-1">
+                    <Quote className="absolute -top-4 -left-4 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
+                    <p className="text-sm font-medium leading-relaxed italic text-foreground/80 relative z-10">
+                      "{review.text}"
+                    </p>
+                  </div>
+
+                  <div className="pt-6 border-t border-border/50">
+                    <p className="font-black text-sm uppercase tracking-tight">{review.name}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{review.role}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
