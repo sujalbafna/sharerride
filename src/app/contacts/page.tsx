@@ -23,7 +23,8 @@ import {
   Mail,
   MapPin,
   ShieldCheck,
-  UserCircle
+  UserCircle,
+  Check
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -81,6 +82,17 @@ export default function ContactsPage() {
 
   const { data: incomingRequests } = useCollection(incomingRequestsQuery)
 
+  // Outgoing Pending Requests
+  const outgoingRequestsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "sentRequests"),
+      where("status", "==", "Pending")
+    )
+  }, [db, user])
+
+  const { data: outgoingRequests } = useCollection(outgoingRequestsQuery)
+
   const filteredContacts = useMemo(() => {
     if (!contacts) return []
     return contacts.filter(c => 
@@ -94,7 +106,6 @@ export default function ContactsPage() {
     
     setIsSearching(true)
     try {
-      // Use case-insensitive range query on normalized uppercase field
       const q = query(
         collection(db, "publicProfiles"),
         where("displayName", ">=", term),
@@ -134,8 +145,7 @@ export default function ContactsPage() {
       })
 
       toast({ title: "Request Sent", description: `Connection request sent to ${targetUser.displayName}.` })
-      setSearchResults([])
-      setSearchQuery("")
+      setSearchResults(prev => prev.map(u => u.userId === targetUser.userId ? { ...u, _isSent: true } : u))
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to send request." })
     }
@@ -196,7 +206,8 @@ export default function ContactsPage() {
         setSelectedProfile({
           displayName: contact.contactName,
           role: "user",
-          phoneNumber: contact.contactPhoneNumber
+          phoneNumber: contact.contactPhoneNumber,
+          userId: contact.appUserId || contact.id
         })
       }
     } catch (e) {
@@ -244,27 +255,59 @@ export default function ContactsPage() {
 
           {searchResults.length > 0 && (
             <div className="grid gap-3 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              {searchResults.map((u) => (
-                <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div 
-                      className="flex items-center gap-4 cursor-pointer flex-1 group"
-                      onClick={() => setSelectedProfile(u)}
-                    >
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                        {u.displayName[0]}
+              {searchResults.map((u) => {
+                const isFriend = contacts?.some(c => (c.appUserId || c.id) === u.userId)
+                const isPendingIncoming = incomingRequests?.some(r => r.senderId === u.userId)
+                const isPendingOutgoing = outgoingRequests?.some(r => r.userId === u.userId) || u._isSent
+
+                return (
+                  <Card key={u.userId} className="rounded-2xl border-none shadow-sm bg-secondary/50 overflow-hidden">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div 
+                        className="flex items-center gap-4 cursor-pointer flex-1 group"
+                        onClick={() => setSelectedProfile(u)}
+                      >
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                          {u.displayName[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
+                          {isFriend && <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-black px-1 mt-0.5">FRIEND</Badge>}
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 px-4 h-10 border-primary/20 text-primary hover:bg-primary/5">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      SEND REQUEST
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                      
+                      {isFriend ? (
+                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-widest h-10 px-4">
+                          <ShieldCheck className="h-4 w-4 mr-2" />
+                          VERIFIED
+                        </Badge>
+                      ) : isPendingIncoming ? (
+                        <Button 
+                          size="sm" 
+                          className="rounded-xl font-black text-[10px] uppercase tracking-widest bg-accent text-primary"
+                          onClick={() => router.push('/notifications')}
+                        >
+                          RESPOND
+                        </Button>
+                      ) : isPendingOutgoing ? (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          disabled 
+                          className="rounded-xl font-black text-[10px] uppercase tracking-widest opacity-50"
+                        >
+                          PENDING
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => sendRequest(u)} className="rounded-xl font-black text-[10px] uppercase tracking-widest shrink-0 px-4 h-10 border-primary/20 text-primary hover:bg-primary/5">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          CONNECT
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
           {searchQuery && !isSearching && searchResults.length === 0 && (
@@ -439,6 +482,23 @@ export default function ContactsPage() {
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 SECURE CHAT
+              </Button>
+            ) : incomingRequests?.some(r => r.senderId === selectedProfile?.userId) ? (
+              <Button 
+                className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-accent text-primary shadow-xl shadow-accent/20 transition-all active:scale-95"
+                onClick={() => {
+                  router.push('/notifications')
+                  setSelectedProfile(null)
+                }}
+              >
+                RESPOND TO REQUEST
+              </Button>
+            ) : outgoingRequests?.some(r => r.userId === selectedProfile?.userId) ? (
+              <Button 
+                disabled
+                className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-muted text-muted-foreground opacity-50"
+              >
+                REQUEST PENDING
               </Button>
             ) : (
               <Button 

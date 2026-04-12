@@ -13,7 +13,8 @@ import {
   UserPlus,
   Car,
   Activity,
-  Users
+  Users,
+  Check
 } from "lucide-react"
 
 import {
@@ -34,7 +35,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase"
 import { signOut } from "firebase/auth"
-import { collection, query, where, getDocs, limit, addDoc, doc } from "firebase/firestore"
+import { collection, query, where, getDocs, limit, addDoc, doc, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 const items = [
@@ -67,6 +68,12 @@ export function AppSidebar() {
   }, [db, user])
   const { data: currentUserDoc } = useDoc(currentUserRef)
 
+  const contactsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return collection(db, "users", user.uid, "trustedContacts")
+  }, [db, user])
+  const { data: contacts } = useCollection(contactsQuery)
+
   const requestsQuery = useMemoFirebase(() => {
     if (!db || !user) return null
     return query(
@@ -74,8 +81,16 @@ export function AppSidebar() {
       where("status", "==", "Pending")
     )
   }, [db, user])
-
   const { data: allRequests } = useCollection(requestsQuery)
+
+  const sentRequestsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null
+    return query(
+      collection(db, "users", user.uid, "sentRequests"),
+      where("status", "==", "Pending")
+    )
+  }, [db, user])
+  const { data: sentRequests } = useCollection(sentRequestsQuery)
   
   const activeTrackingLinks = React.useMemo(() => {
     return allRequests?.filter(r => r.status === "Pending" && r.requestType === "JoinApproved") || []
@@ -116,18 +131,27 @@ export function AppSidebar() {
     if (!db || !user) return
     
     try {
-      await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), {
+      const sharedRequestId = doc(collection(db, "temp")).id
+      const requestData = {
+        id: sharedRequestId,
         userId: targetUser.userId,
         senderId: user.uid,
         senderName: currentUserDisplayName,
+        targetName: targetUser.displayName,
         requestType: "ConnectionRequest",
         description: "wants to join your trusted network.",
         timestamp: new Date().toISOString(),
         status: "Pending"
+      }
+
+      await addDoc(collection(db, "users", targetUser.userId, "supportRequests"), requestData)
+      await setDoc(doc(db, "users", user.uid, "sentRequests", sharedRequestId), {
+        ...requestData,
+        isOutgoing: true
       })
+
       toast({ title: "Request Sent", description: `Friend request sent to ${targetUser.displayName}.` })
-      setSearchResults([])
-      setSearchQuery("")
+      setSearchResults(prev => prev.map(u => u.userId === targetUser.userId ? { ...u, _isSent: true } : u))
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to send request." })
     }
@@ -197,19 +221,38 @@ export function AppSidebar() {
               </div>
               {searchResults.length > 0 && (
                 <div className="space-y-2 pt-2">
-                  {searchResults.map((u) => (
-                    <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg group animate-in slide-in-from-top-2">
-                      <span className="text-[10px] font-bold truncate pr-2 group-hover:text-primary transition-colors">{u.displayName}</span>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-6 w-6 rounded-md hover:bg-primary/10 text-primary"
-                        onClick={() => sendRequest(u)}
-                      >
-                        <UserPlus className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  ))}
+                  {searchResults.map((u) => {
+                    const isFriend = contacts?.some(c => (c.appUserId || c.id) === u.userId)
+                    const isIncoming = allRequests?.some(r => r.senderId === u.userId && r.requestType === "ConnectionRequest")
+                    const isOutgoing = sentRequests?.some(r => r.userId === u.userId) || u._isSent
+
+                    return (
+                      <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg group animate-in slide-in-from-top-2">
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-bold truncate block group-hover:text-primary transition-colors">{u.displayName}</span>
+                          {isFriend && <span className="text-[7px] font-black text-primary uppercase">Friend</span>}
+                        </div>
+                        {isFriend ? (
+                          <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                        ) : isIncoming ? (
+                          <Button size="icon" variant="ghost" className="h-6 w-6 rounded-md bg-accent/20 text-primary" onClick={() => router.push('/notifications')}>
+                            <Clock className="h-3 w-3" />
+                          </Button>
+                        ) : isOutgoing ? (
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground opacity-50 shrink-0" />
+                        ) : (
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-6 w-6 rounded-md hover:bg-primary/10 text-primary"
+                            onClick={() => sendRequest(u)}
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>
