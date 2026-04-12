@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -139,9 +140,13 @@ export default function EditProfilePage() {
 
     setIsSaving(true)
     try {
+      const normalizedFirstName = firstName.trim().toUpperCase()
+      const normalizedLastName = lastName.trim().toUpperCase()
+      const normalizedDisplayName = `${normalizedFirstName} ${normalizedLastName}`
+
       const updateData: any = {
-        firstName,
-        lastName,
+        firstName: normalizedFirstName,
+        lastName: normalizedLastName,
         email,
         phoneNumber: phone,
         address: address,
@@ -151,11 +156,13 @@ export default function EditProfilePage() {
       await updateDoc(doc(db, "users", user.uid), updateData)
 
       await setDoc(doc(db, "publicProfiles", user.uid), {
-        displayName: `${firstName} ${lastName}`,
+        displayName: normalizedDisplayName,
         email: email,
         phoneNumber: phone,
         address: address,
       }, { merge: true })
+
+      await updateProfile(user, { displayName: normalizedDisplayName })
 
       if (email !== user.email) {
         try {
@@ -286,9 +293,9 @@ export default function EditProfilePage() {
                     <Input 
                       id="firstName" 
                       placeholder="First Name" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl uppercase"
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => setFirstName(e.target.value.toUpperCase())}
                       required
                     />
                   </div>
@@ -300,9 +307,9 @@ export default function EditProfilePage() {
                     <Input 
                       id="lastName" 
                       placeholder="Last Name" 
-                      className="pl-10 h-12 rounded-xl"
+                      className="pl-10 h-12 rounded-xl uppercase"
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => setLastName(e.target.value.toUpperCase())}
                       required
                     />
                   </div>

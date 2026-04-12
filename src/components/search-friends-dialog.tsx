@@ -31,13 +31,15 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
   const [selectedUser, setSelectedUser] = useState<any | null>(null)
 
   const handleSearch = async () => {
-    if (!db || !searchQuery.trim()) return
+    const term = searchQuery.trim().toUpperCase()
+    if (!db || !term) return
+    
     setIsSearching(true)
     try {
       const q = query(
         collection(db, "publicProfiles"),
-        where("displayName", ">=", searchQuery),
-        where("displayName", "<=", searchQuery + "\uf8ff"),
+        where("displayName", ">=", term),
+        where("displayName", "<=", term + "\uf8ff"),
         limit(5)
       )
       const snap = await getDocs(q)

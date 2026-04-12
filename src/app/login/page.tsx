@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
@@ -204,13 +205,14 @@ function LoginContent() {
       const credential = EmailAuthProvider.credential(regEmail, regPassword);
       await linkWithCredential(currentUser, credential);
 
-      await updateProfile(currentUser, { displayName: fullName });
+      const normalizedFullName = fullName.trim().toUpperCase();
+      await updateProfile(currentUser, { displayName: normalizedFullName });
       
       const userRef = doc(db, "users", currentUser.uid);
       const publicRef = doc(db, "publicProfiles", currentUser.uid);
       
-      const names = fullName.trim().split(/\s+/);
-      const fName = names[0] || "User";
+      const names = normalizedFullName.split(/\s+/);
+      const fName = names[0] || "USER";
       const lName = names.slice(1).join(' ') || "";
 
       const userData = {
@@ -228,7 +230,7 @@ function LoginContent() {
 
       const publicData = {
         userId: currentUser.uid,
-        displayName: fullName,
+        displayName: normalizedFullName,
         email: regEmail,
         photoURL: "",
         phoneNumber: mobileNumber,

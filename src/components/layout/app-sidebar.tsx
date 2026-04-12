@@ -82,13 +82,15 @@ export function AppSidebar() {
   }, [allRequests])
 
   const handleSearch = async () => {
-    if (!db || !searchQuery.trim()) return
+    const term = searchQuery.trim().toUpperCase()
+    if (!db || !term) return
+    
     setIsSearching(true)
     try {
       const q = query(
         collection(db, "publicProfiles"),
-        where("displayName", ">=", searchQuery),
-        where("displayName", "<=", searchQuery + "\uf8ff"),
+        where("displayName", ">=", term),
+        where("displayName", "<=", term + "\uf8ff"),
         limit(3)
       )
       const snap = await getDocs(q)
@@ -187,7 +189,7 @@ export function AppSidebar() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
                 <Input 
                   placeholder="FIND FRIEND..." 
-                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs shadow-inner uppercase"
+                  className="pl-9 h-10 bg-secondary border-none rounded-xl text-xs shadow-inner uppercase font-bold"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

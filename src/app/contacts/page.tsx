@@ -22,7 +22,8 @@ import {
   Send,
   Mail,
   MapPin,
-  ShieldCheck
+  ShieldCheck,
+  UserCircle
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -80,17 +81,6 @@ export default function ContactsPage() {
 
   const { data: incomingRequests } = useCollection(incomingRequestsQuery)
 
-  // Outgoing Pending Requests
-  const outgoingRequestsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null
-    return query(
-      collection(db, "users", user.uid, "sentRequests"),
-      where("status", "==", "Pending")
-    )
-  }, [db, user])
-
-  const { data: outgoingRequests } = useCollection(outgoingRequestsQuery)
-
   const filteredContacts = useMemo(() => {
     if (!contacts) return []
     return contacts.filter(c => 
@@ -99,19 +89,23 @@ export default function ContactsPage() {
   }, [contacts, circleFilter])
 
   const handleSearch = async () => {
-    if (!db || !searchQuery.trim()) return
+    const term = searchQuery.trim().toUpperCase()
+    if (!db || !term) return
+    
     setIsSearching(true)
     try {
+      // Use case-insensitive range query on normalized uppercase field
       const q = query(
         collection(db, "publicProfiles"),
-        where("displayName", ">=", searchQuery),
-        where("displayName", "<=", searchQuery + "\uf8ff"),
-        limit(5)
+        where("displayName", ">=", term),
+        where("displayName", "<=", term + "\uf8ff"),
+        limit(10)
       )
       const snap = await getDocs(q)
       setSearchResults(snap.docs.map(d => d.data()).filter(u => u.userId !== user?.uid))
     } catch (e) {
       console.error(e)
+      toast({ variant: "destructive", title: "Search Failed", description: "Could not access profile directory." })
     } finally {
       setIsSearching(false)
     }
@@ -236,7 +230,7 @@ export default function ContactsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input 
-                className="pl-12 h-14 bg-card rounded-[1.25rem] border-none shadow-sm focus-visible:ring-primary/20 uppercase" 
+                className="pl-12 h-14 bg-card rounded-[1.25rem] border-none shadow-sm focus-visible:ring-primary/20 uppercase font-bold" 
                 placeholder="SEARCH BY NAME..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
@@ -272,6 +266,9 @@ export default function ContactsPage() {
                 </Card>
               ))}
             </div>
+          )}
+          {searchQuery && !isSearching && searchResults.length === 0 && (
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-4">No results found for your search.</p>
           )}
         </section>
 
@@ -375,7 +372,7 @@ export default function ContactsPage() {
                           className="h-12 w-12 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all active:scale-95"
                           onClick={() => setContactToDelete({id: contact.id, name: contact.contactName})}
                         >
-                          <UserMinus className="h-5 w-5" />
+                          <UserMinus className="h-4 w-4" />
                         </Button>
                       </div>
                     </CardContent>
