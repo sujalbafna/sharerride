@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo, useRef } from "react"
@@ -138,7 +137,7 @@ export default function ProfilePage() {
 
       await updateProfile(user, { photoURL: downloadURL })
 
-      toast({ title: "Profile Updated", description: "Your new profile photo has been saved." })
+      toast({ title: "Profile Updated", description: "Your new profile photo has been saved and cropped to a circle." })
     } catch (error: any) {
       console.error(error)
       toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload photo to secure storage." })

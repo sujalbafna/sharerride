@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -80,6 +79,7 @@ export default function EditProfilePage() {
       await uploadBytes(storageRef, file)
       const downloadURL = await getDownloadURL(storageRef)
 
+      // Update both User document and Auth Profile
       await updateDoc(doc(db, "users", user.uid), {
         profileImageUrl: downloadURL,
         updatedAt: new Date().toISOString()
@@ -91,10 +91,10 @@ export default function EditProfilePage() {
 
       await updateProfile(user, { photoURL: downloadURL })
 
-      toast({ title: "Photo Updated", description: "Your profile picture has been changed." })
+      toast({ title: "Photo Updated", description: "Your profile picture has been changed and cropped to a circle." })
     } catch (error: any) {
       console.error(error)
-      toast({ variant: "destructive", title: "Upload Failed", description: "Could not save photo to storage." })
+      toast({ variant: "destructive", title: "Upload Failed", description: "Could not save photo to secure storage." })
     } finally {
       setIsUploading(false)
     }
@@ -230,18 +230,18 @@ export default function EditProfilePage() {
           <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
             <CardHeader className="pt-10 text-center space-y-2">
               <div className="relative mx-auto mb-4 group cursor-pointer" onClick={handlePhotoClick}>
-                <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-lg overflow-hidden transition-all group-hover:opacity-90">
+                <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl overflow-hidden transition-all group-hover:opacity-90">
                   <AvatarImage src={userData?.profileImageUrl || user?.photoURL || undefined} className="object-cover" />
-                  <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary uppercase">
+                  <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
                     {(firstName[0] || user?.displayName?.[0] || 'U')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="h-6 w-6 text-white" />
+                  <Camera className="h-8 w-8 text-white" />
                 </div>
                 {isUploading && (
                   <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center z-10">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
                 )}
                 <input 
@@ -263,7 +263,7 @@ export default function EditProfilePage() {
                   disabled={isUploading}
                 >
                   <Camera className="h-3.5 w-3.5 mr-1.5" />
-                  Add Profile Photo
+                  Set Photo
                 </Button>
                 {(userData?.profileImageUrl || user?.photoURL) && (
                   <Button 
@@ -275,7 +275,7 @@ export default function EditProfilePage() {
                     disabled={isUploading}
                   >
                     <X className="h-3.5 w-3.5 mr-1.5" />
-                    Remove Profile Photo
+                    Remove
                   </Button>
                 )}
               </div>
@@ -292,8 +292,8 @@ export default function EditProfilePage() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="firstName" 
-                      placeholder="First Name" 
-                      className="pl-10 h-12 rounded-xl uppercase"
+                      placeholder="FIRST NAME" 
+                      className="pl-10 h-12 rounded-xl uppercase font-bold"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value.toUpperCase())}
                       required
@@ -306,8 +306,8 @@ export default function EditProfilePage() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="lastName" 
-                      placeholder="Last Name" 
-                      className="pl-10 h-12 rounded-xl uppercase"
+                      placeholder="LAST NAME" 
+                      className="pl-10 h-12 rounded-xl uppercase font-bold"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value.toUpperCase())}
                       required
@@ -354,10 +354,10 @@ export default function EditProfilePage() {
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
                     id="address" 
-                    placeholder="123 College Ave, Campus" 
-                    className="pl-10 h-12 rounded-xl"
+                    placeholder="ENTER ADDRESS" 
+                    className="pl-10 h-12 rounded-xl uppercase font-bold"
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={(e) => setAddress(e.target.value.toUpperCase())}
                     required
                   />
                 </div>
