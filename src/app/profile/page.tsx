@@ -1,12 +1,11 @@
+
 "use client"
 
-import { useState, useMemo, useRef } from "react"
-import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth, useStorage } from "@/firebase"
+import { useState, useMemo } from "react"
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, useAuth } from "@/firebase"
 import { doc, collection, query, where, deleteDoc, updateDoc, setDoc } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { 
@@ -22,7 +21,6 @@ import {
   Search,
   X,
   MapPin,
-  Camera,
   HelpCircle
 } from "lucide-react"
 import { signOut, updateProfile } from "firebase/auth"
@@ -45,18 +43,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { ProfilePhotoSelector } from "@/components/profile-photo-selector"
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
   const auth = useAuth()
-  const storage = useStorage()
   const router = useRouter()
   const { toast } = useToast()
   const [friendSearch, setFriendSearch] = useState("")
   const [contactToDelete, setContactToDelete] = useState<{id: string, name: string} | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -107,42 +103,20 @@ export default function ProfilePage() {
     }
   }
 
-  const handlePhotoClick = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !storage || !user || !db) return
-
-    if (!file.type.startsWith('image/')) {
-      toast({ variant: "destructive", title: "Invalid File", description: "Please select an image file." })
-      return
-    }
-
-    setIsUploading(true)
+  const handleRemovePhoto = async () => {
+    if (!db || !user) return
     try {
-      const storageRef = ref(storage, `profilePhotos/${user.uid}`)
-      await uploadBytes(storageRef, file)
-      const downloadURL = await getDownloadURL(storageRef)
-
       await updateDoc(doc(db, "users", user.uid), {
-        profileImageUrl: downloadURL,
+        profileImageUrl: "",
         updatedAt: new Date().toISOString()
       })
-
       await setDoc(doc(db, "publicProfiles", user.uid), {
-        photoURL: downloadURL
+        photoURL: ""
       }, { merge: true })
-
-      await updateProfile(user, { photoURL: downloadURL })
-
-      toast({ title: "Profile Updated", description: "Your new profile photo has been saved and cropped to a circle." })
+      await updateProfile(user, { photoURL: "" })
+      toast({ title: "Photo Removed", description: "Your profile picture has been removed." })
     } catch (error: any) {
-      console.error(error)
-      toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload photo to secure storage." })
-    } finally {
-      setIsUploading(false)
+      toast({ variant: "destructive", title: "Error", description: "Could not remove photo." })
     }
   }
 
@@ -169,31 +143,22 @@ export default function ProfilePage() {
 
       <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8">
         <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-sm border border-border">
-          <div className="relative group cursor-pointer" onClick={handlePhotoClick}>
-            <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl overflow-hidden transition-all group-hover:opacity-90">
-              <AvatarImage src={userData?.profileImageUrl || user?.photoURL || undefined} className="object-cover" />
-              <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
-                {displayName[0]}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-8 w-8 text-white" />
-            </div>
-
-            {isUploading && (
-              <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center z-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={handleFileChange}
+          <div className="flex flex-col items-center gap-4">
+            <ProfilePhotoSelector 
+              currentPhotoUrl={userData?.profileImageUrl || user?.photoURL}
+              displayName={displayName}
             />
+            {(userData?.profileImageUrl || user?.photoURL) && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 rounded-lg text-[10px] font-black uppercase tracking-widest text-destructive hover:bg-destructive/5"
+                onClick={handleRemovePhoto}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Remove
+              </Button>
+            )}
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-4">

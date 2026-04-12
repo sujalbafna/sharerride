@@ -1,15 +1,14 @@
+
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useFirestore, useUser, useDoc, useMemoFirebase, useStorage } from "@/firebase"
+import { useState, useEffect } from "react"
+import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase"
 import { doc, updateDoc, setDoc } from "firebase/firestore"
 import { updateEmail, updatePassword, updateProfile } from "firebase/auth"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
   User, 
   Mail, 
@@ -25,14 +24,13 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { ProfilePhotoSelector } from "@/components/profile-photo-selector"
 
 export default function EditProfilePage() {
   const { user, isUserLoading } = useUser()
   const db = useFirestore()
-  const storage = useStorage()
   const router = useRouter()
   const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null
@@ -48,7 +46,6 @@ export default function EditProfilePage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isSaving, setIsSaving] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (userData) {
@@ -59,71 +56,6 @@ export default function EditProfilePage() {
       setAddress(userData.address || "")
     }
   }, [userData])
-
-  const handlePhotoClick = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !storage || !user || !db) return
-
-    if (!file.type.startsWith('image/')) {
-      toast({ variant: "destructive", title: "Invalid File", description: "Please select an image file." })
-      return
-    }
-
-    setIsUploading(true)
-    try {
-      const storageRef = ref(storage, `profilePhotos/${user.uid}`)
-      await uploadBytes(storageRef, file)
-      const downloadURL = await getDownloadURL(storageRef)
-
-      // Update both User document and Auth Profile
-      await updateDoc(doc(db, "users", user.uid), {
-        profileImageUrl: downloadURL,
-        updatedAt: new Date().toISOString()
-      })
-
-      await setDoc(doc(db, "publicProfiles", user.uid), {
-        photoURL: downloadURL
-      }, { merge: true })
-
-      await updateProfile(user, { photoURL: downloadURL })
-
-      toast({ title: "Photo Updated", description: "Your profile picture has been changed and cropped to a circle." })
-    } catch (error: any) {
-      console.error(error)
-      toast({ variant: "destructive", title: "Upload Failed", description: "Could not save photo to secure storage." })
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const handleRemovePhoto = async () => {
-    if (!db || !user) return
-
-    setIsUploading(true)
-    try {
-      await updateDoc(doc(db, "users", user.uid), {
-        profileImageUrl: "",
-        updatedAt: new Date().toISOString()
-      })
-
-      await setDoc(doc(db, "publicProfiles", user.uid), {
-        photoURL: ""
-      }, { merge: true })
-
-      await updateProfile(user, { photoURL: "" })
-
-      toast({ title: "Photo Removed", description: "Your profile picture has been removed." })
-    } catch (error: any) {
-      console.error(error)
-      toast({ variant: "destructive", title: "Error", description: "Could not remove photo." })
-    } finally {
-      setIsUploading(false)
-    }
-  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,6 +133,23 @@ export default function EditProfilePage() {
     }
   }
 
+  const handleRemovePhoto = async () => {
+    if (!db || !user) return
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        profileImageUrl: "",
+        updatedAt: new Date().toISOString()
+      })
+      await setDoc(doc(db, "publicProfiles", user.uid), {
+        photoURL: ""
+      }, { merge: true })
+      await updateProfile(user, { photoURL: "" })
+      toast({ title: "Photo Removed", description: "Your profile picture has been removed." })
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: "Could not remove photo." })
+    }
+  }
+
   if (isUserLoading || isUserDocLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -228,43 +177,15 @@ export default function EditProfilePage() {
       <main className="p-4 md:p-8 max-w-2xl mx-auto space-y-8">
         <form onSubmit={handleSave}>
           <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
-            <CardHeader className="pt-10 text-center space-y-2">
-              <div className="relative mx-auto mb-4 group cursor-pointer" onClick={handlePhotoClick}>
-                <Avatar className="h-32 w-32 border-4 border-primary/10 shadow-xl overflow-hidden transition-all group-hover:opacity-90">
-                  <AvatarImage src={userData?.profileImageUrl || user?.photoURL || undefined} className="object-cover" />
-                  <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary uppercase">
-                    {(firstName[0] || user?.displayName?.[0] || 'U')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="h-8 w-8 text-white" />
-                </div>
-                {isUploading && (
-                  <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center z-10">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                )}
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleFileChange}
+            <CardHeader className="pt-10 text-center space-y-4">
+              <div className="flex justify-center">
+                <ProfilePhotoSelector 
+                  currentPhotoUrl={userData?.profileImageUrl || user?.photoURL}
+                  displayName={firstName || user?.displayName || "User"}
                 />
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 pb-4">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  size="sm" 
-                  className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest border-primary/20 text-primary"
-                  onClick={handlePhotoClick}
-                  disabled={isUploading}
-                >
-                  <Camera className="h-3.5 w-3.5 mr-1.5" />
-                  Set Photo
-                </Button>
                 {(userData?.profileImageUrl || user?.photoURL) && (
                   <Button 
                     type="button"
@@ -272,10 +193,9 @@ export default function EditProfilePage() {
                     size="sm" 
                     className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest text-destructive hover:bg-destructive/5"
                     onClick={handleRemovePhoto}
-                    disabled={isUploading}
                   >
                     <X className="h-3.5 w-3.5 mr-1.5" />
-                    Remove
+                    Remove Photo
                   </Button>
                 )}
               </div>
@@ -400,7 +320,7 @@ export default function EditProfilePage() {
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
-                disabled={isSaving || isUploading}
+                disabled={isSaving}
               >
                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
                 SAVE CHANGES
