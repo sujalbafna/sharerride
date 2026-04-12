@@ -61,16 +61,20 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
     
     setIsSearching(true)
     try {
-      const q = query(
-        collection(db, "publicProfiles"),
-        where("displayName", ">=", term),
-        where("displayName", "<=", term + "\uf8ff"),
-        limit(5)
-      )
-      const snap = await getDocs(q)
-      setSearchResults(snap.docs.map(d => d.data()).filter(u => u.userId !== user?.uid))
+      // Fetch all public profiles to allow for "contains" (partial) matching
+      // In a university pilot, the number of users is manageable for client-side filtering
+      const snap = await getDocs(collection(db, "publicProfiles"))
+      const allProfiles = snap.docs.map(d => d.data())
+      
+      const filtered = allProfiles.filter(profile => {
+        if (profile.userId === user?.uid) return false
+        return profile.displayName?.toUpperCase().includes(term)
+      })
+      
+      setSearchResults(filtered.slice(0, 10)) // Limit display to top 10 results
     } catch (e) {
       console.error(e)
+      toast({ variant: "destructive", title: "Search Error", description: "Failed to access directory." })
     } finally {
       setIsSearching(false)
     }
@@ -158,7 +162,7 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
-                          {isFriend && <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary font-black px-1 mt-0.5">FRIEND</Badge>}
+                          {isFriend && <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-black px-1 mt-0.5">FRIEND</Badge>}
                         </div>
                       </div>
                       {isFriend ? (

@@ -14,7 +14,8 @@ import {
   Car,
   Activity,
   Users,
-  Check
+  Check,
+  Clock
 } from "lucide-react"
 
 import {
@@ -102,14 +103,16 @@ export function AppSidebar() {
     
     setIsSearching(true)
     try {
-      const q = query(
-        collection(db, "publicProfiles"),
-        where("displayName", ">=", term),
-        where("displayName", "<=", term + "\uf8ff"),
-        limit(3)
-      )
-      const snap = await getDocs(q)
-      setSearchResults(snap.docs.map(d => d.data()).filter(u => u.userId !== user?.uid))
+      // Fetch all profiles for "contains" (partial) matching
+      const snap = await getDocs(collection(db, "publicProfiles"))
+      const allProfiles = snap.docs.map(d => d.data())
+      
+      const filtered = allProfiles.filter(profile => {
+        if (profile.userId === user?.uid) return false
+        return profile.displayName?.toUpperCase().includes(term)
+      })
+      
+      setSearchResults(filtered.slice(0, 3)) // Show only top 3 in sidebar
     } catch (e) {
       console.error(e)
     } finally {

@@ -106,14 +106,16 @@ export default function ContactsPage() {
     
     setIsSearching(true)
     try {
-      const q = query(
-        collection(db, "publicProfiles"),
-        where("displayName", ">=", term),
-        where("displayName", "<=", term + "\uf8ff"),
-        limit(10)
-      )
-      const snap = await getDocs(q)
-      setSearchResults(snap.docs.map(d => d.data()).filter(u => u.userId !== user?.uid))
+      // Fetch all public profiles to allow for "contains" (partial) matching
+      const snap = await getDocs(collection(db, "publicProfiles"))
+      const allProfiles = snap.docs.map(d => d.data())
+      
+      const filtered = allProfiles.filter(profile => {
+        if (profile.userId === user?.uid) return false
+        return profile.displayName?.toUpperCase().includes(term)
+      })
+      
+      setSearchResults(filtered.slice(0, 10))
     } catch (e) {
       console.error(e)
       toast({ variant: "destructive", title: "Search Failed", description: "Could not access profile directory." })
