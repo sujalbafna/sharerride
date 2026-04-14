@@ -136,8 +136,12 @@ export default function LandingPage() {
         </nav>
 
         <div className="md:hidden">
-           <Button variant="ghost" size="icon" onClick={() => router.push("/login")}>
-              <Users className="h-6 w-6 text-primary" />
+           <Button 
+             className="h-12 w-12 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90" 
+             size="icon" 
+             onClick={() => router.push("/login")}
+           >
+              <Users className="h-6 w-6" />
            </Button>
         </div>
       </header>
