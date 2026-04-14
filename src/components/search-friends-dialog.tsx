@@ -118,17 +118,17 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
         <DialogTrigger asChild>
           {children}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card">
           <DialogHeader className="text-center space-y-4">
-            <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-2">
-              <Search className="h-8 w-8" />
+            <div className="h-12 w-12 md:h-16 md:w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-2">
+              <Search className="h-6 w-6 md:h-8 md:w-8" />
             </div>
-            <DialogTitle className="text-2xl font-black">Search Network</DialogTitle>
-            <DialogDescription>Find friends and send requests to grow your safety circle.</DialogDescription>
+            <DialogTitle className="text-xl md:text-2xl font-black">Search Network</DialogTitle>
+            <DialogDescription className="text-xs md:text-sm">Find friends and send requests to grow your safety circle.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
@@ -194,10 +194,10 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
 
       {/* User Profile Preview Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card">
           <DialogHeader className="text-center space-y-4">
             <div className="relative mx-auto">
-              <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-xl">
+              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
                 <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
                   {selectedUser?.displayName?.[0]}
                 </AvatarFallback>
@@ -212,10 +212,10 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 py-6">
+          <div className="space-y-4 py-4 md:py-6">
             <div className="p-4 bg-muted rounded-2xl space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm shrink-0">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
@@ -225,7 +225,7 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm shrink-0">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">

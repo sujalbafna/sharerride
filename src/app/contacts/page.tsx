@@ -431,10 +431,10 @@ export default function ContactsPage() {
 
       {/* Profile Detail Dialog */}
       <Dialog open={!!selectedProfile} onOpenChange={(open) => !open && setSelectedProfile(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl bg-card">
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card">
           <DialogHeader className="text-center space-y-4">
             <div className="relative mx-auto">
-              <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-xl">
+              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
                 <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
                   {selectedProfile?.displayName?.[0]}
                 </AvatarFallback>
@@ -449,10 +449,10 @@ export default function ContactsPage() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 py-6">
+          <div className="space-y-4 py-4 md:py-6">
             <div className="p-4 bg-muted rounded-2xl space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm shrink-0">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
@@ -462,7 +462,7 @@ export default function ContactsPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm">
+                <div className="h-8 w-8 rounded-lg bg-card flex items-center justify-center shadow-sm shrink-0">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
@@ -473,7 +473,7 @@ export default function ContactsPage() {
             </div>
           </div>
 
-          <div className="pt-2 flex gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row gap-3">
             {contacts?.find(c => (c.appUserId || c.id) === selectedProfile?.userId) ? (
               <Button 
                 className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
@@ -516,7 +516,7 @@ export default function ContactsPage() {
       </Dialog>
 
       <AlertDialog open={!!contactToDelete} onOpenChange={(open) => !open && setContactToDelete(null)}>
-        <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl w-[calc(100%-2rem)]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black">Remove Friend?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm font-medium">
