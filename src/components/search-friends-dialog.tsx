@@ -61,8 +61,6 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
     
     setIsSearching(true)
     try {
-      // Fetch all public profiles to allow for "contains" (partial) matching
-      // In a university pilot, the number of users is manageable for client-side filtering
       const snap = await getDocs(collection(db, "publicProfiles"))
       const allProfiles = snap.docs.map(d => d.data())
       
@@ -71,7 +69,7 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
         return profile.displayName?.toUpperCase().includes(term)
       })
       
-      setSearchResults(filtered.slice(0, 10)) // Limit display to top 10 results
+      setSearchResults(filtered.slice(0, 10))
     } catch (e) {
       console.error(e)
       toast({ variant: "destructive", title: "Search Error", description: "Failed to access directory." })
@@ -118,10 +116,10 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
         <DialogTrigger asChild>
           {children}
         </DialogTrigger>
-        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card">
-          <DialogHeader className="text-center space-y-4">
-            <div className="h-12 w-12 md:h-16 md:w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-2">
-              <Search className="h-6 w-6 md:h-8 md:w-8" />
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+          <DialogHeader className="text-center space-y-2 md:space-y-4">
+            <div className="h-10 w-10 md:h-16 md:w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-1 md:mb-2">
+              <Search className="h-5 w-5 md:h-8 md:w-8" />
             </div>
             <DialogTitle className="text-xl md:text-2xl font-black">Search Network</DialogTitle>
             <DialogDescription className="text-xs md:text-sm">Find friends and send requests to grow your safety circle.</DialogDescription>
@@ -144,7 +142,7 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
               </Button>
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 max-h-[250px] md:max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {searchResults.map((u) => {
                 const isFriend = contacts?.some(c => (c.appUserId || c.id) === u.userId)
                 const isIncoming = incomingRequests?.some(r => r.senderId === u.userId)
@@ -192,19 +190,18 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
         </DialogContent>
       </Dialog>
 
-      {/* User Profile Preview Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
-        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card">
-          <DialogHeader className="text-center space-y-4">
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border-none shadow-2xl bg-card top-[10%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
+          <DialogHeader className="text-center space-y-2 md:space-y-4">
             <div className="relative mx-auto">
-              <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
-                <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
+              <Avatar className="h-16 w-16 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
+                <AvatarFallback className="text-2xl md:text-3xl font-black bg-primary/10 text-primary">
                   {selectedUser?.displayName?.[0]}
                 </AvatarFallback>
               </Avatar>
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">{selectedUser?.displayName}</DialogTitle>
+              <DialogTitle className="text-xl md:text-2xl font-black tracking-tight">{selectedUser?.displayName}</DialogTitle>
               <div className="flex items-center justify-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-accent" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-accent">Verified Profile</span>
@@ -238,23 +235,23 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
 
           <div className="pt-2">
             {contacts?.some(c => (c.appUserId || c.id) === selectedUser?.userId) ? (
-              <Badge className="w-full h-14 rounded-2xl bg-primary/10 text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+              <Badge className="w-full h-12 md:h-14 rounded-2xl bg-primary/10 text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
                 <ShieldCheck className="h-5 w-5" />
                 ALREADY CONNECTED
               </Badge>
             ) : incomingRequests?.some(r => r.senderId === selectedUser?.userId) ? (
-              <Badge className="w-full h-14 rounded-2xl bg-accent text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+              <Badge className="w-full h-12 md:h-14 rounded-2xl bg-accent text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
                 <Clock className="h-5 w-5" />
                 REQUEST RECEIVED
               </Badge>
             ) : (sentRequests?.some(r => r.userId === selectedUser?.userId) || selectedUser?._isSent) ? (
-              <Badge variant="secondary" className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+              <Badge variant="secondary" className="w-full h-12 md:h-14 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
                 <Clock className="h-5 w-5" />
                 REQUEST SENT
               </Badge>
             ) : (
               <Button 
-                className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
+                className="w-full h-12 md:h-14 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95"
                 onClick={() => sendRequest(selectedUser)}
               >
                 <UserPlus className="h-4 w-4 mr-2" />

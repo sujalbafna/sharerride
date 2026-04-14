@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useRef } from "react"
@@ -203,7 +204,7 @@ export function StartJourneyDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="sm:max-w-[500px] rounded-[2rem] p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-[calc(100%-2rem)] sm:max-w-[500px] rounded-[2rem] p-6 md:p-8 border-none shadow-2xl max-h-[90vh] overflow-y-auto top-[5%] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
           if (target?.closest('.pac-container')) {
@@ -211,12 +212,12 @@ export function StartJourneyDialog() {
           }
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-xl md:text-2xl font-black flex items-center gap-2">
+            <Shield className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             Initialize Journey
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs md:text-sm">
             Enter your route details to notify your network. Select addresses from the Google suggestions for accuracy.
           </DialogDescription>
         </DialogHeader>
@@ -420,7 +421,7 @@ export function StartJourneyDialog() {
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-2">
           <Button 
             className="w-full h-14 rounded-2xl font-black text-lg bg-primary shadow-xl" 
             onClick={handleStart}
