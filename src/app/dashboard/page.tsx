@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
@@ -27,6 +26,7 @@ import { FirestorePermissionError } from '@/firebase/errors'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { SearchFriendsDialog } from "@/components/search-friends-dialog"
+import { NotificationPrompt } from "@/components/notification-prompt"
 
 export default function Dashboard() {
   const { user, isUserLoading } = useUser()
@@ -143,6 +143,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-in fade-in duration-700 pb-20 md:pb-0">
+      <NotificationPrompt />
       <header className="h-20 sm:h-24 border-b flex items-center justify-between px-4 sm:px-6 bg-card sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-3 sm:gap-4 w-full min-w-0">
           <SidebarTrigger className="shrink-0" />

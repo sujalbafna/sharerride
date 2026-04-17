@@ -1,17 +1,9 @@
-// ShareRide Background Service Worker
-self.addEventListener('install', (event) => {
-  console.log('ShareRide Service Worker installed.');
-  self.skipWaiting();
-});
+self.addEventListener('push', function(event) {
+  const data = event.data ? event.data.json() : { 
+    title: 'ShareRide Alert', 
+    body: 'Safety network update received.' 
+  };
 
-self.addEventListener('activate', (event) => {
-  console.log('ShareRide Service Worker activated.');
-});
-
-// Logic to handle incoming background push notifications
-self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : { title: 'ShareRide Alert', body: 'New safety update from your circle.' };
-  
   const options = {
     body: data.body,
     icon: 'https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png',
@@ -27,8 +19,7 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Open the app when notification is clicked
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   event.waitUntil(
     clients.openWindow(event.notification.data.url)
