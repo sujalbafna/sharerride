@@ -45,7 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function ContactsPage() {
   const { user } = useUser()
@@ -269,9 +269,12 @@ export default function ContactsPage() {
                         className="flex items-center gap-4 cursor-pointer flex-1 group"
                         onClick={() => setSelectedProfile(u)}
                       >
-                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                          {u.displayName[0]}
-                        </div>
+                        <Avatar className="h-12 w-12 border border-primary/10 group-hover:border-primary/30 transition-colors shrink-0">
+                          <AvatarImage src={u.photoURL} alt={u.displayName} className="object-cover" />
+                          <AvatarFallback className="bg-primary/10 text-primary font-black group-hover:bg-primary group-hover:text-white transition-colors">
+                            {u.displayName[0]}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="min-w-0">
                           <p className="font-black text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
                           {isFriend && <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-black px-1 mt-0.5">FRIEND</Badge>}
@@ -435,6 +438,7 @@ export default function ContactsPage() {
           <DialogHeader className="text-center space-y-4">
             <div className="relative mx-auto">
               <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
+                <AvatarImage src={selectedProfile?.photoURL} alt={selectedProfile?.displayName} className="object-cover" />
                 <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">
                   {selectedProfile?.displayName?.[0]}
                 </AvatarFallback>

@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, UserPlus, Loader2, User, Mail, MapPin, ShieldCheck, Check, Clock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 
 export function SearchFriendsDialog({ children, userName }: { children: React.ReactNode, userName: string }) {
@@ -155,9 +155,12 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
                         className="flex items-center gap-3 min-w-0 cursor-pointer group flex-1"
                         onClick={() => setSelectedUser(u)}
                       >
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black group-hover:bg-primary group-hover:text-white transition-colors">
-                          {u.displayName[0]}
-                        </div>
+                        <Avatar className="h-10 w-10 border border-primary/10 group-hover:border-primary/30 transition-colors shrink-0">
+                          <AvatarImage src={u.photoURL} alt={u.displayName} className="object-cover" />
+                          <AvatarFallback className="bg-primary/10 text-primary font-black group-hover:bg-primary group-hover:text-white transition-colors">
+                            {u.displayName[0]}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="min-w-0">
                           <p className="font-bold text-sm truncate uppercase tracking-tight group-hover:text-primary transition-colors">{u.displayName}</p>
                           {isFriend && <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-black px-1 mt-0.5">FRIEND</Badge>}
@@ -195,6 +198,7 @@ export function SearchFriendsDialog({ children, userName }: { children: React.Re
           <DialogHeader className="text-center space-y-2 md:space-y-4">
             <div className="relative mx-auto">
               <Avatar className="h-16 w-16 md:h-24 md:w-24 border-4 border-primary/10 shadow-xl">
+                <AvatarImage src={selectedUser?.photoURL} alt={selectedUser?.displayName} className="object-cover" />
                 <AvatarFallback className="text-2xl md:text-3xl font-black bg-primary/10 text-primary">
                   {selectedUser?.displayName?.[0]}
                 </AvatarFallback>

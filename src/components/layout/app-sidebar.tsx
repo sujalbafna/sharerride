@@ -231,9 +231,17 @@ export function AppSidebar() {
 
                     return (
                       <div key={u.userId} className="flex items-center justify-between bg-secondary p-2 rounded-lg group animate-in slide-in-from-top-2">
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-bold truncate block group-hover:text-primary transition-colors">{u.displayName}</span>
-                          {isFriend && <span className="text-[7px] font-black text-primary uppercase">Friend</span>}
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Avatar className="h-6 w-6 shrink-0 border border-primary/10">
+                            <AvatarImage src={u.photoURL} alt={u.displayName} className="object-cover" />
+                            <AvatarFallback className="text-[8px] font-black bg-primary/10 text-primary">
+                              {u.displayName[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-bold truncate block group-hover:text-primary transition-colors">{u.displayName}</span>
+                            {isFriend && <span className="text-[7px] font-black text-primary uppercase">Friend</span>}
+                          </div>
                         </div>
                         {isFriend ? (
                           <Check className="h-3.5 w-3.5 text-primary shrink-0" />
