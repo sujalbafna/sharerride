@@ -1,0 +1,23 @@
+{
+  "name": "ShareRide - Safety Companion",
+  "short_name": "ShareRide",
+  "description": "Secure community transit with real-time safety tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eff6f9",
+  "theme_color": "#2280B3",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -7,12 +7,10 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 
 export const metadata: Metadata = {
   title: 'ShareRide - Your Safety Companion',
   description: 'ShareRide ensures traveler safety by connecting them with a network of trusted friends.',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -39,7 +37,6 @@ export default function RootLayout({
             forcedTheme="light"
             disableTransitionOnChange
           >
-            <ServiceWorkerRegistration />
             <SidebarProvider>
               <div className="flex min-h-screen w-full relative">
                 <Suspense fallback={null}>

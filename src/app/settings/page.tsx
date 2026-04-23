@@ -23,7 +23,8 @@ import {
   Lock,
   Eye,
   Smartphone,
-  Mail
+  Mail,
+  ShieldCheck
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -45,6 +46,7 @@ export default function SettingsPage() {
   const [emailEnabled, setEmailEnabled] = useState(true)
   const [language, setLanguage] = useState("english")
   const [isSaving, setIsSaving] = useState(false)
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default')
 
   useEffect(() => {
     if (userData) {
@@ -53,7 +55,33 @@ export default function SettingsPage() {
       setEmailEnabled(userData.emailNotificationsEnabled ?? true)
       setLanguage(userData.language ?? "english")
     }
+    
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotificationPermission(Notification.permission)
+    }
   }, [userData])
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      toast({ variant: "destructive", title: "Unsupported", description: "This device does not support web notifications." })
+      return
+    }
+
+    const permission = await Notification.requestPermission()
+    setNotificationPermission(permission)
+    
+    if (permission === 'granted') {
+      toast({ title: "Permissions Granted", description: "You will now receive background safety alerts." })
+      // Trigger a test notification
+      const registration = await navigator.serviceWorker.ready
+      registration.showNotification('ShareRide Active', {
+        body: 'Background safety link is now operational.',
+        icon: 'https://i.postimg.cc/SxdPPWsv/cropped-circle-image-(1).png'
+      })
+    } else {
+      toast({ variant: "destructive", title: "Permission Denied", description: "Background alerts are disabled." })
+    }
+  }
 
   const handleSave = async () => {
     if (!db || !user) return
@@ -108,6 +136,31 @@ export default function SettingsPage() {
       </header>
 
       <main className="p-4 md:p-8 max-w-3xl mx-auto space-y-8">
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
+            <Smartphone className="h-4 w-4" />
+            Device Integration
+          </div>
+          <Card className="rounded-[2rem] border-none shadow-sm overflow-hidden bg-primary/5 border border-primary/10">
+            <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center sm:text-left">
+                <p className="font-black text-sm uppercase tracking-tight">Mobile Background Alerts</p>
+                <p className="text-xs text-muted-foreground">Receive SOS and journey notifications even when the app is closed.</p>
+              </div>
+              <Button 
+                onClick={requestNotificationPermission}
+                disabled={notificationPermission === 'granted'}
+                className="rounded-xl font-black text-[10px] uppercase tracking-widest px-6"
+                variant={notificationPermission === 'granted' ? 'outline' : 'default'}
+              >
+                {notificationPermission === 'granted' ? (
+                  <><ShieldCheck className="h-4 w-4 mr-2" /> ENABLED</>
+                ) : "ENABLE ALERTS"}
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">
             <Lock className="h-4 w-4" />
