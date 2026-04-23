@@ -19,17 +19,13 @@ import {
   Activity,
   Bell,
   Smartphone,
-  MessageSquare,
-  Quote,
-  Star
+  MessageSquare
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useUser } from "@/firebase"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
-import { cn } from "@/lib/utils"
-import { Card, CardContent } from "@/components/ui/card"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -53,39 +49,12 @@ export default function LandingPage() {
     }
   }
 
-  const reviews = [
-    {
-      name: "Sneha Kulkarni",
-      role: "Student, MIT ADT",
-      text: "Being a student at MIT ADT, late night lab sessions are common. ShareRide's live tracking is a lifesaver for my walk back to the hostel. My parents are much more relaxed now.",
-      rating: 5
-    },
-    {
-      name: "Rohan Mehra",
-      role: "Graduate Assistant",
-      text: "The SOS protocol is genuinely zero-latency. Tested it with my 'Trusted Circle' and the SMS with GPS was sent in seconds. This is exactly what a campus needs.",
-      rating: 5
-    },
-    {
-      name: "Amit Sharma",
-      role: "Final Year Student",
-      text: "Finally an app that understands student privacy. It only tracks when I want it to. The 'Shrinking Blue Line' UI is very professional. Great work Sujal!",
-      rating: 4
-    },
-    {
-      name: "Megha Joshi",
-      role: "Hostel Warden",
-      text: "Safety is a major concern for girls on campus. This app makes students feel much more confident while traveling. It's a great community-driven safety initiative.",
-      rating: 5
-    }
-  ]
-
   return (
     <div className="min-h-screen bg-background flex flex-col font-body">
       {/* Navbar */}
       <header className="h-24 flex items-center justify-between px-6 md:px-12 bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => router.push("/")}>
-          <div className="h-20 w-20 relative shrink-0">
+          <div className="h-16 w-16 relative shrink-0">
             <Image 
               src={logoUrl} 
               alt="ShareRide Logo" 
@@ -93,7 +62,7 @@ export default function LandingPage() {
               className="object-contain"
             />
           </div>
-          <span className="font-black text-4xl md:text-5xl tracking-tighter text-primary uppercase">SHARERIDE</span>
+          <span className="font-black text-3xl md:text-4xl tracking-tighter text-primary uppercase">SHARERIDE</span>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -136,12 +105,8 @@ export default function LandingPage() {
         </nav>
 
         <div className="md:hidden">
-           <Button 
-             className="h-12 w-12 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90" 
-             size="icon" 
-             onClick={() => router.push("/login")}
-           >
-              <Users className="h-6 w-6" />
+           <Button variant="ghost" size="icon" onClick={() => router.push("/login")}>
+              <Users className="h-6 w-6 text-primary" />
            </Button>
         </div>
       </header>
@@ -164,10 +129,7 @@ export default function LandingPage() {
         <div className="relative z-10 w-full max-w-5xl px-6 space-y-12">
           <div className="text-center space-y-4">
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight text-foreground animate-in fade-in slide-in-from-bottom-4 duration-700">
-              Your safety, <br /> 
-              <span className="text-primary underline decoration-accent/30 underline-offset-8 block mt-2">
-                Our commitment
-              </span>
+              Your safety, <br className="hidden md:block" /> <span className="text-primary underline decoration-accent/30 underline-offset-8">Our commitment</span>
             </h1>
             <p className="text-xl md:text-2xl font-medium text-muted-foreground max-w-2xl mx-auto opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards delay-200">
               The social-safety platform that turns university transit from solo vulnerability into a secure, monitored experience.
@@ -196,14 +158,14 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="py-12 px-6 md:px-12 bg-white">
+      <section id="how-it-works" className="pt-8 pb-24 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter">How ShareRide Works</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Five simple steps to ensure you and your loved ones never travel alone.</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-y-12 gap-x-4 md:gap-8 relative">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {[
               { step: "01", title: "Join Circle", desc: "Build your network of trusted friends.", icon: UserPlus },
               { step: "02", title: "Plan Journey", desc: "Enter your route and vehicle details.", icon: MapPin },
@@ -211,30 +173,18 @@ export default function LandingPage() {
               { step: "04", title: "Track Live", desc: "Friends watch your 'blue line' shrink in real-time.", icon: Activity },
               { step: "05", title: "Arrive Safe", desc: "End your trip or use SOS if needed.", icon: CheckCircle2 },
             ].map((item, i) => (
-              <div 
-                key={i} 
-                className={cn(
-                  "relative space-y-6 group flex flex-col items-center text-center",
-                  i === 4 ? "col-span-2 md:col-span-1" : "col-span-1"
-                )}
-              >
-                <div className="h-20 w-20 md:h-24 md:w-24 rounded-[1.5rem] md:rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20 relative z-10">
-                  <item.icon className="h-10 w-10 md:h-12 md:w-12" />
+              <div key={i} className="relative space-y-6 group flex flex-col items-center text-center">
+                <div className="h-24 w-24 rounded-[2rem] bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/20 relative z-10">
+                  <item.icon className="h-12 w-12" />
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-black text-primary tracking-[0.2em]">{item.step}</span>
-                  <h4 className="text-lg md:text-xl font-black uppercase tracking-tight">{item.title}</h4>
-                  <p className="text-muted-foreground text-xs md:text-sm font-medium leading-relaxed max-w-[180px] mx-auto">{item.desc}</p>
+                  <h4 className="text-xl font-black uppercase tracking-tight">{item.title}</h4>
+                  <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-[180px]">{item.desc}</p>
                 </div>
-                {/* Horizontal line for desktop */}
                 {i < 4 && (
                   <div className="hidden md:block absolute top-12 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
                 )}
-                {/* Vertical line for mobile flow */}
-                <div className={cn(
-                  "md:hidden absolute -bottom-12 left-1/2 w-px h-8 bg-border border-dashed border-l",
-                  i === 4 && "hidden"
-                )} />
               </div>
             ))}
           </div>
@@ -364,49 +314,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Community Reviews Section */}
-      <section className="py-24 px-6 md:px-12 bg-white">
-        <div className="max-w-7xl mx-auto space-y-16">
-          <div className="text-center space-y-4">
-            <Badge className="bg-primary/10 text-primary border-none font-black px-4 py-1">COMMUNITY VOICES</Badge>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter">Trusted by Peers</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">See how ShareRide is making a difference in everyday transit for students and faculty.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {reviews.map((review, i) => (
-              <Card key={i} className="rounded-3xl border-none shadow-sm bg-secondary/20 hover:shadow-xl transition-all duration-500 flex flex-col group">
-                <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, starI) => (
-                      <Star 
-                        key={starI} 
-                        className={cn(
-                          "h-4 w-4", 
-                          starI < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"
-                        )} 
-                      />
-                    ))}
-                  </div>
-                  
-                  <div className="relative flex-1">
-                    <Quote className="absolute -top-4 -left-4 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
-                    <p className="text-sm font-medium leading-relaxed italic text-foreground/80 relative z-10">
-                      "{review.text}"
-                    </p>
-                  </div>
-
-                  <div className="pt-6 border-t border-border/50">
-                    <p className="font-black text-sm uppercase tracking-tight">{review.name}</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{review.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="px-6 md:px-12 py-24">
         <div className="max-w-7xl mx-auto bg-slate-900 rounded-[4rem] p-12 md:p-24 text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
@@ -445,7 +352,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white pt-8 pb-16 px-6 md:px-12 border-t mt-auto">
+      <footer className="bg-white pt-20 pb-16 px-6 md:px-12 border-t mt-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
           <div className="space-y-8">
             <div className="flex items-center gap-4">
@@ -457,6 +364,14 @@ export default function LandingPage() {
             <p className="text-lg font-medium text-muted-foreground leading-relaxed max-w-md">
               The official safety companion portal empowering secure community transit through real-time technology and human connection.
             </p>
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-8">
@@ -483,24 +398,6 @@ export default function LandingPage() {
           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">
             © 2025 ShareRide. Developed by Sujal Bafna.
           </p>
-
-          <a 
-            href="https://www.sdslabourcontractor.com/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-4 group"
-          >
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Managed By</span>
-            <div className="h-10 w-24 relative overflow-hidden">
-              <Image 
-                src="https://i.postimg.cc/3xbMtPny/sdslogo.png" 
-                alt="SDS Logo" 
-                fill 
-                className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300" 
-              />
-            </div>
-            <span className="text-xs font-black text-foreground group-hover:text-primary transition-colors uppercase">SDS Sai Datta Services</span>
-          </a>
         </div>
       </footer>
     </div>
