@@ -7,10 +7,12 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
 import { BottomNav } from '@/components/layout/bottom-nav';
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 
 export const metadata: Metadata = {
   title: 'ShareRide - Your Safety Companion',
   description: 'ShareRide ensures traveler safety by connecting them with a network of trusted friends.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -24,6 +26,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <meta name="theme-color" content="#2280B3" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="google-site-verification" content="Nd73Vjtm91uUwb_Yp0mK1S1BVGSj2xKOJCNIR_dr4C8" />
       </head>
       <body className="font-body antialiased selection:bg-accent/30 min-h-screen bg-background text-foreground">
         <FirebaseClientProvider>
@@ -33,6 +39,7 @@ export default function RootLayout({
             forcedTheme="light"
             disableTransitionOnChange
           >
+            <ServiceWorkerRegistration />
             <SidebarProvider>
               <div className="flex min-h-screen w-full relative">
                 <Suspense fallback={null}>
